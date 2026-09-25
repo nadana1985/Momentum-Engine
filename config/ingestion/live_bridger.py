@@ -20,9 +20,10 @@ from config.ingestion.sync_state_manager import (
 from momentum_v10.bar_clock import drop_forming_hours, drop_forming_klines
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from momentum_v10.logger import get_logger, quarantine_corrupted_shard
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
-logger = logging.getLogger("kronos.bridger")
+logger = get_logger("ingest")
+data_logger = get_logger("data_quality")
 
 EXOTIC_DIR = str(ROOT / "data" / "exotic_shards")
 RAW_DIR = str(ROOT / "data" / "raw_shards")
@@ -58,12 +59,24 @@ def get_symbols():
         logger.info(f"Discovered {len(kline_only)} kline-only assets (no exotic shard) — klines will be gap-filled.")
     return sorted(exotic_syms | kline_only)
 
+def safe_read_parquet(path: str, sym: str, shard_type: str) -> pd.DataFrame:
+    """Read a parquet file safely, quarantining it if corrupted."""
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    try:
+        return pd.read_parquet(path)
+    except Exception as e:
+        data_logger.error(f"[{sym}] Corrupted {shard_type} shard detected at {path}: {e}")
+        quarantine_corrupted_shard(path, reason=f"{shard_type} corrupted: {e}")
+        return pd.DataFrame()
+
 def _get_last_ts_from_parquet(path):
     try:
         df = pd.read_parquet(path, columns=['timestamp'])
         if df.empty: return None
         return int(df['timestamp'].max())
-    except:
+    except Exception as e:
+        data_logger.warning("Unreadable or corrupted timestamp in %s: %s", path, e)
         return None
 
 # Global funding cache
@@ -119,7 +132,7 @@ def process_symbol(sym):
                         resampled = drop_forming_hours(resampled, current_ts)
 
                         if not resampled.empty:
-                            df = pd.read_parquet(funding_path)
+                            df = safe_read_parquet(funding_path, sym, "funding")
                             combined = pd.concat([df, resampled.reset_index(drop=True)])
                             combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                             combined.reset_index(drop=True).to_parquet(funding_path, index=False)
@@ -136,7 +149,7 @@ def process_symbol(sym):
                             df_new['timestamp'] = df_new['datetime'].astype('datetime64[ms]').astype('int64')
                             df_new = drop_forming_hours(df_new, current_ts)
                             if not df_new.empty:
-                                df = pd.read_parquet(funding_path)
+                                df = safe_read_parquet(funding_path, sym, "funding")
                                 combined = pd.concat([df, df_new.drop(columns=['datetime'])])
                                 combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                                 combined.reset_index(drop=True).to_parquet(funding_path, index=False)
@@ -175,7 +188,7 @@ def process_symbol(sym):
                             new_df = merged[['timestamp', 'sum_open_interest', 'sum_open_interest_value', 'count_toptrader_long_short_ratio']]
                             new_df = drop_forming_hours(new_df, current_ts)
                             if not new_df.empty:
-                                df = pd.read_parquet(metrics_path)
+                                df = safe_read_parquet(metrics_path, sym, "metrics")
                                 combined = pd.concat([df, new_df])
                                 combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                                 combined.reset_index(drop=True).to_parquet(metrics_path, index=False)
@@ -194,6 +207,9 @@ def process_symbol(sym):
     if os.path.exists(kline_path):
         kline_last_ts = (_sync.get("raw", sym) if _sync else None) or _get_last_ts_from_parquet(kline_path)
         if kline_last_ts and current_ts - kline_last_ts >= 3600000:
+            gap_hours = (current_ts - kline_last_ts) / 3600000.0
+            if gap_hours >= 24:
+                logger.warning(f"[{sym}] Gap detected: {gap_hours:.1f} hours behind last kline.")
             url_kline = f"https://fapi.binance.com/fapi/v1/klines?symbol={sym}&interval=1h&startTime={kline_last_ts + 1}&limit=1500"
             sess = get_session()
             try:
@@ -212,7 +228,7 @@ def process_symbol(sym):
                         # The last row is often the hour still printing. Do not store it.
                         df_kline = drop_forming_klines(df_kline, current_ts)
                         if not df_kline.empty:
-                            df = pd.read_parquet(kline_path)
+                            df = safe_read_parquet(kline_path, sym, "kline")
                             combined = pd.concat([df, df_kline])
                             combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                             combined.reset_index(drop=True).to_parquet(kline_path, index=False)
@@ -231,6 +247,7 @@ def process_symbol(sym):
 
 def run_bridger():
     global _sync
+    t_start = time.perf_counter()
     if SYNC_STATE_PATH.exists():
         _sync = SyncStateManager()
         logger.info(
@@ -271,8 +288,10 @@ def run_bridger():
     if _sync is not None:
         _sync.save()
         logger.info("sync_state.json updated.")
-    logger.info("Bridging Complete! Updated=%s UpToDate=%s Failed=%s", success, skipped, failed)
+    elapsed = time.perf_counter() - t_start
+    logger.info(f"Bridging Complete in {elapsed:.1f}s! Updated={success} UpToDate={skipped} Failed={failed}")
     return {"symbols": total, "updated": success, "uptodate": skipped, "failed": failed}
+
 
 if __name__ == "__main__":
     run_bridger()

@@ -10,6 +10,11 @@ from momentum_v10.cta_dual import compute_features, step_cta
 from momentum_v10.config import ROOT, SHARD_DIR, TAPE_DIR, FeatureConfig, CtaConfig
 from momentum_v10.live_book import count_closed, count_open, dedupe_new_trades, preserve_research_open
 from momentum_v10.universe_generator import load_with_oi, discover_assets
+from momentum_v10.logger import get_logger, quarantine_corrupted_shard
+
+logger = get_logger("engine")
+trade_logger = get_logger("trades")
+data_logger = get_logger("data_quality")
 
 STATE_FILE = ROOT / 'data' / 'engine_state.json'
 CLOSED_TRADES_FILE = TAPE_DIR / 'closed_trades.csv'
@@ -31,7 +36,13 @@ def active_trade_record(asset, trade, curr_close):
 
 def process_live_asset(asset, data_dir, current_state):
     try:
-        df = load_with_oi(asset, data_dir)
+        try:
+            df = load_with_oi(asset, data_dir)
+        except Exception as io_err:
+            raw_file = Path(data_dir) / f"{asset}_USDT_1h.parquet"
+            data_logger.error(f"[live_runner] Corrupted shard detected for {asset}: {io_err}")
+            quarantine_corrupted_shard(raw_file, reason=str(io_err))
+            raise
         fcfg = FeatureConfig(
             shock_percentile=99.0,
             shock_mult=None,
@@ -93,8 +104,7 @@ def process_live_asset(asset, data_dir, current_state):
         return asset, current_state, completed_trades, active_trades_records
 
     except Exception as e:
-        print(f"[live_runner] {asset} failed: {e}", flush=True)
-        traceback.print_exc()
+        logger.error(f"[live_runner] {asset} failed: {e}")
         return asset, None, [], []
 
 def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
@@ -103,8 +113,9 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
         data_dir = ROOT / data_dir
     assets = discover_assets(data_dir)
     workers = workers or min(16, os.cpu_count() or 1)
+    total_assets = len(assets)
 
-    print(f'[live_runner] Found {len(assets)} assets in {data_dir}. Loading state...')
+    logger.info(f"[live_runner] Found {total_assets} assets in {data_dir}. Spawning {workers} workers.")
 
     if STATE_FILE.exists():
         with open(STATE_FILE, 'r') as f:
@@ -117,7 +128,10 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
     assets_failed = 0
     failed_assets = set()
     previous_open = pd.read_csv(OPEN_TRADES_FILE) if OPEN_TRADES_FILE.exists() else pd.DataFrame()
-    
+
+    milestone_step = max(1, total_assets // 4)
+    completed_tasks = 0
+
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = {}
         for asset in assets:
@@ -129,8 +143,9 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
                 'last_processed_timestamp': '1970-01-01T00:00:00'
             })
             futures[executor.submit(process_live_asset, asset, data_dir, state)] = asset
-            
+
         for future in as_completed(futures):
+            completed_tasks += 1
             asset = futures[future]
             try:
                 asset, new_state, completed, active = future.result()
@@ -144,7 +159,11 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
             except Exception as e:
                 assets_failed += 1
                 failed_assets.add(asset)
-                print(f"Error processing {asset}: {e}")
+                logger.error(f"Error processing {asset}: {e}")
+
+            if completed_tasks % milestone_step == 0 or completed_tasks == total_assets:
+                pct = (completed_tasks / total_assets) * 100.0
+                logger.info(f"[live_runner] Progress {completed_tasks}/{total_assets} ({pct:.0f}%) | Succeeded: {completed_tasks - assets_failed} | Failed: {assets_failed}")
 
     # Save new state atomically
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -176,6 +195,18 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
             df_existing = pd.DataFrame()
         df_new = dedupe_new_trades(df_existing, df_completed)
         n_appended = int(len(df_new))
+
+        # Trade Audit Logging for closed exits
+        for _, tr in df_new.iterrows():
+            pnl_val = float(tr['pnl']) if 'pnl' in tr and pd.notna(tr['pnl']) else 0.0
+            trade_logger.info(
+                f"[EXIT] {tr.get('asset')} | Engine: {tr.get('engine')} | "
+                f"Entry: {tr.get('entry')} @ {float(tr.get('entry_px', 0)):.4f} | "
+                f"Exit: {tr.get('exit')} @ {float(tr.get('exit_px', 0)):.4f} | "
+                f"Reason: {tr.get('reason')} | PnL: {pnl_val*100:+.2f}% | "
+                f"Hold: {tr.get('duration', '')}"
+            )
+
         if df_existing.empty:
             df_combined = df_new
         elif df_new.empty:
@@ -184,13 +215,13 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
             df_combined = pd.concat([df_existing, df_new], ignore_index=True)
         CLOSED_TRADES_FILE.parent.mkdir(parents=True, exist_ok=True)
         df_combined.to_csv(CLOSED_TRADES_FILE, index=False)
-        print(f"[live_runner] Appended {n_appended} new closed trades (skipped {len(df_completed) - n_appended} already in the ledger).")
+        logger.info(f"[live_runner] Appended {n_appended} new closed trades (skipped {len(df_completed) - n_appended} duplicates).")
     else:
         df_combined = pd.read_csv(CLOSED_TRADES_FILE) if CLOSED_TRADES_FILE.exists() else pd.DataFrame()
 
     preserved = preserve_research_open(OPEN_TRADES_FILE)
     if preserved is not None:
-        print(f"[live_runner] Preserved research open_at_end rows -> {preserved.name}")
+        logger.info(f"[live_runner] Preserved research open_at_end rows -> {preserved.name}")
 
     df_active = pd.DataFrame(all_active)
     if failed_assets and not previous_open.empty and 'asset' in previous_open.columns:
@@ -199,10 +230,22 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
             carried = carried.loc[~carried['reason'].fillna('').astype(str).str.strip().eq('open_at_end')]
         if not carried.empty:
             df_active = pd.concat([df_active, carried], ignore_index=True)
-            print(f"[live_runner] Carried {len(carried)} open rows for {len(failed_assets)} assets that failed this hour.")
+            logger.warning(f"[live_runner] Carried {len(carried)} open rows for {len(failed_assets)} assets that failed this hour.")
     OPEN_TRADES_FILE.parent.mkdir(parents=True, exist_ok=True)
     if not df_active.empty:
         df_active.to_csv(OPEN_TRADES_FILE, index=False)
+        # Trade Audit Logging for newly opened positions
+        prev_keys = set()
+        if not previous_open.empty and {'asset', 'entry'}.issubset(previous_open.columns):
+            prev_keys = set(zip(previous_open['asset'].astype(str), previous_open['entry'].astype(str)))
+        for _, tr in df_active.iterrows():
+            k = (str(tr.get('asset')), str(tr.get('entry')))
+            if k not in prev_keys:
+                trade_logger.info(
+                    f"[ENTRY] New position: {tr.get('asset')} | Engine: {tr.get('engine')} | "
+                    f"Entry: {tr.get('entry')} @ {float(tr.get('entry_price', 0)):.4f} | "
+                    f"Shock: {float(tr.get('shock', 0)):.1f}x"
+                )
     else:
         pd.DataFrame(columns=['asset', 'engine', 'entry', 'entry_price', 'pnl', 'shock', 'mae', 'mfe']).to_csv(OPEN_TRADES_FILE, index=False)
 
@@ -210,14 +253,15 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
     n_closed = count_closed(df_combined)
     from momentum_v10.book_store import write_book
     write_book()
-    print(f"[live_runner] State updated. Open={n_open} Closed={n_closed} NewClosed={n_appended} FailedAssets={assets_failed}")
+    logger.info(f"[live_runner] State updated. Open={n_open} Closed={n_closed} NewClosed={n_appended} FailedAssets={assets_failed}")
     return {
         "open": n_open,
         "closed": n_closed,
         "closed_this_hour": n_appended,
-        "assets": len(assets),
+        "assets": total_assets,
         "assets_failed": assets_failed,
     }
+
 
 
 def main():

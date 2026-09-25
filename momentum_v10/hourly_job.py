@@ -15,9 +15,13 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 
 from momentum_v10.config import ROOT, TAPE_DIR
+from momentum_v10.logger import get_logger, check_disk_space
+
+logger = get_logger("system")
 
 
 def render_report(status: dict) -> tuple[str, str]:
@@ -46,17 +50,14 @@ def send_report(status: dict) -> bool:
     to_raw = os.environ.get("V10_ALERT_TO", "").strip()
     subject, body = render_report(status)
     if not from_addr or not to_raw:
-        print(
-            "[hourly] Email not sent. Set V10_SES_FROM and V10_ALERT_TO.",
-            flush=True,
-        )
+        logger.warning("[hourly] Email not sent. V10_SES_FROM and V10_ALERT_TO not set in environment.")
         return False
     tos = [item.strip() for item in to_raw.split(",") if item.strip()]
     region = os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION") or "us-east-1"
     try:
         import boto3
         client = boto3.client("ses", region_name=region)
-        client.send_email(
+        resp = client.send_email(
             Source=from_addr,
             Destination={"ToAddresses": tos},
             Message={
@@ -64,11 +65,12 @@ def send_report(status: dict) -> bool:
                 "Body": {"Text": {"Data": body, "Charset": "UTF-8"}},
             },
         )
+        msg_id = resp.get("MessageId", "unknown")
+        logger.info(f"[hourly] SES email successfully dispatched to {', '.join(tos)}: MessageId={msg_id}")
+        return True
     except Exception as e:
-        print(f"[hourly] SES send failed: {e}", flush=True)
+        logger.error(f"[hourly] SES email dispatch failed: {e}")
         return False
-    print(f"[hourly] Emailed {', '.join(tos)}: {subject}", flush=True)
-    return True
 
 
 def main() -> int:
@@ -76,7 +78,15 @@ def main() -> int:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    t_run_start = time.perf_counter()
     started = datetime.now(timezone.utc)
+    logger.info(f"========== Kronos V10 Hourly Clock Started ({started.strftime('%Y-%m-%d %H:%M:%S UTC')}) ==========")
+
+    # Host diagnostics: check disk space before execution
+    disk = check_disk_space(ROOT / "data")
+    if not disk.get("healthy", True):
+        logger.warning(f"[hourly] Running with reduced free disk space: {disk.get('free_gb')} GB free ({disk.get('free_pct')}%)")
+
     status = {
         "started_utc": started.strftime("%Y-%m-%d %H:%M:%S"),
         "open": 0,
@@ -94,27 +104,45 @@ def main() -> int:
         from momentum_v10.build_csv import write_all_trades_view
         from momentum_v10.live_runner import run as run_live
 
+        # Phase 1: Ingestion
+        t_ingest_start = time.perf_counter()
         ingest = run_bridger()
+        t_ingest = time.perf_counter() - t_ingest_start
         status["ingest_updated"] = int(ingest.get("updated", 0))
         status["ingest_failed"] = int(ingest.get("failed", 0))
+        logger.info(f"[hourly] Phase 1 (Ingestion) completed in {t_ingest:.1f}s | Updated={status['ingest_updated']} Failed={status['ingest_failed']}")
+
+        # Phase 2: Live Runner & State Update
+        t_live_start = time.perf_counter()
         live = run_live()
+        t_live = time.perf_counter() - t_live_start
         for key in ("open", "closed", "closed_this_hour", "assets", "assets_failed"):
             status[key] = int(live[key])
+        logger.info(f"[hourly] Phase 2 (Live Compute) completed in {t_live:.1f}s | Open={status['open']} Closed={status['closed']} NewClosed={status['closed_this_hour']}")
+
         write_all_trades_view()
         if live["assets"] <= 0:
             status["error"] = "no assets discovered"
+            logger.error("[hourly] Error: no assets discovered in shard directory.")
         elif live["assets_failed"] >= live["assets"]:
             status["error"] = "live runner failed every asset"
+            logger.critical("[hourly] Critical: live runner failed on every asset.")
         else:
             status["ok"] = True
     except Exception as e:
         status["error"] = f"{type(e).__name__}: {e}"
-        print(f"[hourly] {status['error']}", flush=True)
+        logger.error(f"[hourly] Pipeline exception: {status['error']}", exc_info=True)
 
     status["finished_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     TAPE_DIR.mkdir(parents=True, exist_ok=True)
     (TAPE_DIR / "hourly_status.json").write_text(json.dumps(status, indent=2), encoding="utf-8")
+
     sent = send_report(status)
+
+    t_total = time.perf_counter() - t_run_start
+    result_flag = "SUCCESS" if status["ok"] else "FAILED"
+    logger.info(f"========== Kronos V10 Hourly Clock Finished in {t_total:.1f}s [{result_flag}] ==========")
+
     if not status["ok"]:
         return 1
     if not sent:
@@ -124,3 +152,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

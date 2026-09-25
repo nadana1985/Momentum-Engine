@@ -69,7 +69,11 @@ desktop.ini
 v10_2_tear_tape.md
 v10_open_trades.md
 
-# Data directory contents (large OHLCV shards, exotic metrics, output tapes)
+# Log directories and rotating files
+/logs/*
+!/logs/.gitkeep
+
+# Data directory contents (large OHLCV shards, exotic metrics, output tapes, quarantine)
 # Directory structure is preserved via .gitkeep
 /data/*
 !/data/.gitkeep
@@ -84,3 +88,7 @@ v10_open_trades.md
 !/data/all_tapes/v10_production/
 /data/all_tapes/v10_production/*
 !/data/all_tapes/v10_production/.gitkeep
+!/data/quarantine/
+/data/quarantine/*
+!/data/quarantine/.gitkeep
+
