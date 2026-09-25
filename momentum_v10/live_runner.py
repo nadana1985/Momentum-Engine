@@ -34,6 +34,44 @@ def active_trade_record(asset, trade, curr_close):
         'mfe': (trade['trade_max_high'] - entry_price) / entry_price,
     }
 
+def validate_asset_data(df: pd.DataFrame, asset: str, now: pd.Timestamp | None = None, strict_currency: bool = True) -> tuple[bool, str]:
+    """
+    4-Gate Per-Asset Circuit Breaker:
+    Validates physical integrity, currency, and price sanity for an asset.
+    Returns (is_valid, reason).
+    """
+    if df is None or df.empty:
+        return False, "Dataframe is empty or unreadable"
+
+    if len(df) < 720:  # Minimum 30 days of 1h history required for baseline math
+        return False, f"Insufficient history: {len(df)} bars (minimum 720 required)"
+
+    if strict_currency and now is not None:
+        # Currency Gate: At 5 mins past close (e.g. 11:05), the latest bar open time
+        # must be at least (current_hour - 1h). E.g. at 11:05, bar open must be >= 10:00.
+        latest_ts = pd.to_datetime(df.index[-1])
+        if latest_ts.tzinfo is not None:
+            latest_ts = latest_ts.tz_convert('UTC').tz_localize(None)
+
+        now_naive = pd.Timestamp(now)
+        if now_naive.tzinfo is not None:
+            now_naive = now_naive.tz_convert('UTC').tz_localize(None)
+
+        expected_min_ts = now_naive.floor('h') - pd.Timedelta(hours=1)
+        if latest_ts < expected_min_ts:
+            return False, f"Stale data: latest bar open is {latest_ts}, expected >= {expected_min_ts}"
+
+    # Price / Sanity Gate: check for nulls or non-positive prices in recent 100 bars
+    recent = df.tail(100)
+    for col in ['open', 'high', 'low', 'close']:
+        if col in recent.columns:
+            if recent[col].isnull().any():
+                return False, f"Null values detected in '{col}'"
+            if (recent[col] <= 0).any():
+                return False, f"Non-positive price (<=0) detected in '{col}'"
+
+    return True, "OK"
+
 def process_live_asset(asset, data_dir, current_state):
     try:
         try:
@@ -43,6 +81,28 @@ def process_live_asset(asset, data_dir, current_state):
             data_logger.error(f"[live_runner] Corrupted shard detected for {asset}: {io_err}")
             quarantine_corrupted_shard(raw_file, reason=str(io_err))
             raise
+
+        now = pd.Timestamp.now(tz='UTC')
+        is_valid, reason = validate_asset_data(df, asset, now=now)
+        if not is_valid:
+            has_active = bool(current_state.get('active_trades'))
+            if has_active:
+                trade_logger.warning(
+                    f"[breaker] Asset {asset} TRIPPED CIRCUIT BREAKER ({reason}), "
+                    f"but HAS ACTIVE OPEN POSITION(S)! Position carried forward safely without stepping."
+                )
+            else:
+                data_logger.warning(f"[breaker] Asset {asset} TRIPPED CIRCUIT BREAKER ({reason}). Skipping computation.")
+
+            curr_close = 0.0
+            if not df.empty and 'close' in df.columns:
+                curr_close = float(df['close'].iloc[-1])
+            active_trades_records = [
+                active_trade_record(asset, t, curr_close)
+                for t in current_state.get('active_trades', [])
+            ]
+            return asset, current_state, [], active_trades_records
+
         fcfg = FeatureConfig(
             shock_percentile=99.0,
             shock_mult=None,
@@ -54,6 +114,7 @@ def process_live_asset(asset, data_dir, current_state):
             first_of_run=True,
         )
         cfg = CtaConfig()
+
         
         # Vectorized math over the whole history (fast)
         feat = compute_features(df, fcfg, asset=asset)
@@ -253,6 +314,14 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
     n_closed = count_closed(df_combined)
     from momentum_v10.book_store import write_book
     write_book()
+
+    if total_assets > 0 and assets_failed > (0.20 * total_assets):
+        logger.critical(
+            f"[CIRCUIT BREAKER SYSTEMIC ALERT] {assets_failed}/{total_assets} "
+            f"({assets_failed / total_assets * 100:.1f}%) assets tripped breaker or failed! "
+            f"Possible exchange outage or corrupted dataset."
+        )
+
     logger.info(f"[live_runner] State updated. Open={n_open} Closed={n_closed} NewClosed={n_appended} FailedAssets={assets_failed}")
     return {
         "open": n_open,
@@ -261,6 +330,7 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
         "assets": total_assets,
         "assets_failed": assets_failed,
     }
+
 
 
 

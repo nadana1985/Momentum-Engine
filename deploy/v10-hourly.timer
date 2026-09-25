@@ -2,7 +2,7 @@
 Description=Run the V10 hourly job
 
 [Timer]
-OnCalendar=hourly
+OnCalendar=*-*-* *:05:00
 Persistent=true
 Unit=v10-hourly.service
 
