@@ -1,0 +1,86 @@
+# =============================================================================
+# Kronos V10 Momentum Engine — .gitignore
+# =============================================================================
+
+# Python bytecode and compilation caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Numba JIT compiler cache files
+*.nbc
+*.nbi
+
+# Testing and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# Static analysis and linting caches
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment configurations and credentials
+.env
+*.env
+!deploy/v10.env.example
+!*.env.example
+*.pem
+*.key
+*.cert
+
+# Scratch & ad-hoc exploratory research files
+/scratch/
+
+# Backup, temporary, and log files
+*.bak
+*.tmp
+*.temp
+*.log
+*~
+*.swp
+*.swo
+
+# Operating system and IDE metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Binary parquet data files (market shards and caches)
+*.parquet
+
+# Runtime state and timestamp cache files
+**/sync_state.json
+**/engine_state.json
+
+# Generated run report artifacts
+v10_2_tear_tape.md
+v10_open_trades.md
+
+# Data directory contents (large OHLCV shards, exotic metrics, output tapes)
+# Directory structure is preserved via .gitkeep
+/data/*
+!/data/.gitkeep
+!/data/raw_shards/
+/data/raw_shards/*
+!/data/raw_shards/.gitkeep
+!/data/exotic_shards/
+/data/exotic_shards/*
+!/data/exotic_shards/.gitkeep
+!/data/all_tapes/
+/data/all_tapes/*
+!/data/all_tapes/v10_production/
+/data/all_tapes/v10_production/*
+!/data/all_tapes/v10_production/.gitkeep

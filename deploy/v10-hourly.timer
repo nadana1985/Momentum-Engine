@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the V10 hourly job
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=v10-hourly.service
+
+[Install]
+WantedBy=timers.target

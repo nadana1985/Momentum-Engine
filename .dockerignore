@@ -1,0 +1,5 @@
+data
+**/__pycache__
+**/*.pyc
+.git
+momentum_v10/cta_dual.py.bak

@@ -1,0 +1,11 @@
+[Unit]
+Description=V10 hourly ingest, compute, and trade-count email
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/v10_standalone
+EnvironmentFile=-/opt/v10_standalone/deploy/v10.env
+ExecStart=/opt/v10_standalone/.venv/bin/python -m momentum_v10.hourly_job
+TimeoutStartSec=3600
