@@ -35,11 +35,33 @@ class TradeLogFilter(logging.Filter):
         return getattr(record, "is_trade", False) or record.name.startswith("kronos.trades")
 
 
+class SafeStreamHandler(logging.StreamHandler):
+    """StreamHandler that ensures Unicode characters don't crash Windows charmap consoles."""
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            super().emit(record)
+        except UnicodeEncodeError:
+            try:
+                msg = self.format(record)
+                encoding = getattr(self.stream, "encoding", "utf-8") or "utf-8"
+                safe_msg = msg.encode(encoding, errors="replace").decode(encoding)
+                self.stream.write(safe_msg + self.terminator)
+                self.flush()
+            except Exception:
+                self.handleError(record)
+
+
 def init_logging(log_dir: Path | str | None = None) -> None:
     """Initialize root 'kronos' logger with rotating files, trade audit, and console handlers."""
     global _INITIALIZED
     if _INITIALIZED:
         return
+
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(errors="replace")
+        except Exception:
+            pass
 
     log_path = Path(log_dir) if log_dir is not None else DEFAULT_LOG_DIR
     log_path.mkdir(parents=True, exist_ok=True)
@@ -61,7 +83,7 @@ def init_logging(log_dir: Path | str | None = None) -> None:
     )
 
     # 1. Console Handler (INFO+)
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = SafeStreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(standard_formatter)
     root_logger.addHandler(console_handler)
