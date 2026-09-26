@@ -40,6 +40,7 @@ os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -62,7 +63,9 @@ def discover_assets(data_dir: Path) -> list[str]:
         for p in data_dir.glob(f'*{suffix}')
         if p.name.endswith(suffix)
     )
-    return assets
+    # Symbols are [A-Z0-9]. Names mangled to '?' on a non-UTF-8 save cannot be
+    # matched to Binance or the exotic shards; leave them out of the book.
+    return [a for a in assets if re.fullmatch(r"[A-Z0-9]+", a)]
 
 
 def load_with_oi(asset: str, data_dir: Path) -> pd.DataFrame:

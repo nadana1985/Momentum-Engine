@@ -39,10 +39,11 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parent.parent.parent   # package root (this repo)
-SYNC_STATE_PATH = ROOT / "data" / "sync_state.json"
+_DATA = Path(os.environ.get("V10_DATA_ROOT") or (ROOT / "data")).resolve()
+SYNC_STATE_PATH = _DATA / "sync_state.json"
 
-RAW_DIR     = ROOT / "data" / "raw_shards"
-EXOTIC_DIR  = ROOT / "data" / "exotic_shards"
+RAW_DIR     = _DATA / "raw_shards"
+EXOTIC_DIR  = _DATA / "exotic_shards"
 
 
 # ---------------------------------------------------------------------------

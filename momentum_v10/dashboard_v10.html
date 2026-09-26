@@ -619,6 +619,25 @@
             </div>
         </div>
 
+        <!-- NEW SIGNALS (LAST 24H) -->
+        <div class="table-box" id="signals-box" style="margin-bottom: 1.25rem; display: none;">
+            <div class="table-controls">
+                <div class="table-title">
+                    🆕 <span>New Signals — last 24h (<span id="signals-count">0</span>)</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 0.5rem;">Stop = exit if an hourly candle closes below it · paper signals, not advice</span>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset</th><th>Engine</th><th>Entry (UTC)</th><th>Age</th><th>Entry Px</th>
+                        <th>Current Px</th><th>Stop</th><th>To Stop</th><th>PnL %</th>
+                    </tr>
+                </thead>
+                <tbody id="signals-tbody"></tbody>
+            </table>
+        </div>
+
         <!-- LIVE OPEN POSITIONS LEDGER TABLE -->
         <div class="table-box">
             <div class="table-controls">
@@ -797,6 +816,8 @@
                 const res = await fetch(`/api/data?mode=${currentMode}`);
                 const data = await res.json();
                 
+                renderSignals(data.new_signals);
+
                 // Update Dynamic KPI Titles based on current mode
                 if (currentMode === 'closed') {
                     document.getElementById('kpi-total-title').innerText = 'Total Closed Trades';
@@ -972,7 +993,35 @@
                         </div>
                         <span style="color: var(--text-muted);">${e.count} (${e.pct}%)</span>
                     </div>
+                `).join('');
             }
+        }
+
+        function renderSignals(list) {
+            const box = document.getElementById('signals-box');
+            if (!box) return;
+            if (!Array.isArray(list)) { box.style.display = 'none'; return; }
+            box.style.display = '';
+            document.getElementById('signals-count').innerText = list.length;
+            const fmt = v => (v === null || v === undefined) ? '—' : Number(v).toPrecision(5);
+            const pct = v => (v === null || v === undefined) ? '—' : `${v > 0 ? '+' : ''}${Number(v).toFixed(1)}%`;
+            const tbody = document.getElementById('signals-tbody');
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="color: var(--text-muted); text-align: center;">No new entries in the last 24 hours</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = list.map(s => `
+                <tr>
+                    <td><strong>${s.asset}</strong>${s.age_hours <= 1.5 ? ' <span class="txt-up">●</span>' : ''}</td>
+                    <td><span class="engine-tag">${s.engine}</span></td>
+                    <td>${s.entry}</td>
+                    <td>${Math.round(s.age_hours)}h</td>
+                    <td>${fmt(s.entry_price)}</td>
+                    <td>${fmt(s.current_price)}</td>
+                    <td>${fmt(s.stop)}</td>
+                    <td class="txt-down">${pct(s.stop_pct)}</td>
+                    <td class="${(s.pnl_pct || 0) >= 0 ? 'txt-up' : 'txt-down'}">${pct(s.pnl_pct)}</td>
+                </tr>`).join('');
         }
 
         function renderDurationList(durations) {

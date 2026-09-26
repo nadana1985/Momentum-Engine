@@ -7,22 +7,52 @@ from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from momentum_v10.bar_clock import bar_is_closed
 from momentum_v10.cta_dual import compute_features, step_cta
-from momentum_v10.config import ROOT, SHARD_DIR, TAPE_DIR, FeatureConfig, CtaConfig
+from momentum_v10.config import DATA_ROOT, ROOT, SHARD_DIR, TAPE_DIR, FeatureConfig, CtaConfig
 from momentum_v10.live_book import count_closed, count_open, dedupe_new_trades, preserve_research_open
 from momentum_v10.universe_generator import load_with_oi, discover_assets
 from momentum_v10.logger import get_logger, quarantine_corrupted_shard
+from momentum_v10.io_utils import atomic_to_csv, atomic_write_text
 
 logger = get_logger("engine")
 trade_logger = get_logger("trades")
 data_logger = get_logger("data_quality")
 
-STATE_FILE = ROOT / 'data' / 'engine_state.json'
+STATE_FILE = DATA_ROOT / 'engine_state.json'
 CLOSED_TRADES_FILE = TAPE_DIR / 'closed_trades.csv'
 OPEN_TRADES_FILE = TAPE_DIR / 'open_trades.csv'
 
-def active_trade_record(asset, trade, curr_close):
+def effective_stop(trade) -> float:
+    """The level whose breach on an hourly close exits this trade (normal regime).
+
+    Mirrors step_cta: squeeze engines use -20% and, once up 5%, a 25% trail
+    from the peak; CONTINUATION ratchets to the 21d Donchian floor once armed;
+    IGNITION / PHOENIX_* use the trigger-candle low (hard_stop).
+    """
+    engine = str(trade.get('engine', ''))
+    entry = float(trade['entry_price'])
+    hard = float(trade.get('hard_stop', 0.0) or 0.0)
+    peak = float(trade.get('trade_max_high', entry) or entry)
+    if 'SQZ' in engine or 'SQUEEZE' in engine:
+        stop = entry * 0.80
+        if peak > entry * 1.05:
+            stop = max(stop, peak * 0.75)
+        return stop
+    if engine == 'CONTINUATION':
+        return max(hard, float(trade.get('donchian_stop', 0.0) or 0.0))
+    return hard
+
+
+def active_trade_record(asset, trade, curr_close, now=None):
     """Open-book row. Saved trades have no entry_shock key; that is not a failure."""
     entry_price = trade['entry_price']
+    stop = effective_stop(trade)
+    now = pd.Timestamp(now) if now is not None else pd.Timestamp.now(tz='UTC')
+    if now.tzinfo is not None:
+        now = now.tz_convert('UTC').tz_localize(None)
+    entry_ts = pd.to_datetime(trade['entry_time'], errors='coerce')
+    if entry_ts is not pd.NaT and getattr(entry_ts, 'tzinfo', None) is not None:
+        entry_ts = entry_ts.tz_convert('UTC').tz_localize(None)
+    age_h = (now - entry_ts).total_seconds() / 3600.0 if pd.notna(entry_ts) else float('nan')
     return {
         'asset': asset,
         'engine': trade['engine'],
@@ -32,6 +62,10 @@ def active_trade_record(asset, trade, curr_close):
         'shock': trade.get('entry_shock', 0.0),
         'mae': (trade['trade_min_low'] - entry_price) / entry_price,
         'mfe': (trade['trade_max_high'] - entry_price) / entry_price,
+        'current_price': curr_close if curr_close > 0 else float('nan'),
+        'stop': stop if stop > 0 else float('nan'),
+        'stop_pct': (stop - curr_close) / curr_close if (stop > 0 and curr_close > 0) else float('nan'),
+        'duration_hours': age_h,
     }
 
 def validate_asset_data(df: pd.DataFrame, asset: str, now: pd.Timestamp | None = None, strict_currency: bool = True) -> tuple[bool, str]:
@@ -226,12 +260,6 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
                 pct = (completed_tasks / total_assets) * 100.0
                 logger.info(f"[live_runner] Progress {completed_tasks}/{total_assets} ({pct:.0f}%) | Succeeded: {completed_tasks - assets_failed} | Failed: {assets_failed}")
 
-    # Save new state atomically
-    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    tmp_file = STATE_FILE.with_name(STATE_FILE.name + '.tmp')
-    with open(tmp_file, 'w') as f:
-        json.dump(engine_state, f, indent=4, default=lambda o: o.strftime('%Y-%m-%dT%H:%M:%S') if hasattr(o, 'strftime') else str(o))
-    os.replace(tmp_file, STATE_FILE)
 
     # Append completed trades with aligned columns. Never duplicate a row
     # already in the closed ledger (a cold start replays full history).
@@ -275,7 +303,7 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
         else:
             df_combined = pd.concat([df_existing, df_new], ignore_index=True)
         CLOSED_TRADES_FILE.parent.mkdir(parents=True, exist_ok=True)
-        df_combined.to_csv(CLOSED_TRADES_FILE, index=False)
+        atomic_to_csv(df_combined, CLOSED_TRADES_FILE)
         logger.info(f"[live_runner] Appended {n_appended} new closed trades (skipped {len(df_completed) - n_appended} duplicates).")
     else:
         df_combined = pd.read_csv(CLOSED_TRADES_FILE) if CLOSED_TRADES_FILE.exists() else pd.DataFrame()
@@ -294,7 +322,7 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
             logger.warning(f"[live_runner] Carried {len(carried)} open rows for {len(failed_assets)} assets that failed this hour.")
     OPEN_TRADES_FILE.parent.mkdir(parents=True, exist_ok=True)
     if not df_active.empty:
-        df_active.to_csv(OPEN_TRADES_FILE, index=False)
+        atomic_to_csv(df_active, OPEN_TRADES_FILE)
         # Trade Audit Logging for newly opened positions
         prev_keys = set()
         if not previous_open.empty and {'asset', 'entry'}.issubset(previous_open.columns):
@@ -308,8 +336,13 @@ def run(data_dir: Path | None = None, workers: int | None = None) -> dict:
                     f"Shock: {float(tr.get('shock', 0)):.1f}x"
                 )
     else:
-        pd.DataFrame(columns=['asset', 'engine', 'entry', 'entry_price', 'pnl', 'shock', 'mae', 'mfe']).to_csv(OPEN_TRADES_FILE, index=False)
+        atomic_to_csv(pd.DataFrame(columns=['asset', 'engine', 'entry', 'entry_price', 'pnl', 'shock', 'mae', 'mfe']), OPEN_TRADES_FILE)
 
+    # Commit the per-asset watermark LAST. If the process dies before this,
+    # the next run replays the same bars; closed-ledger dedupe makes that
+    # idempotent. Writing it first would lose exits permanently.
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_text(STATE_FILE, json.dumps(engine_state, indent=4, default=lambda o: o.strftime('%Y-%m-%dT%H:%M:%S') if hasattr(o, 'strftime') else str(o)))
     n_open = count_open(df_active)
     n_closed = count_closed(df_combined)
     from momentum_v10.book_store import write_book

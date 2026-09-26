@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Sid": "ManageTheServerRoleOnly", "Effect": "Allow",
+     "Action": ["iam:GetRole", "iam:CreateRole", "iam:TagRole", "iam:PutRolePolicy", "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy", "iam:DeleteRole",
+                "iam:GetInstanceProfile", "iam:CreateInstanceProfile", "iam:AddRoleToInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile", "iam:DeleteInstanceProfile"],
+     "Resource": ["arn:aws:iam::ACCOUNT_ID:role/v10-momentum-ec2",
+                  "arn:aws:iam::ACCOUNT_ID:instance-profile/v10-momentum-ec2"]},
+    {"Sid": "AttachOnlySsmCorePolicy", "Effect": "Allow", "Action": "iam:AttachRolePolicy",
+     "Resource": "arn:aws:iam::ACCOUNT_ID:role/v10-momentum-ec2",
+     "Condition": {"ArnEquals": {"iam:PolicyARN": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"}}},
+    {"Sid": "PassRoleToEc2Only", "Effect": "Allow", "Action": "iam:PassRole",
+     "Resource": "arn:aws:iam::ACCOUNT_ID:role/v10-momentum-ec2",
+     "Condition": {"StringEquals": {"iam:PassedToService": "ec2.amazonaws.com"}}}
+  ]
+}

@@ -7,6 +7,8 @@ live book is owned by live_runner.py.
 import numpy as np
 import pandas as pd
 
+from momentum_v10.io_utils import atomic_to_csv
+
 from momentum_v10.config import TAPE_DIR
 
 CLOSED_CSV = TAPE_DIR / "closed_trades.csv"
@@ -33,7 +35,7 @@ def write_all_trades_view() -> int:
     df = pd.concat([closed_df, open_df], ignore_index=True)
     if df.empty:
         ALL_CSV.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(ALL_CSV, index=False)
+        atomic_to_csv(df, ALL_CSV)
         print(f"[build_csv] all_trades.csv rows=0 ({ALL_CSV})")
         return 0
 
@@ -65,7 +67,7 @@ def write_all_trades_view() -> int:
         df = df.sort_values(["asset", "entry_dt"]).reset_index(drop=True)
 
     ALL_CSV.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(ALL_CSV, index=False)
+    atomic_to_csv(df, ALL_CSV)
     print(f"[build_csv] all_trades.csv rows={len(df)} (open and closed ledgers left untouched)")
     return int(len(df))
 

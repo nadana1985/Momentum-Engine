@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Sid": "CloudFrontDashboard", "Effect": "Allow",
+     "Action": ["cloudfront:CreateDistribution", "cloudfront:GetDistribution", "cloudfront:GetDistributionConfig",
+                "cloudfront:UpdateDistribution", "cloudfront:DeleteDistribution", "cloudfront:ListDistributions",
+                "cloudfront:TagResource",
+                "cloudfront:CreateOriginAccessControl", "cloudfront:GetOriginAccessControl",
+                "cloudfront:ListOriginAccessControls", "cloudfront:DeleteOriginAccessControl"],
+     "Resource": "*"},
+    {"Sid": "DashboardBucketPolicy", "Effect": "Allow",
+     "Action": ["s3:PutBucketPolicy", "s3:GetBucketPolicy", "s3:DeleteBucketPolicy"],
+     "Resource": "arn:aws:s3:::v10-momentum-*"}
+  ]
+}

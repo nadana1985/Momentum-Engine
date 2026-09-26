@@ -162,7 +162,11 @@ def build_api_response(mode: str = 'open'):
         dur_str = f"{int(dur_hrs)}h" if not np.isnan(dur_hrs) else "1h"
         
         entry_px = float(r.get('entry_price', r.get('entry_px', 0.0)))
-        current_px = float(r.get('exit_price', r.get('exit_px', entry_px)))
+        # Open rows carry the latest close; closed rows the exit price.
+        cp = r.get('current_price', np.nan)
+        if pd.isna(cp) or str(r.get('reason', '')).strip() not in ('', 'nan', 'open_at_end'):
+            cp = r.get('exit_price', r.get('exit_px', np.nan))
+        current_px = float(cp) if pd.notna(cp) else entry_px
         pnl_v = float(r.get('pnl_pct', 0.0))
         mfe_v = float(r.get('mfe_pct', r.get('mfe', 0.0)))
         
@@ -176,10 +180,13 @@ def build_api_response(mode: str = 'open'):
             "duration": dur_str,
             "duration_hours": dur_hrs,
             "mfe": round(mfe_v, 4),
-            "pnl_pct": round(pnl_v, 4)
+            "pnl_pct": round(pnl_v, 4),
+            "stop": float(r['stop']) if 'stop' in r and pd.notna(r['stop']) else None,
         })
         
+    from momentum_v10.live_book import new_signals
     return {
+        "new_signals": new_signals(open_df) if mode == 'open' else None,
         "summary": {
             "total_open": total_open,
             "open_win_pct": round(win_pct, 1),

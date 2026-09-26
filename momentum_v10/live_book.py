@@ -77,3 +77,48 @@ def preserve_research_open(path: Path) -> Path | None:
         return None
     df.to_csv(dest, index=False)
     return dest
+
+
+def new_signals(open_df: pd.DataFrame | None, now=None, hours: float = 24.0) -> list[dict]:
+    """Live positions entered within the last `hours`, newest first.
+
+    Each row: asset, engine, entry (UTC), entry_price, current_price, stop,
+    stop_pct (distance from current price to stop), pnl_pct, age_hours.
+    """
+    if open_df is None or open_df.empty or "entry" not in open_df.columns:
+        return []
+    df = open_df.copy()
+    if "reason" in df.columns:
+        r = _reason(df)
+        df = df.loc[r.eq("") | r.eq("nan")]
+    now = pd.Timestamp(now) if now is not None else pd.Timestamp.now(tz="UTC")
+    if now.tzinfo is not None:
+        now = now.tz_convert("UTC").tz_localize(None)
+    entry = pd.to_datetime(df["entry"], errors="coerce", utc=True).dt.tz_localize(None)
+    df = df.assign(_entry=entry).dropna(subset=["_entry"])
+    df = df.loc[df["_entry"] >= now - pd.Timedelta(hours=hours)].sort_values("_entry", ascending=False)
+
+    def num(row, col):
+        v = row.get(col)
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return None
+        return None if v != v else v
+
+    out = []
+    for _, row in df.iterrows():
+        pnl = num(row, "pnl")
+        stop_pct = num(row, "stop_pct")
+        out.append({
+            "asset": str(row["asset"]),
+            "engine": str(row["engine"]),
+            "entry": row["_entry"].strftime("%Y-%m-%d %H:%M"),
+            "entry_price": num(row, "entry_price"),
+            "current_price": num(row, "current_price"),
+            "stop": num(row, "stop"),
+            "stop_pct": None if stop_pct is None else round(stop_pct * 100.0, 2),
+            "pnl_pct": None if pnl is None else round(pnl * 100.0, 2),
+            "age_hours": round((now - row["_entry"]).total_seconds() / 3600.0, 1),
+        })
+    return out

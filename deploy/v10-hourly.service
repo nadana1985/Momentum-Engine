@@ -1,11 +1,23 @@
 [Unit]
-Description=V10 hourly ingest, compute, and trade-count email
+Description=V10 hourly ingest, compute, and report
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
+User=v10
+Group=v10
 WorkingDirectory=/opt/v10_standalone
-EnvironmentFile=-/opt/v10_standalone/deploy/v10.env
-ExecStart=/opt/v10_standalone/.venv/bin/python -m momentum_v10.hourly_job
-TimeoutStartSec=3600
+EnvironmentFile=/etc/v10/v10.env
+Environment=HOME=/var/lib/v10 PYTHONDONTWRITEBYTECODE=1 NUMBA_CACHE_DIR=/var/lib/v10/numba-cache
+ExecStart=/opt/v10_venv/bin/python -m momentum_v10.hourly_job
+TimeoutStartSec=3300
+# 3 = previous run still holding the lock; not a failure
+SuccessExitStatus=3
+# Hardening: code and venv are read-only; only data and logs are writable.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/v10 /var/log/v10
+UMask=0077

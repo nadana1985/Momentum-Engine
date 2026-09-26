@@ -64,3 +64,54 @@ python momentum_v10/dashboard_nicegui.py
 * **Trade book**: `data/all_tapes/v10_production/trades.parquet` (one row per trade)
 * **Scorecard**: `data/all_tapes/v10_production/scorecard.parquet` (one row per symbol)
 * **One tear sheet, on request**: `python -m momentum_v10.book_store ASSET`
+
+---
+
+## 🛡️ Production hardening (2026-09-26)
+
+Settings live in `deploy/v10.env` (see `deploy/v10.env.example`).
+
+| Area | Change |
+|---|---|
+| Data location | `V10_DATA_ROOT` points every module at one data directory (default `<repo>/data`). The job fails closed if it finds fewer than `V10_MIN_SHARDS` (100) raw shards. |
+| Crash safety | Every shard, ledger, state and status file is written to a temp file and swapped in with `os.replace`. The engine watermark (`engine_state.json`) is committed **after** the ledgers, so a crash replays the hour instead of losing exits. Orphaned temp files are swept at the start of each run. |
+| Overlap | `flock` on `<data>/.hourly.lock`; a second run exits with code 3. |
+| Binance pacing | OI/L-S ≤ 3 req/s (limit 1000/5 min), funding ≤ 1.5 req/s (limit 500/5 min), klines at the lowest weight bucket. Funding is fetched only after a new settlement. Metrics and klines paginate to back-fill outages. 418/451 stop all requests for the run. |
+| Health gates | The run is marked failed (email subject `FAILED`, exit 1) if fewer than `V10_MIN_FRESH_PCT` (80%) of shards hold the last closed bar, or more than `V10_MAX_FAIL_PCT` (20%) of assets or symbols fail, or Binance blocks the run. |
+| Backup | `V10_BACKUP_BUCKET`: ledger and state go to `latest/` every hour and to `daily/<date>/` at 00 UTC (expire with a 35-day lifecycle rule). All shards are mirrored to `data/` once a day. Restore a fresh host with `python -m momentum_v10.ops restore`. |
+| Heartbeat | `V10_CW_NAMESPACE`: publishes `HourlyOK`, `OpenTrades`, `IngestFailed`, `AssetsFailed` and `RunSeconds` to CloudWatch. Alarm on missing `HourlyOK` to catch a dead host. |
+| Symbols | Shards whose names were mangled to `?` are skipped with a warning. |
+| Dependencies | Pinned in `requirements.txt`; dashboard in `requirements-dashboard.txt`; tests in `requirements-dev.txt` (`python -m pytest momentum_v10/tests`). |
+
+Steady-state hourly runtime is dominated by OI/L-S pacing: about 1,720 requests at 3/s is about 10 minutes, and compute is about 1 minute.
+Not addressed here: the strategy/execution findings in the Phase 2 audit (same-bar fills, toxic-regime exit price, funding forward-fill from current `premiumIndex`).
+
+### AWS deployment (EC2, eu-west-2)
+
+`deploy/aws/deploy.sh` creates or reuses the following, all tagged `Project=v10-momentum`:
+- S3 bucket `v10-momentum-<account>-eu-west-2`
+- SNS topic, with email subscriptions
+- IAM role, least-privilege, plus SSM access
+- security group with no inbound rules
+- a `t4g.small` Amazon Linux 2023 instance: IMDSv2, encrypted gp3, termination protection
+- a CloudWatch heartbeat alarm
+
+It uploads the code and your `../data` folder, and the instance installs itself on first boot.
+
+```bash
+cd deploy/aws
+./deploy.sh            # first deploy (asks for confirmation)
+./deploy.sh status     # last run status, timer, memory, disk
+./deploy.sh logs       # bootstrap log + journal
+./deploy.sh update     # ship code changes (waits for a running job)
+./deploy.sh run-now    # trigger a run
+./deploy.sh destroy    # remove everything except the S3 bucket
+```
+
+On the instance:
+- code: `/opt/v10_standalone` (read-only)
+- venv: `/opt/v10_venv`
+- data: `/var/lib/v10/data`
+- logs: `/var/log/v10`
+- settings: `/etc/v10/v10.env`
+- service: `v10-hourly.service` runs as the unprivileged `v10` user under systemd sandboxing.
