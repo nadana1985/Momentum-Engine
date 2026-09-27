@@ -456,6 +456,94 @@
         .dna-label { font-size: 0.75rem; color: var(--text-muted); }
         .dna-status-valid { color: var(--accent-green); font-weight: 600; font-size: 0.8rem; display: block; margin-top: 0.35rem; }
         .dna-status-veto { color: var(--accent-red); font-weight: 600; font-size: 0.8rem; display: block; margin-top: 0.35rem; }
+        /* ---- additions: views, sorting, filters, toasts ---- */
+        .view { display: none; }
+        .view.active { display: block; }
+        th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+        th.sortable:hover { color: var(--accent-cyan); }
+        th .sort-ind { opacity: 0.35; margin-left: 0.25rem; font-size: 0.7rem; }
+        th.sorted .sort-ind { opacity: 1; color: var(--accent-cyan); }
+        .pill-btn[data-range], .pill-btn[data-trend] { min-width: 2.6rem; }
+        .date-picker-box { cursor: pointer; position: relative; }
+        .popover {
+            position: absolute; z-index: 60; top: calc(100% + 6px); right: 0; min-width: 260px;
+            background: #0d1320; border: 1px solid var(--border-highlight); border-radius: var(--radius-md);
+            padding: 0.9rem; box-shadow: 0 12px 30px rgba(0,0,0,0.5); display: none; cursor: default;
+        }
+        .popover.open { display: block; }
+        .popover h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin: 0.6rem 0 0.35rem; }
+        .popover h4:first-child { margin-top: 0; }
+        .popover label { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: var(--text-main); padding: 0.15rem 0; cursor: pointer; }
+        .popover input[type=date] { background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--border-glow); border-radius: 6px; padding: 0.3rem 0.4rem; font-size: 0.78rem; }
+        .popover-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.8rem; }
+        .rel { position: relative; }
+        .badge-count { display: inline-block; min-width: 1.1rem; padding: 0 0.3rem; margin-left: 0.3rem; border-radius: 999px; background: var(--accent-cyan); color: #000; font-size: 0.68rem; font-weight: 700; text-align: center; }
+        .row-actions { white-space: nowrap; }
+        .row-actions button, .row-actions a { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.95rem; padding: 0 0.2rem; text-decoration: none; }
+        .row-actions button:hover, .row-actions a:hover { color: var(--accent-cyan); }
+        .toast { position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 90; background: #0d1320; border: 1px solid var(--border-highlight);
+                 color: #fff; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.8rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .panel-grid .table-box { margin-bottom: 0; }
+        .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; font-size: 0.8rem; }
+        .kv dt { color: var(--text-muted); }
+        .kv dd { font-family: var(--font-mono); color: #fff; }
+        .muted { color: var(--text-muted); }
+        .note { font-size: 0.72rem; color: var(--text-muted); margin-left: 0.5rem; font-weight: 400; }
+        .select-input { background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--border-glow); border-radius: 6px; padding: 0.35rem 0.5rem; font-size: 0.8rem; }
+        .link-btn { background: none; border: 1px solid var(--border-glow); color: var(--accent-cyan); border-radius: 6px; padding: 0.35rem 0.6rem; font-size: 0.78rem; cursor: pointer; }
+        .link-btn:hover { border-color: var(--accent-cyan); }
+        .modal-body pre { white-space: pre-wrap; font-family: var(--font-mono); font-size: 0.78rem; color: #dfe6f3; }
+        @media (max-width: 1100px) { .panel-grid { grid-template-columns: 1fr; } }
+
+        /* ---- responsive layout (tablet / phone) ---- */
+        main { min-width: 0; }
+        .table-box, .chart-box, .kpi-card, .charts-row > *, .kpi-grid > * { min-width: 0; }
+        .chart-header { flex-wrap: wrap; gap: 0.5rem; }
+        .table-scroll { width: 100%; overflow-x: auto; }
+        .table-scroll table td, .table-scroll table th { white-space: nowrap; }
+        .chart-box { height: auto; min-height: 280px; }
+        .donut-wrapper { height: 140px; }
+        .donut-legend { gap: 0.25rem; font-size: 0.7rem; }
+        .donut-legend .legend-item > span { white-space: nowrap; }
+        .hide-exit th[data-sort="exit"], .hide-exit td:nth-child(6) { display: none; }
+        #positions-tbody td { padding: 0.65rem 0.5rem; }
+        #positions-tbody td:nth-child(12) { white-space: normal; max-width: 120px; }
+        .table-scroll table th.sortable { white-space: normal; padding: 0.6rem 0.5rem; vertical-align: bottom; line-height: 1.25; }
+        .donut-legend .legend-item { gap: 0.4rem; min-width: 0; }
+        .donut-legend .legend-left span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (max-width: 1300px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .charts-row { grid-template-columns: 1fr 1fr; }
+            .charts-row > :first-child { grid-column: 1 / -1; }
+        }
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            aside { position: sticky; top: 0; width: 100%; max-width: 100vw; height: auto; padding: 0.5rem 16px; flex-direction: row; align-items: center; gap: 0.75rem; border-right: none; border-bottom: 1px solid var(--border-glow); }
+            aside > div:first-child { display: flex; align-items: center; gap: 0.75rem; min-width: 0; width: 100%; }
+            .brand-logo { padding: 0; border: none; flex-shrink: 0; }
+            .brand-text { display: none; }
+            .nav-menu { flex-direction: row; margin: 0; overflow-x: auto; min-width: 0; flex: 1; gap: 0.25rem; scrollbar-width: none; }
+            .nav-item a { white-space: nowrap; padding: 0.45rem 0.6rem; font-size: 0.8rem; }
+            .nav-item.active a { border-left: none; border-bottom: 2px solid var(--accent-cyan); }
+            .sidebar-footer { display: none; }
+            main { margin-left: 0; padding: 1rem 16px; }
+            header, .control-strip, .table-controls { flex-wrap: wrap; gap: 0.6rem; }
+            .header-widgets { flex-wrap: wrap; gap: 0.5rem; }
+            #page-subtitle, .clock-widget { display: none; }
+            .kpi-grid { grid-template-columns: 1fr 1fr; }
+            .charts-row { grid-template-columns: 1fr; }
+            .table-actions { flex-wrap: wrap; width: 100%; }
+            .search-input { width: 100%; flex: 1 1 160px; }
+            .pagination { flex-direction: column; gap: 0.5rem; }
+            .popover { right: auto; left: 0; max-width: calc(100vw - 32px); }
+            .panel-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 520px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .kpi-card { height: auto; min-height: 120px; }
+        }
     </style>
 </head>
 <body>
@@ -487,24 +575,23 @@
         </div>
     </aside>
 
-    <!-- MAIN DASHBOARD CONTENT -->
     <main>
         <!-- TOP HEADER -->
         <header>
             <div class="header-title">
                 <span class="flame-badge">🔥</span>
                 <div>
-                    <h1>Active Open Positions Command Center</h1>
-                    <p>Universal Microstructure & Donchian Ratchet Execution System</p>
+                    <h1 id="page-title">Active Open Positions Command Center</h1>
+                    <p id="page-subtitle">Universal Microstructure & Donchian Ratchet Execution System</p>
                 </div>
             </div>
             <div class="header-widgets">
                 <div class="live-badge">
                     <div class="dot-pulse"></div>
-                    <span id="pos-count-badge">LIVE | 214 Positions</span>
+                    <span id="pos-count-badge">LIVE | 0 Positions</span>
                 </div>
-                <div class="clock-widget" id="live-clock">Sun, 21 Sep 2026 | 08:39:26</div>
-                <button class="toggle-refresh">🟢 Auto Refresh</button>
+                <div class="clock-widget" id="live-clock">--</div>
+                <button class="toggle-refresh" id="auto-refresh-btn" onclick="toggleAutoRefresh()">🟢 Auto Refresh</button>
             </div>
         </header>
 
@@ -516,27 +603,38 @@
                     <button class="pill-btn" id="mode-closed-btn" onclick="setMode('closed')">📜 Closed Book</button>
                     <button class="pill-btn" id="mode-all-btn" onclick="setMode('all')">🌐 All Trades</button>
                 </div>
-                <div class="date-picker-box">
-                    📅 <span id="date-range-text">2026-09-15 ➔ 2026-09-21</span>
+                <div class="date-picker-box" id="date-range-box" onclick="toggleCustomRange(event)">
+                    📅 <span id="date-range-text">--</span>
+                    <div class="popover" id="custom-range" onclick="event.stopPropagation()">
+                        <h4>Custom range (UTC)</h4>
+                        <label>From <input type="date" id="range-from"></label>
+                        <label>To&nbsp;&nbsp;&nbsp; <input type="date" id="range-to"></label>
+                        <div class="popover-actions">
+                            <button class="link-btn" onclick="clearCustomRange()">Clear</button>
+                            <button class="btn-secondary" id="range-apply" onclick="applyCustomRange()">Apply</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="pill-group">
-                <button class="pill-btn">1D</button>
-                <button class="pill-btn active">7D</button>
-                <button class="pill-btn">30D</button>
-                <button class="pill-btn">Custom</button>
+            <div class="pill-group" id="range-pills">
+                <button class="pill-btn" data-range="1D" onclick="setRange('1D')">1D</button>
+                <button class="pill-btn" data-range="7D" onclick="setRange('7D')">7D</button>
+                <button class="pill-btn" data-range="30D" onclick="setRange('30D')">30D</button>
+                <button class="pill-btn active" data-range="ALL" onclick="setRange('ALL')">ALL</button>
+                <button class="pill-btn" data-range="CUSTOM" onclick="toggleCustomRange(event)">Custom</button>
             </div>
         </div>
 
-        <!-- KPI METRIC CARDS (5 Across) -->
+        <!-- ================= DASHBOARD VIEW ================= -->
+        <section class="view active" id="view-dashboard">
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-header">
                     <span class="kpi-title" id="kpi-total-title">Total Open Trades</span>
                     <div class="kpi-icon icon-teal">📚</div>
                 </div>
-                <div class="kpi-value" id="kpi-total-open">279</div>
-                <div class="kpi-sub"><span class="txt-up">▲ +12</span> vs yesterday</div>
+                <div class="kpi-value" id="kpi-total-open">--</div>
+                <div class="kpi-sub" id="kpi-sub-1">&nbsp;</div>
                 <div class="sparkline-wrapper"><canvas id="spark-1"></canvas></div>
             </div>
             <div class="kpi-card">
@@ -544,8 +642,8 @@
                     <span class="kpi-title" id="kpi-win-title">Open Win %</span>
                     <div class="kpi-icon icon-blue">🎯</div>
                 </div>
-                <div class="kpi-value" id="kpi-win-pct">96.3%</div>
-                <div class="kpi-sub"><span class="txt-up">▲ +2.1%</span></div>
+                <div class="kpi-value" id="kpi-win-pct">--</div>
+                <div class="kpi-sub" id="kpi-sub-2">&nbsp;</div>
                 <div class="sparkline-wrapper"><canvas id="spark-2"></canvas></div>
             </div>
             <div class="kpi-card">
@@ -553,8 +651,8 @@
                     <span class="kpi-title" id="kpi-cum-title">Unrealized Cum PnL</span>
                     <div class="kpi-icon icon-green">📈</div>
                 </div>
-                <div class="kpi-value" id="kpi-cum-pnl">+25,698.2%</div>
-                <div class="kpi-sub"><span class="txt-up">▲ +4,320.6%</span> (7D)</div>
+                <div class="kpi-value" id="kpi-cum-pnl">--</div>
+                <div class="kpi-sub" id="kpi-sub-3">&nbsp;</div>
                 <div class="sparkline-wrapper"><canvas id="spark-3"></canvas></div>
             </div>
             <div class="kpi-card">
@@ -562,8 +660,8 @@
                     <span class="kpi-title" id="kpi-mean-title">Mean Open PnL</span>
                     <div class="kpi-icon icon-purple">🎯</div>
                 </div>
-                <div class="kpi-value" id="kpi-mean-pnl">+120.09%</div>
-                <div class="kpi-sub"><span class="txt-up">▲ +18.4%</span></div>
+                <div class="kpi-value" id="kpi-mean-pnl">--</div>
+                <div class="kpi-sub" id="kpi-sub-4">&nbsp;</div>
                 <div class="sparkline-wrapper"><canvas id="spark-4"></canvas></div>
             </div>
             <div class="kpi-card">
@@ -571,49 +669,43 @@
                     <span class="kpi-title">Top Runner</span>
                     <div class="kpi-icon icon-gold">🏆</div>
                 </div>
-                <div class="kpi-value" id="kpi-top-runner">AKE</div>
-                <div class="kpi-sub" id="kpi-top-runner-sub"><span class="txt-up">+10,793.5%</span></div>
+                <div class="kpi-value" id="kpi-top-runner">--</div>
+                <div class="kpi-sub" id="kpi-top-runner-sub">&nbsp;</div>
                 <div class="sparkline-wrapper"><canvas id="spark-5"></canvas></div>
             </div>
         </div>
 
-        <!-- CHARTS ROW (50% - 25% - 25%) -->
         <div class="charts-row">
-            <!-- Unrealized PnL Trend -->
             <div class="chart-box">
                 <div class="chart-header">
-                    <span class="chart-title">Unrealized PnL Trend (Open Positions)</span>
-                    <div class="pill-group">
-                        <button class="pill-btn">1D</button>
-                        <button class="pill-btn active">1W</button>
-                        <button class="pill-btn">1M</button>
-                        <button class="pill-btn">ALL</button>
+                    <span class="chart-title" id="trend-title">Cumulative PnL by Entry Time</span>
+                    <div class="pill-group" id="trend-pills">
+                        <button class="pill-btn" data-trend="1D" onclick="setTrendRange('1D')">1D</button>
+                        <button class="pill-btn" data-trend="1W" onclick="setTrendRange('1W')">1W</button>
+                        <button class="pill-btn" data-trend="1M" onclick="setTrendRange('1M')">1M</button>
+                        <button class="pill-btn active" data-trend="ALL" onclick="setTrendRange('ALL')">ALL</button>
                     </div>
                 </div>
                 <div class="chart-container">
                     <canvas id="pnlTrendChart"></canvas>
                 </div>
             </div>
-
-            <!-- Open Positions by Engine Donut -->
             <div class="chart-box">
                 <div class="chart-header">
-                    <span class="chart-title">Open Positions by Engine</span>
+                    <span class="chart-title" id="donut-title">Open Positions by Engine</span>
                 </div>
                 <div class="donut-wrapper">
                     <canvas id="engineDonutChart"></canvas>
                     <div class="donut-center-text">
-                        <h3 id="donut-total">214</h3>
-                        <p>Positions</p>
+                        <h3 id="donut-total">0</h3>
+                        <p id="donut-label">Positions</p>
                     </div>
                 </div>
                 <div class="donut-legend" id="donut-legend"></div>
             </div>
-
-            <!-- Position Duration Distribution -->
             <div class="chart-box">
                 <div class="chart-header">
-                    <span class="chart-title">Position Duration Distribution</span>
+                    <span class="chart-title" id="duration-title">Holding Time Distribution</span>
                 </div>
                 <div class="duration-list" id="duration-list"></div>
             </div>
@@ -624,10 +716,10 @@
             <div class="table-controls">
                 <div class="table-title">
                     🆕 <span>New Signals — last 24h (<span id="signals-count">0</span>)</span>
-                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 0.5rem;">Stop = exit if an hourly candle closes below it · paper signals, not advice</span>
+                    <span class="note">Stop = exit if an hourly candle closes below it · paper signals, not advice</span>
                 </div>
             </div>
-            <table>
+            <div class="table-scroll"><table>
                 <thead>
                     <tr>
                         <th>Asset</th><th>Engine</th><th>Entry (UTC)</th><th>Age</th><th>Entry Px</th>
@@ -635,52 +727,168 @@
                     </tr>
                 </thead>
                 <tbody id="signals-tbody"></tbody>
-            </table>
+            </table></div>
         </div>
 
-        <!-- LIVE OPEN POSITIONS LEDGER TABLE -->
+        <!-- POSITIONS / LEDGER TABLE -->
         <div class="table-box">
             <div class="table-controls">
                 <div class="table-title">
-                    📄 <span>Live Open Positions (<span id="table-total-count">214</span> Positions)</span>
-                    <span style="font-size: 0.72rem; color: var(--accent-green); margin-left: 0.5rem;">🟢 Streaming live...</span>
+                    📄 <span><span id="table-title-text">Live Open Positions</span> (<span id="table-total-count">0</span>)</span>
+                    <span class="note" id="freshness-note">--</span>
                 </div>
                 <div class="table-actions">
-                    <input type="text" id="search-box" class="search-input" placeholder="Search asset, engine, or ID...">
-                    <button class="btn-secondary">⚙️ Filters</button>
-                    <button class="btn-secondary">📥 Export</button>
+                    <input type="text" id="search-box" class="search-input" placeholder="Search asset, engine, reason or #...">
+                    <div class="rel">
+                        <button class="btn-secondary" id="filters-btn" onclick="toggleFilters(event)">⚙️ Filters<span id="filter-count"></span></button>
+                        <div class="popover" id="filters-panel" onclick="event.stopPropagation()">
+                            <h4>Engine</h4>
+                            <div id="filter-engines"></div>
+                            <h4>Outcome</h4>
+                            <label><input type="radio" name="f-outcome" value="all" checked> All</label>
+                            <label><input type="radio" name="f-outcome" value="win"> Winners (PnL &gt; 0)</label>
+                            <label><input type="radio" name="f-outcome" value="loss"> Losers (PnL ≤ 0)</label>
+                            <h4>Risk (open trades)</h4>
+                            <label><input type="checkbox" id="f-nearstop"> Within 5% of stop</label>
+                            <label><input type="checkbox" id="f-stale"> Stale: open &gt; 30 days</label>
+                            <div class="popover-actions">
+                                <button class="link-btn" id="filters-reset" onclick="resetFilters()">Reset</button>
+                                <button class="btn-secondary" id="filters-apply" onclick="applyFilters()">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" id="export-btn" onclick="exportCsv()">📥 Export<span id="selected-count"></span></button>
                 </div>
             </div>
 
-            <table>
+            <div class="table-scroll"><table>
                 <thead>
                     <tr>
-                        <th><input type="checkbox"></th>
-                        <th>#</th>
-                        <th>Asset</th>
-                        <th>Engine</th>
-                        <th>Entry Time</th>
-                        <th>Entry Px</th>
-                        <th>Current Px</th>
-                        <th>Duration</th>
-                        <th>MFE</th>
-                        <th>Unrealized PnL %</th>
-                        <th>Status</th>
+                        <th><input type="checkbox" id="select-all" onclick="toggleSelectAll(this.checked)"></th>
+                        <th class="sortable" data-sort="id">#<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="asset">Asset<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="engine">Engine<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="entry">Entry (UTC)<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="exit">Exit (UTC)<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="entry_px">Entry Px<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="px" id="th-px">Current Px<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="hours">Duration<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="mfe">MFE %<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="pnl" id="th-pnl">PnL %<span class="sort-ind">↕</span></th>
+                        <th class="sortable" data-sort="stop_pct" id="th-stop">To Stop / Exit<span class="sort-ind">↕</span></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="positions-tbody"></tbody>
-            </table>
+            </table></div>
 
             <div class="pagination">
-                <div id="page-info">Showing 1-10 of 214 positions</div>
+                <div id="page-info">--</div>
                 <div class="page-btns" id="page-btns"></div>
             </div>
         </div>
+        </section>
+
+        <!-- ================= ENGINE PERFORMANCE VIEW ================= -->
+        <section class="view" id="view-engines">
+            <div class="table-box" style="margin-bottom: 1.25rem;">
+                <div class="table-controls"><div class="table-title">⚡ <span>Engine scorecard — closed trades in range</span><span class="note" id="eng-note"></span></div></div>
+                <div class="table-scroll"><table><thead><tr>
+                    <th>Engine</th><th>Closed</th><th>Win %</th><th>Avg win</th><th>Avg loss</th><th>Expectancy / trade</th><th>Median</th><th>Sum of PnL %</th><th>Median hold</th><th>Open now</th>
+                </tr></thead><tbody id="engines-tbody"></tbody></table></div>
+            </div>
+            <div class="panel-grid">
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">🚪 <span>Exit reasons</span></div></div>
+                    <div class="table-scroll"><table><thead><tr><th>Reason</th><th>Trades</th><th>Share</th><th>Avg PnL</th></tr></thead><tbody id="exits-tbody"></tbody></table></div>
+                </div>
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">🎯 <span>Concentration</span></div></div>
+                    <dl class="kv" id="concentration-kv"></dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= RISK MONITOR VIEW ================= -->
+        <section class="view" id="view-risk">
+            <div class="panel-grid">
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">🛡️ <span>Open risk summary</span></div></div>
+                    <dl class="kv" id="risk-kv"></dl>
+                </div>
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">⏳ <span>Position age</span></div></div>
+                    <div class="table-scroll"><table><thead><tr><th>Age</th><th>Positions</th><th>Share</th><th>Sum PnL %</th></tr></thead><tbody id="age-tbody"></tbody></table></div>
+                </div>
+            </div>
+            <div class="table-box" style="margin-bottom: 1.25rem;">
+                <div class="table-controls"><div class="table-title">⚠️ <span>Closest to stop</span><span class="note">exit triggers on an hourly close below the stop</span></div></div>
+                <div class="table-scroll"><table><thead><tr><th>Asset</th><th>Engine</th><th>Entry (UTC)</th><th>Price</th><th>Stop</th><th>To stop</th><th>PnL %</th></tr></thead><tbody id="nearstop-tbody"></tbody></table></div>
+            </div>
+            <div class="table-box">
+                <div class="table-controls"><div class="table-title">🧊 <span>Oldest open positions</span></div></div>
+                <div class="table-scroll"><table><thead><tr><th>Asset</th><th>Engine</th><th>Entry (UTC)</th><th>Age</th><th>PnL %</th><th>MFE %</th></tr></thead><tbody id="oldest-tbody"></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ================= REPORTS VIEW ================= -->
+        <section class="view" id="view-reports">
+            <div class="panel-grid">
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">🩺 <span>Latest hourly run</span></div></div>
+                    <dl class="kv" id="run-kv"></dl>
+                </div>
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">📥 <span>Downloads</span></div></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
+                        <button class="btn-secondary" id="dl-open" onclick="downloadBook('open')">Open positions (CSV)</button>
+                        <button class="btn-secondary" id="dl-closed" onclick="downloadBook('closed')">Closed trades (CSV)</button>
+                        <button class="btn-secondary" id="dl-all" onclick="downloadBook('all')">Full ledger (CSV)</button>
+                        <button class="btn-secondary" id="dl-scorecard" onclick="downloadScorecard()">Engine scorecard (CSV)</button>
+                    </div>
+                    <p class="muted" style="font-size:0.75rem; margin-top:0.8rem;">Files are built from the data currently loaded in this page (updated hourly).</p>
+                </div>
+            </div>
+            <div class="table-box" style="margin-bottom: 1.25rem;">
+                <div class="table-controls"><div class="table-title">🕐 <span>Run history (last 48 hourly runs)</span></div></div>
+                <div class="table-scroll"><table><thead><tr><th>Started (UTC)</th><th>Result</th><th>Open</th><th>Closed</th><th>New closed</th><th>New signals</th><th>Ingest failed</th><th>Delisted skipped</th><th>Fresh %</th><th>Run s</th></tr></thead><tbody id="history-tbody"></tbody></table></div>
+            </div>
+            <div class="table-box">
+                <div class="table-controls"><div class="table-title">📅 <span>Closed-trade performance by year</span></div></div>
+                <div class="table-scroll"><table><thead><tr><th>Year</th><th>Closed</th><th>Win %</th><th>Mean PnL</th><th>Median PnL</th><th>Sum of PnL %</th></tr></thead><tbody id="years-tbody"></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ================= SETTINGS VIEW ================= -->
+        <section class="view" id="view-settings">
+            <div class="panel-grid">
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">🖥️ <span>Display preferences</span><span class="note">saved in this browser</span></div></div>
+                    <dl class="kv">
+                        <dt>Rows per page</dt><dd><select class="select-input" id="pref-pagesize" onchange="setPref('pageSize', +this.value)"><option>10</option><option>25</option><option>50</option><option>100</option></select></dd>
+                        <dt>Default sort</dt><dd><select class="select-input" id="pref-sort" onchange="setPref('defaultSort', this.value)">
+                            <option value="pnl:desc">PnL, highest first</option>
+                            <option value="entry:desc">Entry time, newest first</option>
+                            <option value="exit:desc">Exit time, newest first</option>
+                            <option value="stop_pct:desc">Closest to stop first</option>
+                        </select></dd>
+                        <dt>Auto refresh</dt><dd><select class="select-input" id="pref-refresh" onchange="setPref('refreshSec', +this.value)"><option value="60">every 60 s</option><option value="300">every 5 min</option><option value="0">off</option></select></dd>
+                    </dl>
+                </div>
+                <div class="table-box">
+                    <div class="table-controls"><div class="table-title">📡 <span>Data</span></div></div>
+                    <dl class="kv" id="data-kv"></dl>
+                </div>
+            </div>
+            <div class="table-box">
+                <div class="table-controls"><div class="table-title">🔧 <span>Engine configuration</span><span class="note">read-only · from momentum_v10/config.py</span></div></div>
+                <div class="table-scroll"><table><thead><tr><th>Group</th><th>Parameter</th><th>Value</th></tr></thead><tbody id="config-tbody"></tbody></table></div>
+            </div>
+        </section>
     </main>
 
     <!-- ASSET DNA MODAL -->
-    <div id="asset-dna-modal" class="modal-backdrop" style="display: none;">
+    <div id="asset-dna-modal" class="modal-backdrop" style="display: none;" onclick="if (event.target === this) closeAssetDnaModal()">
         <div class="modal-card">
             <div class="modal-header">
                 <h3>🔍 TRADOOR Asset DNA Panel</h3>
@@ -689,7 +897,8 @@
             <div class="modal-body">
                 <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem;">
                     <label style="color: var(--text-muted); font-size: 0.82rem;">Select Asset:</label>
-                    <input type="text" id="dna-asset-input" class="search-input" style="width: 160px;" placeholder="e.g. LIT, AKE, BTC" value="LIT">
+                    <input type="text" id="dna-asset-input" class="search-input" style="width: 160px;" placeholder="e.g. LIT, AKE, BTC" value="LIT"
+                           onkeydown="if (event.key === 'Enter') fetchAssetDna(this.value.toUpperCase())">
                     <button class="btn-secondary" onclick="fetchAssetDna(document.getElementById('dna-asset-input').value.toUpperCase())">Inspect DNA</button>
                 </div>
                 <div class="dna-metrics-grid">
@@ -703,440 +912,628 @@
                         <span id="dna-alpha-status" class="dna-status-valid">Select asset to compute</span>
                     </div>
                 </div>
+                <p class="muted" style="font-size:0.72rem; margin-top:0.8rem;">Hill tail index of the last 720 hourly up-moves. Lower α = fatter right tail (bigger outlier rallies). ≤ 3.19 passes the engine's fat-tail check.</p>
             </div>
         </div>
     </div>
 
+    <!-- TRADE DETAIL MODAL -->
+    <div id="trade-modal" class="modal-backdrop" style="display: none;" onclick="if (event.target === this) closeTradeModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="trade-modal-title">Trade</h3>
+                <button class="modal-close" id="trade-modal-close" onclick="closeTradeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <dl class="kv" id="trade-modal-kv"></dl>
+                <p class="muted" id="trade-modal-engine" style="font-size:0.75rem; margin-top:0.9rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
     <script>
-        function navigate(view) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navMap = {
-                'dashboard': 'nav-dashboard',
-                'open': 'nav-open',
-                'closed': 'nav-closed',
-                'analytics': 'nav-analytics',
-                'engines': 'nav-engines',
-                'risk': 'nav-risk',
-                'asset-dna': 'nav-asset-dna',
-                'reports': 'nav-reports',
-                'settings': 'nav-settings'
-            };
-            const activeId = navMap[view];
-            if (activeId && document.getElementById(activeId)) {
-                document.getElementById(activeId).classList.add('active');
-            }
+    // ============================================================
+    // TRADOOR V10 dashboard. Data: data/trades.json, meta.json,
+    // config.json, asset_dna.json (hourly). Every KPI, chart, filter,
+    // range and sort is computed here from the same trade rows.
+    // ============================================================
+    const HOUR = 3600e3, DAY = 24 * HOUR;
+    const ENGINE_COLORS = { IGNITION: '#00f0ff', CONTINUATION: '#ffb800', PHOENIX_IGNITION: '#7b61ff',
+        PHOENIX_CONTINUATION: '#00ff87', SQUEEZE_IGN: '#ec4899', RETAIL_SQZ: '#3b82f6' };
+    const ENGINE_INFO = {
+        IGNITION: 'A dormant coin wakes up: volume shock above its own 1-year p99, quiet book, 24h-high breakout, then confirmed aggressive/institutional buying within 12h. Stop: trigger-candle low.',
+        SQUEEZE_IGN: 'Ignition while funding is negative (shorts paying) plus accelerating negative funding or a 3σ taker-buy burst. Stop: −20%, then 25% trail from peak once +5%.',
+        CONTINUATION: 'Established uptrend breaking its 24h high on a >2.5× range candle with aggressive, institutional flow and rising open interest. Stop: entry-candle low; ratchets to the 21-day low once +50%.',
+        RETAIL_SQZ: 'Retail-driven breakout while top traders are net short and open interest drops >5% (liquidations), fat-tailed coins only. Stop: −20%, 25% trail from peak.',
+        PHOENIX_IGNITION: 'Re-entry after an Ignition stop-out: price reclaims the original entry within 14 days with aggressive buying. Stop: re-entry candle low.',
+        PHOENIX_CONTINUATION: 'Re-entry after a Continuation stop-out: price reclaims the original entry within 14 days with aggressive buying. Stop: re-entry candle low.',
+    };
+    const state = {
+        view: 'dashboard', mode: 'open', range: 'ALL', custom: null, trend: 'ALL',
+        search: '', filters: { engines: null, outcome: 'all', nearStop: false, stale: false },
+        sort: null, page: 1, selected: new Set(), autoRefresh: true, timer: null,
+    };
+    let DATA = { open: [], closed: [], generated_utc: null, latest_bar_utc: null };
+    let META = {}, CONFIG = null, DNA = null, VIEWROWS = [];
 
-            if (view === 'dashboard' || view === 'open') {
-                setMode('open');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else if (view === 'closed') {
-                setMode('closed');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else if (view === 'analytics') {
-                setMode('all');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else if (view === 'engines' || view === 'risk') {
-                document.querySelector('.charts-row').scrollIntoView({ behavior: 'smooth' });
-            } else if (view === 'asset-dna') {
-                openAssetDnaModal();
-            }
+    // ---------- small helpers ----------
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const t = s => s ? Date.parse(String(s).replace(' ', 'T') + ':00Z') : NaN;
+    const fin = v => v !== null && v !== undefined && isFinite(v);
+    const fmtPx = v => fin(v) ? Number(v).toPrecision(5) : '—';
+    const fmtPct = (v, d = 1) => fin(v) ? `${v > 0 ? '+' : ''}${Number(v).toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d})}%` : '—';
+    const fmtHours = h => fin(h) ? (h >= 48 ? `${Math.floor(h / 24)}d ${Math.round(h % 24)}h` : `${Math.round(h)}h`) : '—';
+    const median = a => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+    const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN;
+    const sum = a => a.reduce((x, y) => x + y, 0);
+    function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2200); }
+    function pref(key, dflt) { try { const v = localStorage.getItem('v10.' + key); return v === null ? dflt : JSON.parse(v); } catch (e) { return dflt; } }
+    function setPref(key, val) {
+        try { localStorage.setItem('v10.' + key, JSON.stringify(val)); } catch (e) {}
+        if (key === 'pageSize') { state.page = 1; render(); }
+        if (key === 'defaultSort') { state.sort = null; render(); }
+        if (key === 'refreshSec') { state.autoRefresh = val > 0; scheduleRefresh(); updateRefreshBtn(); }
+        toast('Preference saved');
+    }
+    // End of the newest completed bar: the reference "now" for 1D/7D/30D windows.
+    function nowRef() {
+        const lb = t(DATA.latest_bar_utc); if (isFinite(lb)) return lb + HOUR;
+        const g = t(DATA.generated_utc); return isFinite(g) ? g : Date.now();
+    }
+
+    // ---------- data ----------
+    async function loadData() {
+        try {
+            const [trades, meta] = await Promise.all([
+                fetch('data/trades.json', {cache: 'no-cache'}).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }),
+                fetch('data/meta.json', {cache: 'no-cache'}).then(r => r.json()).catch(() => ({})),
+            ]);
+            DATA = trades; META = meta || {};
+            const engines = engineList();
+            if (!state.filters.engines) state.filters.engines = new Set(engines);
+            else engines.forEach(e => { if (!buildEngineFilter.seen || !buildEngineFilter.seen.has(e)) state.filters.engines.add(e); });
+            buildEngineFilter(engines);
+            render();
+        } catch (err) {
+            console.error('Error loading dashboard data:', err);
+            $('freshness-note').textContent = 'Could not load data — retrying at next refresh';
         }
+    }
+    async function loadConfig() {
+        if (CONFIG) return CONFIG;
+        try { CONFIG = await fetch('data/config.json', {cache: 'no-cache'}).then(r => r.json()); } catch (e) { CONFIG = {}; }
+        return CONFIG;
+    }
+    function engineList() { return [...new Set([...DATA.open, ...DATA.closed].map(r => r.engine))].sort(); }
 
-        function openAssetDnaModal() {
-            document.getElementById('asset-dna-modal').style.display = 'flex';
-            fetchAssetDna('LIT');
-        }
-
-        function closeAssetDnaModal() {
-            document.getElementById('asset-dna-modal').style.display = 'none';
-        }
-
-        async function fetchAssetDna(asset) {
-            if (!asset) return;
-            document.getElementById('dna-asset-name').innerText = asset;
-            document.getElementById('dna-alpha-val').innerText = 'Computing...';
-            document.getElementById('dna-alpha-status').innerText = '...';
-            try {
-                const res = await fetch(`/api/asset_dna?asset=${asset}`);
-                const data = await res.json();
-                if (data.alpha !== null && data.alpha !== undefined) {
-                    const alpha = parseFloat(data.alpha).toFixed(2);
-                    document.getElementById('dna-alpha-val').innerText = alpha;
-                    if (parseFloat(alpha) <= 3.19) {
-                        document.getElementById('dna-alpha-status').className = 'dna-status-valid';
-                        document.getElementById('dna-alpha-status').innerText = 'VALID (Fat Tail ≤ 3.19)';
-                    } else {
-                        document.getElementById('dna-alpha-status').className = 'dna-status-veto';
-                        document.getElementById('dna-alpha-status').innerText = 'VETO (Thin Tail > 3.19)';
-                    }
-                } else {
-                    document.getElementById('dna-alpha-val').innerText = 'N/A';
-                    document.getElementById('dna-alpha-status').className = 'dna-status-veto';
-                    document.getElementById('dna-alpha-status').innerText = 'No shard data';
-                }
-            } catch (e) {
-                document.getElementById('dna-alpha-val').innerText = 'Error';
-            }
-        }
-        // Update Live Clock
-        function updateClock() {
-            const now = new Date();
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const str = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} | ${now.toTimeString().split(' ')[0]}`;
-            document.getElementById('live-clock').innerText = str;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        let rawPositions = [];
-        let currentFilteredPositions = [];
-        let currentPage = 1;
-        const pageSize = 10;
-        let trendChartInstance = null;
-        let donutChartInstance = null;
-        let currentMode = 'open';
-
-        function setMode(mode) {
-            currentMode = mode;
-            currentPage = 1;
-            ['open', 'closed', 'all'].forEach(m => {
-                const btn = document.getElementById(`mode-${m}-btn`);
-                if (btn) {
-                    if (m === mode) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                }
-            });
-            loadData();
-        }
-
-        // Fetch Real-Time Data from Python Backend
-        async function loadData() {
-            try {
-                const res = await fetch(`/api/data?mode=${currentMode}`);
-                const data = await res.json();
-                
-                renderSignals(data.new_signals);
-
-                // Update Dynamic KPI Titles based on current mode
-                if (currentMode === 'closed') {
-                    document.getElementById('kpi-total-title').innerText = 'Total Closed Trades';
-                    document.getElementById('kpi-win-title').innerText = 'Closed Win %';
-                    document.getElementById('kpi-cum-title').innerText = 'Realized Cum PnL';
-                    document.getElementById('kpi-mean-title').innerText = 'Mean Trade PnL';
-                } else if (currentMode === 'all') {
-                    document.getElementById('kpi-total-title').innerText = 'Total Portfolio Trades';
-                    document.getElementById('kpi-win-title').innerText = 'Overall Win %';
-                    document.getElementById('kpi-cum-title').innerText = 'Mark-to-Market PnL';
-                    document.getElementById('kpi-mean-title').innerText = 'Mean Expectancy / Trade';
-                } else {
-                    document.getElementById('kpi-total-title').innerText = 'Total Open Trades';
-                    document.getElementById('kpi-win-title').innerText = 'Open Win %';
-                    document.getElementById('kpi-cum-title').innerText = 'Unrealized Cum PnL';
-                    document.getElementById('kpi-mean-title').innerText = 'Mean Open PnL';
-                }
-
-                // Update KPIs
-                document.getElementById('kpi-total-open').innerText = data.summary.total_open.toLocaleString();
-                document.getElementById('kpi-win-pct').innerText = data.summary.open_win_pct + '%';
-                document.getElementById('kpi-cum-pnl').innerText = '+' + data.summary.unrealized_cum_pnl.toLocaleString() + '%';
-                document.getElementById('kpi-mean-pnl').innerText = '+' + data.summary.mean_pnl + '%';
-                document.getElementById('kpi-top-runner').innerText = data.summary.top_runner_asset;
-                document.getElementById('kpi-top-runner-sub').innerHTML = `<span class="txt-up">+${data.summary.top_runner_pnl.toLocaleString()}%</span>`;
-                
-                const modeTitle = currentMode === 'closed' ? 'CLOSED BOOK' : (currentMode === 'all' ? 'ALL TRADES' : 'LIVE');
-                document.getElementById('pos-count-badge').innerText = `${modeTitle} | ${data.summary.total_open.toLocaleString()} Positions`;
-                document.getElementById('donut-total').innerText = data.summary.total_open.toLocaleString();
-                document.getElementById('table-total-count').innerText = data.summary.total_open.toLocaleString();
-
-                // Render Visual Elements safely
-                try { initSparklines(); } catch (e) { console.error("Sparklines error:", e); }
-                try { renderTrendChart(data.trend); } catch (e) { console.error("Trend chart error:", e); }
-                try { renderEngineDonut(data.engines); } catch (e) { console.error("Donut chart error:", e); }
-                try { renderDurationList(data.durations); } catch (e) { console.error("Duration list error:", e); }
-
-                // Update Positions Array & Render Table Page
-                rawPositions = data.open_positions;
-                const searchQ = document.getElementById('search-box').value.toLowerCase().trim();
-                if (searchQ) {
-                    currentFilteredPositions = rawPositions.filter(p => 
-                        p.asset.toLowerCase().includes(searchQ) || 
-                        p.engine.toLowerCase().includes(searchQ) || 
-                        p.id.toString().includes(searchQ)
-                    );
-                } else {
-                    currentFilteredPositions = rawPositions;
-                }
-                try { renderTablePage(); } catch (e) { console.error("Table page error:", e); }
-
-            } catch (err) {
-                console.error("Error loading dashboard data:", err);
-            }
-        }
-
-        function initSparklines() {
-            const configs = [
-                { id: 'spark-1', color: '#00f0ff' },
-                { id: 'spark-2', color: '#00ff87' },
-                { id: 'spark-3', color: '#10b981' },
-                { id: 'spark-4', color: '#7b61ff' },
-                { id: 'spark-5', color: '#ffb800' },
-            ];
-
-            configs.forEach(cfg => {
-                const canvasEl = document.getElementById(cfg.id);
-                if (!canvasEl) return;
-                const existing = Chart.getChart(canvasEl);
-                if (existing) existing.destroy();
-                const ctx = canvasEl.getContext('2d');
-                
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: [1,2,3,4,5,6,7,8,9,10],
-                        datasets: [{
-                            data: Array.from({length: 10}, () => Math.floor(Math.random() * 50) + 10),
-                            borderColor: cfg.color,
-                            borderWidth: 2,
-                            tension: 0.4,
-                            pointRadius: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { x: { display: false }, y: { display: false } }
-                    }
-                });
-            });
-        }
-
-        function renderTrendChart(trendData) {
-            const canvasEl = document.getElementById('pnlTrendChart');
-            if (!canvasEl) return;
-            const existing = Chart.getChart(canvasEl);
-            if (existing) existing.destroy();
-            const ctx = canvasEl.getContext('2d');
-
-            const labels = trendData.map(d => d.time);
-            const values = trendData.map(d => d.cum_pnl);
-
-            const gradient = ctx.createLinearGradient(0, 0, 0, 180);
-            gradient.addColorStop(0, 'rgba(0, 255, 135, 0.4)');
-            gradient.addColorStop(1, 'rgba(0, 255, 135, 0.0)');
-
-            trendChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Unrealized PnL %',
-                        data: values,
-                        borderColor: '#00ff87',
-                        borderWidth: 2,
-                        fill: true,
-                        backgroundColor: gradient,
-                        tension: 0.35,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#8e9ab0', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8e9ab0', font: { size: 10 } } }
-                    }
-                }
-            });
-        }
-
-        function renderEngineDonut(engines) {
-            const canvasEl = document.getElementById('engineDonutChart');
-            if (!canvasEl) return;
-            const existing = Chart.getChart(canvasEl);
-            if (existing) existing.destroy();
-            const ctx = canvasEl.getContext('2d');
-
-            const labels = engines.map(e => e.name);
-            const values = engines.map(e => e.count);
-            const colors = engines.map(e => e.color);
-
-            donutChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 0,
-                        cutout: '78%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Build Legend
-            const legendEl = document.getElementById('donut-legend');
-            if (legendEl) {
-                legendEl.innerHTML = engines.map(e => `
-                    <div class="legend-item">
-                        <div class="legend-left">
-                            <div class="legend-dot" style="background: ${e.color};"></div>
-                            <span style="color: #fff; font-weight: 500;">${e.name}</span>
-                        </div>
-                        <span style="color: var(--text-muted);">${e.count} (${e.pct}%)</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function renderSignals(list) {
-            const box = document.getElementById('signals-box');
-            if (!box) return;
-            if (!Array.isArray(list)) { box.style.display = 'none'; return; }
-            box.style.display = '';
-            document.getElementById('signals-count').innerText = list.length;
-            const fmt = v => (v === null || v === undefined) ? '—' : Number(v).toPrecision(5);
-            const pct = v => (v === null || v === undefined) ? '—' : `${v > 0 ? '+' : ''}${Number(v).toFixed(1)}%`;
-            const tbody = document.getElementById('signals-tbody');
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="color: var(--text-muted); text-align: center;">No new entries in the last 24 hours</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = list.map(s => `
-                <tr>
-                    <td><strong>${s.asset}</strong>${s.age_hours <= 1.5 ? ' <span class="txt-up">●</span>' : ''}</td>
-                    <td><span class="engine-tag">${s.engine}</span></td>
-                    <td>${s.entry}</td>
-                    <td>${Math.round(s.age_hours)}h</td>
-                    <td>${fmt(s.entry_price)}</td>
-                    <td>${fmt(s.current_price)}</td>
-                    <td>${fmt(s.stop)}</td>
-                    <td class="txt-down">${pct(s.stop_pct)}</td>
-                    <td class="${(s.pnl_pct || 0) >= 0 ? 'txt-up' : 'txt-down'}">${pct(s.pnl_pct)}</td>
-                </tr>`).join('');
-        }
-
-        function renderDurationList(durations) {
-            const el = document.getElementById('duration-list');
-            el.innerHTML = durations.map(d => `
-                <div class="duration-item">
-                    <div class="duration-meta">
-                        <span style="color: #fff;">${d.label}</span>
-                        <span style="color: var(--text-muted);">${d.count} (${d.pct}%)</span>
-                    </div>
-                    <div class="duration-track">
-                        <div class="duration-fill" style="width: ${d.pct}%;"></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function changePage(page) {
-            const totalPages = Math.ceil(currentFilteredPositions.length / pageSize);
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTablePage();
-        }
-
-        function renderTablePage() {
-            const tbody = document.getElementById('positions-tbody');
-            const total = currentFilteredPositions.length;
-            if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 2rem;">No positions found matching filter.</td></tr>`;
-                document.getElementById('page-info').innerText = `Showing 0 of 0 positions`;
-                document.getElementById('page-btns').innerHTML = '';
-                return;
-            }
-
-            const start = (currentPage - 1) * pageSize;
-            const end = Math.min(start + pageSize, total);
-            const display = currentFilteredPositions.slice(start, end);
-
-            tbody.innerHTML = display.map(p => {
-                const isPos = p.pnl_pct >= 0;
-                const pnlClass = isPos ? 'pnl-pos' : 'pnl-neg';
-                const pnlSign = isPos ? '+' : '';
-                const gaugeWidth = Math.min(100, Math.max(10, Math.abs(isPos ? p.pnl_pct * 3 : p.pnl_pct * 15)));
-                const gaugeClass = isPos ? 'gauge-pos' : 'gauge-neg';
-
-                return `
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td style="color: var(--text-muted);">${p.id}</td>
-                        <td style="font-weight: 700; color: #fff;">${p.asset}</td>
-                        <td><span class="engine-tag">${p.engine}</span></td>
-                        <td style="color: var(--text-muted);">${p.entry_time}</td>
-                        <td>${p.entry_px}</td>
-                        <td>${p.current_px}</td>
-                        <td>${p.duration}</td>
-                        <td>${p.mfe}</td>
-                        <td><span class="pnl-pill ${pnlClass}">${pnlSign}${p.pnl_pct}%</span></td>
-                        <td>
-                            <div class="status-gauge-wrapper">
-                                <div class="status-gauge-fill ${gaugeClass}" style="width: ${gaugeWidth}%;"></div>
-                            </div>
-                        </td>
-                        <td style="color: var(--text-muted); cursor: pointer;">📈 📋 ⋮</td>
-                    </tr>
-                `;
-            }).join('');
-
-            document.getElementById('page-info').innerText = `Showing ${start + 1}-${end} of ${total} positions`;
-
-            // Render Pagination Controls
-            const totalPages = Math.ceil(total / pageSize);
-            const pageBtnsEl = document.getElementById('page-btns');
-            let btnsHtml = `<div class="page-num ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">‹</div>`;
-
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, startPage + 4);
-            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
-
-            if (startPage > 1) {
-                btnsHtml += `<div class="page-num" onclick="changePage(1)">1</div>`;
-                if (startPage > 2) btnsHtml += `<div class="page-num disabled">...</div>`;
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                btnsHtml += `<div class="page-num ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</div>`;
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) btnsHtml += `<div class="page-num disabled">...</div>`;
-                btnsHtml += `<div class="page-num" onclick="changePage(${totalPages})">${totalPages}</div>`;
-            }
-
-            btnsHtml += `<div class="page-num ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">›</div>`;
-            pageBtnsEl.innerHTML = btnsHtml;
-        }
-
-        // Live Search Handler (0ms instant response)
-        document.getElementById('search-box').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase().trim();
-            if (!q) {
-                currentFilteredPositions = rawPositions;
-            } else {
-                currentFilteredPositions = rawPositions.filter(p => 
-                    p.asset.toLowerCase().includes(q) || 
-                    p.engine.toLowerCase().includes(q) || 
-                    p.id.toString().includes(q)
-                );
-            }
-            currentPage = 1;
-            renderTablePage();
+    // ---------- row pipeline: mode -> range -> filters -> search -> sort ----------
+    function rowTime(r) { return r.status === 'CLOSED' ? t(r.exit) : t(r.entry); }
+    function rangeWindow() {
+        if (state.range === 'CUSTOM' && state.custom) return state.custom;
+        const days = {'1D': 1, '7D': 7, '30D': 30}[state.range];
+        if (!days) return null;
+        const end = nowRef(); return [end - days * DAY, end];
+    }
+    function baseRows() {
+        if (state.mode === 'open') return DATA.open;
+        if (state.mode === 'closed') return DATA.closed;
+        return DATA.open.concat(DATA.closed);
+    }
+    function inRange(rows) {
+        const w = rangeWindow();
+        return w ? rows.filter(r => { const x = rowTime(r); return x >= w[0] && x < w[1]; }) : rows;
+    }
+    function ageHours(r) { return fin(r.hours) ? r.hours : (nowRef() - t(r.entry)) / HOUR; }
+    function passesFilters(r) {
+        const f = state.filters;
+        if (f.engines && !f.engines.has(r.engine)) return false;
+        if (f.outcome === 'win' && !(r.pnl > 0)) return false;
+        if (f.outcome === 'loss' && !(r.pnl <= 0)) return false;
+        if (f.nearStop && !(r.status === 'OPEN' && fin(r.stop_pct) && r.stop_pct >= -5)) return false;
+        if (f.stale && !(r.status === 'OPEN' && ageHours(r) > 30 * 24)) return false;
+        return true;
+    }
+    function sortSpec() { return (state.sort || pref('defaultSort', 'pnl:desc')).split(':'); }
+    function currentRows() {
+        const q = state.search.toLowerCase().trim();
+        let rows = inRange(baseRows()).filter(passesFilters);
+        if (q) rows = rows.filter(r => r.asset.toLowerCase().includes(q) || r.engine.toLowerCase().includes(q)
+                                      || (r.reason || '').toLowerCase().includes(q) || String(r.id) === q.replace('#', ''));
+        const [key, dir] = sortSpec();
+        const val = r => key === 'entry' ? t(r.entry) : key === 'exit' ? t(r.exit) : key === 'hours' ? ageHours(r) : r[key];
+        const sgn = dir === 'asc' ? 1 : -1;
+        return rows.slice().sort((a, b) => {
+            const x = val(a), y = val(b);
+            const xm = x === null || x === undefined || (typeof x === 'number' && isNaN(x));
+            const ym = y === null || y === undefined || (typeof y === 'number' && isNaN(y));
+            if (xm && ym) return 0; if (xm) return 1; if (ym) return -1;       // blanks always last
+            return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sgn;
         });
+    }
 
-        // Initial Load & Auto Refresh Interval (10 seconds)
-        loadData();
-        setInterval(loadData, 10000);
+    // ---------- render ----------
+    function render() {
+        VIEWROWS = currentRows();
+        renderHeader();
+        if (state.view === 'dashboard') {
+            renderKpis(VIEWROWS); renderSignals(); renderTrend(VIEWROWS); renderDonut(VIEWROWS);
+            renderDurations(VIEWROWS); renderTable();
+        } else if (state.view === 'engines') renderEngines();
+        else if (state.view === 'risk') renderRisk();
+        else if (state.view === 'reports') renderReports();
+        else if (state.view === 'settings') renderSettings();
+    }
+
+    function renderHeader() {
+        const labels = { open: ['LIVE', 'Active Open Positions Command Center'], closed: ['CLOSED BOOK', 'Closed Trade Ledger'], all: ['ALL TRADES', 'All Trades — Open & Closed'] };
+        const viewTitles = { engines: 'Engine Performance', risk: 'Risk Monitor', reports: 'Reports', settings: 'Settings' };
+        $('page-title').textContent = viewTitles[state.view] || labels[state.mode][1];
+        $('pos-count-badge').textContent = `${labels[state.mode][0]} | ${VIEWROWS.length.toLocaleString()} ${state.mode === 'open' ? 'Positions' : 'Trades'}`;
+        const w = rangeWindow();
+        const all = baseRows().map(rowTime).filter(isFinite);
+        let lo = w ? w[0] : NaN, hi = w ? w[1] - 1 : NaN;
+        if (!w && all.length) { lo = all.reduce((a, b) => Math.min(a, b)); hi = all.reduce((a, b) => Math.max(a, b)); }
+        $('date-range-text').textContent = isFinite(lo) ? `${new Date(lo).toISOString().slice(0, 10)} ➔ ${new Date(hi).toISOString().slice(0, 10)}` : '—';
+        document.querySelectorAll('#range-pills .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.range === state.range));
+        $('freshness-note').textContent = DATA.generated_utc ? `Updated ${DATA.generated_utc} UTC · data to ${DATA.latest_bar_utc || '?'} UTC bar · refreshes hourly` : '';
+        $('positions-tbody').closest('table').classList.toggle('hide-exit', state.mode === 'open');
+        $('table-title-text').textContent = state.mode === 'open' ? 'Live Open Positions' : state.mode === 'closed' ? 'Closed Trades' : 'All Trades';
+        $('th-px').firstChild.textContent = state.mode === 'open' ? 'Current Px ' : state.mode === 'closed' ? 'Exit Px ' : 'Current / Exit Px ';
+        $('th-pnl').firstChild.textContent = state.mode === 'open' ? 'Unrealized PnL % ' : state.mode === 'closed' ? 'Realized PnL % ' : 'PnL % ';
+        $('th-stop').firstChild.textContent = state.mode === 'open' ? 'To Stop ' : state.mode === 'closed' ? 'Exit reason ' : 'To Stop / Exit ';
+        const active = (state.filters.engines && state.filters.engines.size < engineList().length ? 1 : 0)
+            + (state.filters.outcome !== 'all' ? 1 : 0) + (state.filters.nearStop ? 1 : 0) + (state.filters.stale ? 1 : 0);
+        $('filter-count').innerHTML = active ? `<span class="badge-count">${active}</span>` : '';
+        $('selected-count').innerHTML = state.selected.size ? `<span class="badge-count">${state.selected.size}</span>` : '';
+    }
+
+    function renderKpis(rows) {
+        const pn = rows.map(r => r.pnl).filter(fin);
+        const wins = pn.filter(v => v > 0).length;
+        const T = { open: ['Total Open Trades', 'Open Win %', 'Unrealized Cum PnL', 'Mean Open PnL'],
+                    closed: ['Total Closed Trades', 'Closed Win %', 'Realized Cum PnL', 'Mean Trade PnL'],
+                    all: ['Total Trades', 'Win %', 'Cum PnL (open + closed)', 'Mean Trade PnL'] }[state.mode];
+        $('kpi-total-title').textContent = T[0]; $('kpi-win-title').textContent = T[1];
+        $('kpi-cum-title').textContent = T[2]; $('kpi-mean-title').textContent = T[3];
+        $('kpi-total-open').textContent = rows.length.toLocaleString();
+        $('kpi-win-pct').textContent = pn.length ? (wins / pn.length * 100).toFixed(1) + '%' : '—';
+        $('kpi-cum-pnl').textContent = pn.length ? fmtPct(sum(pn)) : '—';
+        $('kpi-mean-pnl').textContent = fmtPct(mean(pn), 2);
+        const end = nowRef();
+        const newOpen = DATA.open.filter(r => t(r.entry) >= end - DAY).length;
+        const newClosed = DATA.closed.filter(r => t(r.exit) >= end - DAY).length;
+        $('kpi-sub-1').innerHTML = state.mode === 'open' ? `<span class="txt-up">+${newOpen}</span> entered in last 24h`
+            : state.mode === 'closed' ? `<span class="txt-down">${newClosed}</span> closed in last 24h`
+            : `${DATA.open.length.toLocaleString()} open · ${DATA.closed.length.toLocaleString()} closed`;
+        $('kpi-sub-2').textContent = `${wins.toLocaleString()} of ${pn.length.toLocaleString()} in profit`;
+        $('kpi-sub-3').textContent = 'sum of per-trade %, not a portfolio return';
+        $('kpi-sub-4').textContent = `median ${fmtPct(median(pn), 2)}`;
+        const top = rows.filter(r => fin(r.pnl)).reduce((a, b) => (!a || b.pnl > a.pnl) ? b : a, null);
+        $('kpi-top-runner').textContent = top ? top.asset : '—';
+        $('kpi-top-runner-sub').innerHTML = top ? `<span class="${top.pnl >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(top.pnl)}</span> · ${esc(top.engine)}` : '&nbsp;';
+        renderSparks(rows);
+    }
+
+    function dailyBuckets(rows, days = 30) {
+        const end = nowRef(), start = end - days * DAY, b = Array.from({length: days}, () => []);
+        rows.forEach(r => { const x = rowTime(r); if (x >= start && x < end) b[Math.floor((x - start) / DAY)].push(r); });
+        return b;
+    }
+    function renderSparks(rows) {
+        const b = dailyBuckets(rows);
+        let cum = 0;
+        const series = [
+            b.map(d => d.length),
+            b.map(d => d.length ? d.filter(r => r.pnl > 0).length / d.length * 100 : null),
+            b.map(d => (cum += sum(d.map(r => r.pnl || 0)))),
+            b.map(d => d.length ? mean(d.map(r => r.pnl || 0)) : null),
+            b.map(d => d.length ? Math.max(...d.map(r => r.pnl || 0)) : null),
+        ];
+        ['#00f0ff', '#00ff87', '#10b981', '#7b61ff', '#ffb800'].forEach((color, i) => {
+            const el = $(`spark-${i + 1}`); if (!el || typeof Chart === 'undefined') return;
+            const ex = Chart.getChart(el); if (ex) ex.destroy();
+            new Chart(el.getContext('2d'), { type: 'line',
+                data: { labels: series[i].map((_, k) => k), datasets: [{ data: series[i], borderColor: color, borderWidth: 2, tension: 0.35, pointRadius: 0, spanGaps: true }] },
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                           scales: { x: { display: false }, y: { display: false } } } });
+        });
+    }
+
+    function renderTrend(rows) {
+        const el = $('pnlTrendChart'); if (!el || typeof Chart === 'undefined') return;
+        const ex = Chart.getChart(el); if (ex) ex.destroy();
+        const end = nowRef(), span = {'1D': DAY, '1W': 7 * DAY, '1M': 30 * DAY}[state.trend];
+        let pts = rows.map(r => [rowTime(r), r.pnl || 0]).filter(p => isFinite(p[0])).sort((a, b) => a[0] - b[0]);
+        if (span) pts = pts.filter(p => p[0] >= end - span);
+        let c = 0; const cum = pts.map(p => [p[0], (c += p[1])]);
+        const step = Math.max(1, Math.floor(cum.length / 300)), s = cum.filter((_, i) => i % step === 0 || i === cum.length - 1);
+        $('trend-title').textContent = state.mode === 'closed' ? 'Cumulative Realized PnL by Exit Time' : state.mode === 'open' ? 'Cumulative Unrealized PnL by Entry Time' : 'Cumulative PnL (closed by exit, open by entry)';
+        document.querySelectorAll('#trend-pills .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.trend === state.trend));
+        const ctx = el.getContext('2d'), g = ctx.createLinearGradient(0, 0, 0, 180);
+        g.addColorStop(0, 'rgba(0, 255, 135, 0.4)'); g.addColorStop(1, 'rgba(0, 255, 135, 0.0)');
+        new Chart(ctx, { type: 'line',
+            data: { labels: s.map(p => new Date(p[0]).toISOString().slice(0, 16).replace('T', ' ')),
+                    datasets: [{ label: 'Cumulative PnL %', data: s.map(p => +p[1].toFixed(2)), borderColor: '#00ff87', borderWidth: 2, fill: true, backgroundColor: g, tension: 0.3, pointRadius: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } },
+                       scales: { x: { grid: { display: false }, ticks: { color: '#8e9ab0', font: { size: 10 }, maxTicksLimit: 8 } },
+                                 y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8e9ab0', font: { size: 10 } } } } } });
+    }
+
+    function renderDonut(rows) {
+        const el = $('engineDonutChart'); if (!el || typeof Chart === 'undefined') return;
+        const ex = Chart.getChart(el); if (ex) ex.destroy();
+        const counts = {}; rows.forEach(r => counts[r.engine] = (counts[r.engine] || 0) + 1);
+        const list = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        const n = rows.length || 1;
+        new Chart(el.getContext('2d'), { type: 'doughnut',
+            data: { labels: list.map(e => e[0]), datasets: [{ data: list.map(e => e[1]), backgroundColor: list.map(e => ENGINE_COLORS[e[0]] || '#8e8ea8'), borderWidth: 0, cutout: '78%' }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } } });
+        $('donut-total').textContent = rows.length.toLocaleString();
+        $('donut-label').textContent = state.mode === 'open' ? 'Positions' : 'Trades';
+        $('donut-title').textContent = state.mode === 'open' ? 'Open Positions by Engine' : state.mode === 'closed' ? 'Closed Trades by Engine' : 'All Trades by Engine';
+        $('donut-legend').innerHTML = list.map(([name, cnt]) => `
+            <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:${ENGINE_COLORS[name] || '#8e8ea8'}"></div>
+            <span style="color:#fff;font-weight:500;">${esc(name)}</span></div>
+            <span style="color:var(--text-muted);">${cnt} (${(cnt / n * 100).toFixed(1)}%)</span></div>`).join('');
+    }
+
+    function renderDurations(rows) {
+        const hs = rows.map(ageHours).filter(isFinite), n = hs.length || 1;
+        const bins = [['< 6h', h => h < 6], ['6 – 24h', h => h >= 6 && h < 24], ['1 – 7 days', h => h >= 24 && h < 168],
+                      ['7 – 30 days', h => h >= 168 && h < 720], ['> 30 days', h => h >= 720]];
+        $('duration-title').textContent = state.mode === 'open' ? 'Position Age Distribution' : 'Holding Time Distribution';
+        $('duration-list').innerHTML = bins.map(([label, fn]) => { const c = hs.filter(fn).length, p = c / n * 100; return `
+            <div class="duration-item"><div class="duration-meta"><span style="color:#fff;">${label}</span>
+            <span style="color:var(--text-muted);">${c} (${p.toFixed(1)}%)</span></div>
+            <div class="duration-track"><div class="duration-fill" style="width:${p}%;"></div></div></div>`; }).join('');
+    }
+
+    function renderSignals() {
+        const box = $('signals-box');
+        if (state.mode !== 'open') { box.style.display = 'none'; return; }
+        const end = nowRef();
+        const list = DATA.open.filter(r => t(r.entry) >= end - DAY).sort((a, b) => t(b.entry) - t(a.entry));
+        box.style.display = '';
+        $('signals-count').textContent = list.length;
+        $('signals-tbody').innerHTML = list.length ? list.map(r => `
+            <tr><td><strong>${esc(r.asset)}</strong>${t(r.entry) >= end - 2 * HOUR ? ' <span class="txt-up" title="entered in the latest run">●</span>' : ''}</td>
+            <td><span class="engine-tag">${esc(r.engine)}</span></td><td>${esc(r.entry)}</td><td>${fmtHours((end - t(r.entry)) / HOUR)}</td>
+            <td>${fmtPx(r.entry_px)}</td><td>${fmtPx(r.px)}</td><td>${fmtPx(r.stop)}</td>
+            <td class="txt-down">${fmtPct(r.stop_pct)}</td><td class="${(r.pnl || 0) >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(r.pnl)}</td></tr>`).join('')
+            : `<tr><td colspan="9" style="color:var(--text-muted);text-align:center;">No new entries in the last 24 hours</td></tr>`;
+    }
+
+    function renderTable() {
+        const pageSize = +pref('pageSize', 10) || 10;
+        const rows = VIEWROWS, total = rows.length, pages = Math.max(1, Math.ceil(total / pageSize));
+        state.page = Math.min(Math.max(1, state.page), pages);
+        const start = (state.page - 1) * pageSize, shown = rows.slice(start, start + pageSize);
+        $('table-total-count').textContent = total.toLocaleString();
+        const [sk, sd] = sortSpec();
+        document.querySelectorAll('th.sortable').forEach(th => {
+            const on = th.dataset.sort === sk; th.classList.toggle('sorted', on);
+            const ind = th.querySelector('.sort-ind'); if (ind) ind.textContent = on ? (sd === 'asc' ? '▲' : '▼') : '↕';
+        });
+        $('select-all').checked = total > 0 && rows.every(r => state.selected.has(r.id));
+        $('positions-tbody').innerHTML = total ? shown.map(r => {
+            const pos = (r.pnl || 0) >= 0;
+            const last = r.status === 'OPEN'
+                ? `<span class="${fin(r.stop_pct) && r.stop_pct >= -5 ? 'txt-down' : ''}">${fmtPct(r.stop_pct)}</span>`
+                : `<span class="muted">${esc((r.reason || '—').replace(/_/g, ' '))}</span>`;
+            return `<tr data-id="${r.id}">
+                <td><input type="checkbox" class="row-check" ${state.selected.has(r.id) ? 'checked' : ''} onclick="toggleRow(${r.id}, this.checked)"></td>
+                <td style="color:var(--text-muted);">${r.id}</td>
+                <td><strong>${esc(r.asset)}</strong>${r.status === 'OPEN' && state.mode === 'all' ? ' <span class="txt-up" title="open">●</span>' : ''}</td>
+                <td><span class="engine-tag">${esc(r.engine)}</span></td>
+                <td>${esc(r.entry || '—')}</td><td>${esc(r.exit || '—')}</td>
+                <td>${fmtPx(r.entry_px)}</td><td>${fmtPx(r.px)}</td>
+                <td>${fmtHours(ageHours(r))}</td><td>${fmtPct(r.mfe)}</td>
+                <td><span class="pnl-pill ${pos ? 'pnl-pos' : 'pnl-neg'}">${fmtPct(r.pnl, 2)}</span></td>
+                <td>${last}</td>
+                <td class="row-actions">
+                    <a href="https://www.binance.com/en/futures/${encodeURIComponent(r.asset)}USDT" target="_blank" rel="noopener" title="Open ${esc(r.asset)} chart on Binance">📈</a>
+                    <button title="Copy trade summary" onclick="copyRow(${r.id})">📋</button>
+                    <button title="Trade details" onclick="openTrade(${r.id})">⋮</button>
+                </td></tr>`; }).join('')
+            : `<tr><td colspan="13" style="text-align:center;color:var(--text-muted);padding:2rem;">No trades match the current range, filters or search.</td></tr>`;
+        $('page-info').textContent = total ? `Showing ${start + 1}–${Math.min(start + pageSize, total)} of ${total.toLocaleString()}` : 'Showing 0 of 0';
+        renderPager(pages);
+    }
+    function renderPager(pages) {
+        const p = state.page, b = [];
+        const btn = (label, target, cls = '') => `<div class="page-num ${cls}" onclick="changePage(${target})">${label}</div>`;
+        b.push(btn('‹', p - 1, p === 1 ? 'disabled' : ''));
+        const lo = Math.max(1, p - 2), hi = Math.min(pages, p + 2);
+        if (lo > 1) { b.push(btn(1, 1)); if (lo > 2) b.push('<div class="page-num disabled">…</div>'); }
+        for (let i = lo; i <= hi; i++) b.push(btn(i, i, i === p ? 'active' : ''));
+        if (hi < pages) { if (hi < pages - 1) b.push('<div class="page-num disabled">…</div>'); b.push(btn(pages, pages)); }
+        b.push(btn('›', p + 1, p === pages ? 'disabled' : ''));
+        $('page-btns').innerHTML = b.join('');
+    }
+
+    // ---------- views ----------
+    function scorecard(closed) {
+        const by = {}; closed.forEach(r => (by[r.engine] = by[r.engine] || []).push(r));
+        const openBy = {}; DATA.open.forEach(r => openBy[r.engine] = (openBy[r.engine] || 0) + 1);
+        return Object.entries(by).map(([engine, rs]) => {
+            const p = rs.map(r => r.pnl || 0), w = p.filter(x => x > 0), l = p.filter(x => x <= 0);
+            return { engine, n: rs.length, win: w.length / rs.length * 100, avgWin: mean(w), avgLoss: mean(l), exp: mean(p),
+                     med: median(p), total: sum(p), hold: median(rs.map(r => r.hours).filter(fin)), open: openBy[engine] || 0 };
+        }).sort((a, b) => b.n - a.n);
+    }
+    const rangeLabel = () => state.range === 'CUSTOM' && state.custom
+        ? `${new Date(state.custom[0]).toISOString().slice(0, 10)} → ${new Date(state.custom[1] - 1).toISOString().slice(0, 10)}`
+        : state.range === 'ALL' ? 'all history' : 'last ' + state.range;
+    function renderEngines() {
+        const closed = inRange(DATA.closed).filter(passesFilters), sc = scorecard(closed);
+        $('eng-note').textContent = `${closed.length.toLocaleString()} closed trades · ${rangeLabel()} (by exit time) · filters apply`;
+        $('engines-tbody').innerHTML = sc.length ? sc.map(s => `<tr><td><span class="engine-tag">${esc(s.engine)}</span></td><td>${s.n.toLocaleString()}</td>
+            <td>${s.win.toFixed(1)}%</td><td class="txt-up">${fmtPct(s.avgWin)}</td><td class="txt-down">${fmtPct(s.avgLoss)}</td>
+            <td class="${s.exp >= 0 ? 'txt-up' : 'txt-down'}"><strong>${fmtPct(s.exp, 2)}</strong></td><td>${fmtPct(s.med, 2)}</td>
+            <td>${fmtPct(s.total, 0)}</td><td>${fmtHours(s.hold)}</td><td>${s.open}</td></tr>`).join('')
+            : `<tr><td colspan="10" class="muted" style="text-align:center;">No closed trades in this range</td></tr>`;
+        const reasons = {}; closed.forEach(r => (reasons[r.reason || '—'] = reasons[r.reason || '—'] || []).push(r.pnl || 0));
+        $('exits-tbody').innerHTML = Object.entries(reasons).sort((a, b) => b[1].length - a[1].length).map(([k, v]) =>
+            `<tr><td>${esc(k)}</td><td>${v.length}</td><td>${(v.length / (closed.length || 1) * 100).toFixed(1)}%</td><td class="${mean(v) >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(mean(v), 2)}</td></tr>`).join('')
+            || `<tr><td colspan="4" class="muted" style="text-align:center;">—</td></tr>`;
+        const p = closed.map(r => r.pnl || 0).sort((a, b) => b - a), tot = sum(p), k1 = Math.max(1, Math.floor(p.length / 100));
+        const share = k => tot ? (sum(p.slice(0, k)) / tot * 100).toFixed(0) + '%' : '—';
+        $('concentration-kv').innerHTML = `
+            <dt>Sum of closed PnL %</dt><dd>${fmtPct(tot, 0)}</dd>
+            <dt>Median trade</dt><dd>${fmtPct(median(p), 2)}</dd>
+            <dt>Top 10 trades' share of total</dt><dd>${share(10)}</dd>
+            <dt>Top 1% of trades' share</dt><dd>${share(k1)}</dd>
+            <dt>Sum without top 1%</dt><dd>${fmtPct(sum(p.slice(k1)), 0)}</dd>
+            <dt>Reading</dt><dd class="muted" style="font-family:inherit;">A share above 100% means the rest of the book loses money in aggregate.</dd>`;
+    }
+    function renderRisk() {
+        const open = inRange(DATA.open).filter(passesFilters);
+        const withStop = open.filter(r => fin(r.stop_pct));
+        const near = withStop.filter(r => r.stop_pct >= -5);
+        const p = open.map(r => r.pnl || 0).sort((a, b) => b - a), tot = sum(p);
+        const byEng = {}; open.forEach(r => byEng[r.engine] = (byEng[r.engine] || 0) + 1);
+        $('risk-kv').innerHTML = `
+            <dt>Open positions</dt><dd>${open.length}</dd>
+            <dt>Within 5% of stop</dt><dd class="${near.length ? 'txt-down' : ''}">${near.length}</dd>
+            <dt>Median distance to stop</dt><dd>${fmtPct(median(withStop.map(r => r.stop_pct)))}</dd>
+            <dt>Top-5 share of open PnL</dt><dd>${tot ? (sum(p.slice(0, 5)) / tot * 100).toFixed(0) + '%' : '—'}</dd>
+            <dt>Largest engine exposure</dt><dd>${Object.entries(byEng).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '—'}</dd>
+            <dt>Stops known for</dt><dd>${withStop.length} of ${open.length}${withStop.length < open.length ? ' (the rest appear after the next hourly run)' : ''}</dd>`;
+        const bins = [['< 1 day', 0, 24], ['1 – 7 days', 24, 168], ['7 – 30 days', 168, 720], ['30 – 90 days', 720, 2160], ['> 90 days', 2160, Infinity]];
+        $('age-tbody').innerHTML = bins.map(([l, a, b]) => { const rs = open.filter(r => ageHours(r) >= a && ageHours(r) < b);
+            return `<tr><td>${l}</td><td>${rs.length}</td><td>${(rs.length / (open.length || 1) * 100).toFixed(1)}%</td><td>${fmtPct(sum(rs.map(r => r.pnl || 0)), 0)}</td></tr>`; }).join('');
+        $('nearstop-tbody').innerHTML = withStop.slice().sort((a, b) => b.stop_pct - a.stop_pct).slice(0, 15).map(r => `<tr>
+            <td><strong>${esc(r.asset)}</strong></td><td><span class="engine-tag">${esc(r.engine)}</span></td><td>${esc(r.entry)}</td>
+            <td>${fmtPx(r.px)}</td><td>${fmtPx(r.stop)}</td><td class="txt-down">${fmtPct(r.stop_pct)}</td>
+            <td class="${(r.pnl || 0) >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(r.pnl)}</td></tr>`).join('')
+            || `<tr><td colspan="7" class="muted" style="text-align:center;">No stop data yet (populated from the next hourly run)</td></tr>`;
+        $('oldest-tbody').innerHTML = open.slice().sort((a, b) => t(a.entry) - t(b.entry)).slice(0, 10).map(r => `<tr>
+            <td><strong>${esc(r.asset)}</strong></td><td><span class="engine-tag">${esc(r.engine)}</span></td><td>${esc(r.entry)}</td>
+            <td>${fmtHours(ageHours(r))}</td><td class="${(r.pnl || 0) >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(r.pnl)}</td><td>${fmtPct(r.mfe)}</td></tr>`).join('')
+            || `<tr><td colspan="6" class="muted" style="text-align:center;">No open positions in this range</td></tr>`;
+    }
+    function renderReports() {
+        const st = META.status || {};
+        $('run-kv').innerHTML = st.started_utc ? `
+            <dt>Started</dt><dd>${esc(st.started_utc)} UTC</dd><dt>Result</dt><dd class="${st.ok ? 'txt-up' : 'txt-down'}">${st.ok ? 'OK' : 'FAILED'}${st.error ? ' — ' + esc(st.error) : ''}</dd>
+            <dt>Open / closed</dt><dd>${esc(st.open ?? '—')} / ${esc(st.closed ?? '—')} (${esc(st.closed_this_hour ?? 0)} closed this hour)</dd>
+            <dt>Ingest</dt><dd>${esc(st.ingest_updated ?? '—')} updated · ${esc(st.ingest_failed ?? 0)} failed · ${esc(st.ingest_delisted ?? 0)} delisted skipped</dd>
+            <dt>Fresh shards</dt><dd>${esc(st.fresh_pct ?? '—')}%</dd><dt>Run time</dt><dd>${esc(st.run_seconds ?? '—')} s</dd>
+            <dt>Backup / dashboard</dt><dd>${esc(st.backup || '—')} · ${esc(st.site || '—')}</dd>`
+            : '<dt>Status</dt><dd class="muted">No run status published yet</dd>';
+        const hist = META.history || [];
+        $('history-tbody').innerHTML = hist.length ? hist.map(h => `<tr><td>${esc(h.started_utc || '')}</td>
+            <td class="${h.ok ? 'txt-up' : 'txt-down'}">${h.ok ? 'OK' : 'FAILED'}</td><td>${esc(h.open ?? '')}</td><td>${esc(h.closed ?? '')}</td>
+            <td>${esc(h.closed_this_hour ?? '')}</td><td>${esc(Array.isArray(h.new_signals) ? h.new_signals.length : (h.new_signals ?? ''))}</td><td>${esc(h.ingest_failed ?? '')}</td><td>${esc(h.ingest_delisted ?? '')}</td>
+            <td>${esc(h.fresh_pct ?? '')}</td><td>${esc(h.run_seconds ?? '')}</td></tr>`).join('')
+            : `<tr><td colspan="10" class="muted" style="text-align:center;">Run history starts accumulating from the next hourly run</td></tr>`;
+        const by = {}; DATA.closed.forEach(r => { const y = (r.exit || '').slice(0, 4); if (y) (by[y] = by[y] || []).push(r.pnl || 0); });
+        $('years-tbody').innerHTML = Object.keys(by).sort().reverse().map(y => { const p = by[y]; return `<tr><td>${y}</td><td>${p.length}</td>
+            <td>${(p.filter(x => x > 0).length / p.length * 100).toFixed(1)}%</td><td class="${mean(p) >= 0 ? 'txt-up' : 'txt-down'}">${fmtPct(mean(p), 2)}</td>
+            <td>${fmtPct(median(p), 2)}</td><td>${fmtPct(sum(p), 0)}</td></tr>`; }).join('');
+    }
+    async function renderSettings() {
+        $('pref-pagesize').value = String(pref('pageSize', 10));
+        $('pref-sort').value = pref('defaultSort', 'pnl:desc');
+        $('pref-refresh').value = String(pref('refreshSec', 60));
+        $('data-kv').innerHTML = `
+            <dt>Generated</dt><dd>${esc(DATA.generated_utc || '—')} UTC</dd><dt>Newest bar</dt><dd>${esc(DATA.latest_bar_utc || '—')} UTC</dd>
+            <dt>Open / closed rows</dt><dd>${DATA.open.length} / ${DATA.closed.length}</dd>
+            <dt>Source files</dt><dd>data/trades.json · meta.json · config.json · asset_dna.json</dd>`;
+        const cfg = await loadConfig(), rows = [];
+        const add = (grp, obj) => Object.entries(obj || {}).forEach(([k, v]) => rows.push(`<tr><td class="muted">${esc(grp)}</td><td>${esc(k)}</td><td>${esc(typeof v === 'object' ? JSON.stringify(v) : v)}</td></tr>`));
+        Object.entries(cfg || {}).forEach(([grp, obj]) => { if (obj && typeof obj === 'object') add(grp, obj); });
+        $('config-tbody').innerHTML = rows.join('') || '<tr><td colspan="3" class="muted">config.json not available</td></tr>';
+    }
+
+    // ---------- controls ----------
+    function showView(v) {
+        state.view = v;
+        document.querySelectorAll('.view').forEach(s => s.classList.toggle('active', s.id === `view-${v}`));
+    }
+    function markNav(id) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if ($(id)) $(id).classList.add('active');
+    }
+    function navigate(view) {
+        if (view === 'asset-dna') { markNav('nav-asset-dna'); openAssetDnaModal(); return; }
+        markNav(`nav-${view}`);
+        const modeFor = { dashboard: 'open', open: 'open', closed: 'closed', analytics: 'all' };
+        showView(modeFor[view] ? 'dashboard' : view);
+        if (modeFor[view]) setMode(modeFor[view], true); else render();
+        window.scrollTo({ top: 0 });
+    }
+    function setMode(mode, fromNav) {
+        state.mode = mode; state.page = 1; state.sort = null; state.selected.clear();
+        ['open', 'closed', 'all'].forEach(m => { const b = $(`mode-${m}-btn`); if (b) b.classList.toggle('active', m === mode); });
+        if (!fromNav) {
+            if (!['dashboard', 'engines', 'risk'].includes(state.view)) showView('dashboard');
+            if (state.view === 'dashboard') markNav({ open: 'nav-dashboard', closed: 'nav-closed', all: 'nav-analytics' }[mode]);
+        }
+        render();
+    }
+    function setRange(r) { state.range = r; if (r !== 'CUSTOM') state.custom = null; state.page = 1; $('custom-range').classList.remove('open'); render(); }
+    function toggleCustomRange(ev) {
+        if (ev) ev.stopPropagation();
+        $('filters-panel').classList.remove('open');
+        const p = $('custom-range'); p.classList.toggle('open');
+        if (p.classList.contains('open')) {
+            if (!$('range-from').value) $('range-from').value = new Date(nowRef() - 7 * DAY).toISOString().slice(0, 10);
+            if (!$('range-to').value) $('range-to').value = new Date(nowRef() - 1).toISOString().slice(0, 10);
+        }
+    }
+    function applyCustomRange() {
+        const a = Date.parse($('range-from').value + 'T00:00:00Z'), b = Date.parse($('range-to').value + 'T00:00:00Z') + DAY;
+        if (!isFinite(a) || !isFinite(b) || b <= a) { toast('Pick a valid From/To range'); return; }
+        state.custom = [a, b]; state.range = 'CUSTOM'; state.page = 1; $('custom-range').classList.remove('open'); render();
+    }
+    function clearCustomRange() { $('range-from').value = ''; $('range-to').value = ''; setRange('ALL'); }
+    function setTrendRange(r) { state.trend = r; renderTrend(VIEWROWS); }
+    function buildEngineFilter(engines) {
+        buildEngineFilter.seen = new Set(engines);
+        $('filter-engines').innerHTML = engines.map(e => `<label><input type="checkbox" class="f-engine" value="${esc(e)}" ${state.filters.engines.has(e) ? 'checked' : ''}>
+            <span style="background:${ENGINE_COLORS[e] || '#8e8ea8'};display:inline-block;width:8px;height:8px;border-radius:50%;"></span> ${esc(e)}</label>`).join('');
+    }
+    function toggleFilters(ev) { if (ev) ev.stopPropagation(); $('custom-range').classList.remove('open'); $('filters-panel').classList.toggle('open'); }
+    function applyFilters() {
+        state.filters.engines = new Set([...document.querySelectorAll('.f-engine:checked')].map(c => c.value));
+        state.filters.outcome = (document.querySelector('input[name=f-outcome]:checked') || {}).value || 'all';
+        state.filters.nearStop = $('f-nearstop').checked; state.filters.stale = $('f-stale').checked;
+        state.page = 1; state.selected.clear(); $('filters-panel').classList.remove('open'); render();
+    }
+    function resetFilters() {
+        document.querySelectorAll('.f-engine').forEach(c => c.checked = true);
+        const all = document.querySelector('input[name=f-outcome][value=all]'); if (all) all.checked = true;
+        $('f-nearstop').checked = false; $('f-stale').checked = false; applyFilters();
+    }
+    function toggleRow(id, on) { on ? state.selected.add(id) : state.selected.delete(id); renderHeader(); $('select-all').checked = VIEWROWS.length > 0 && VIEWROWS.every(r => state.selected.has(r.id)); }
+    function toggleSelectAll(on) { VIEWROWS.forEach(r => on ? state.selected.add(r.id) : state.selected.delete(r.id)); renderHeader(); renderTable(); }
+    function changePage(p) { const pages = Math.max(1, Math.ceil(VIEWROWS.length / (+pref('pageSize', 10) || 10))); if (p < 1 || p > pages) return; state.page = p; renderTable(); }
+    function findRow(id) { return DATA.open.find(r => r.id === id) || DATA.closed.find(r => r.id === id); }
+    function summaryText(r) {
+        return `${r.asset} ${r.engine} ${r.status} | entry ${r.entry} UTC @ ${fmtPx(r.entry_px)} | ` +
+            (r.status === 'OPEN' ? `now ${fmtPx(r.px)} | stop ${fmtPx(r.stop)} (${fmtPct(r.stop_pct)})` : `exit ${r.exit} UTC @ ${fmtPx(r.px)} (${r.reason})`) +
+            ` | PnL ${fmtPct(r.pnl, 2)} | MFE ${fmtPct(r.mfe)} | MAE ${fmtPct(r.mae)}`;
+    }
+    async function copyRow(id) {
+        const r = findRow(id); if (!r) return;
+        const text = summaryText(r);
+        try { await navigator.clipboard.writeText(text); toast('Copied: ' + r.asset); }
+        catch (e) {
+            const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+            let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {}
+            toast(ok ? 'Copied: ' + r.asset : 'Copy blocked by the browser'); ta.remove();
+        }
+    }
+    function openTrade(id) {
+        const r = findRow(id); if (!r) return;
+        $('trade-modal-title').textContent = `#${r.id} · ${r.asset} · ${r.engine}`;
+        const rows = [['Status', r.status], ['Entry (UTC)', r.entry], ['Entry price', fmtPx(r.entry_px)],
+            [r.status === 'OPEN' ? 'Current price' : 'Exit price', fmtPx(r.px)],
+            ...(r.status === 'OPEN' ? [['Stop', fmtPx(r.stop)], ['Distance to stop', fmtPct(r.stop_pct)], ['Age', fmtHours(ageHours(r))]]
+                                    : [['Exit (UTC)', r.exit], ['Exit reason', r.reason], ['Held', fmtHours(r.hours)]]),
+            ['PnL', fmtPct(r.pnl, 2)], ['Best (MFE)', fmtPct(r.mfe, 2)], ['Worst (MAE)', fmtPct(r.mae, 2)]];
+        $('trade-modal-kv').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v ?? '—')}</dd>`).join('');
+        $('trade-modal-engine').textContent = ENGINE_INFO[r.engine] || '';
+        $('trade-modal').style.display = 'flex';
+    }
+    function closeTradeModal() { $('trade-modal').style.display = 'none'; }
+
+    // ---------- CSV ----------
+    const CSV_COLS = ['id', 'asset', 'engine', 'status', 'entry', 'exit', 'entry_px', 'px', 'pnl', 'mfe', 'mae', 'hours', 'stop', 'stop_pct', 'reason'];
+    function toCsv(rows, cols = CSV_COLS) {
+        const q = v => { if (v === null || v === undefined) return ''; const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+        return cols.join(',') + '\n' + rows.map(r => cols.map(c => q(r[c])).join(',')).join('\n') + '\n';
+    }
+    function download(name, text) {
+        const blob = new Blob([text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+    const stamp = () => new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+    function exportCsv() {
+        const rows = state.selected.size ? VIEWROWS.filter(r => state.selected.has(r.id)) : VIEWROWS;
+        if (!rows.length) { toast('Nothing to export'); return; }
+        download(`v10_${state.mode}_${stamp()}.csv`, toCsv(rows));
+        toast(`Exported ${rows.length} row${rows.length === 1 ? '' : 's'}${state.selected.size ? ' (selected)' : ''}`);
+    }
+    function downloadBook(which) {
+        const rows = which === 'open' ? DATA.open : which === 'closed' ? DATA.closed : DATA.open.concat(DATA.closed);
+        download(`v10_${which}_${stamp()}.csv`, toCsv(rows)); toast(`Downloaded ${rows.length} rows`);
+    }
+    function downloadScorecard() {
+        const cols = ['engine', 'n', 'win', 'avgWin', 'avgLoss', 'exp', 'med', 'total', 'hold', 'open'];
+        const sc = scorecard(DATA.closed).map(s => Object.fromEntries(Object.entries(s).map(([k, v]) => [k, typeof v === 'number' && isFinite(v) ? +v.toFixed(4) : v])));
+        download(`v10_engine_scorecard_${stamp()}.csv`, toCsv(sc, cols)); toast('Downloaded scorecard');
+    }
+
+    // ---------- Asset DNA ----------
+    function openAssetDnaModal() { $('asset-dna-modal').style.display = 'flex'; fetchAssetDna(($('dna-asset-input').value || 'LIT').toUpperCase()); }
+    function closeAssetDnaModal() {
+        $('asset-dna-modal').style.display = 'none';
+        markNav(state.view === 'dashboard' ? { open: 'nav-dashboard', closed: 'nav-closed', all: 'nav-analytics' }[state.mode] : `nav-${state.view}`);
+    }
+    async function fetchAssetDna(asset) {
+        asset = String(asset || '').trim().toUpperCase(); if (!asset) return;
+        $('dna-asset-name').innerText = asset; $('dna-alpha-val').innerText = 'Loading…'; $('dna-alpha-status').innerText = '…';
+        try {
+            if (!DNA) DNA = await fetch('data/asset_dna.json', { cache: 'no-cache' }).then(r => r.json());
+            const has = Object.prototype.hasOwnProperty.call(DNA, asset), alpha = has ? DNA[asset] : null;
+            if (fin(alpha)) {
+                const a = parseFloat(alpha).toFixed(2); $('dna-alpha-val').innerText = a;
+                const ok = parseFloat(a) <= 3.19;
+                $('dna-alpha-status').className = ok ? 'dna-status-valid' : 'dna-status-veto';
+                $('dna-alpha-status').innerText = ok ? 'VALID (Fat Tail ≤ 3.19)' : 'VETO (Thin Tail > 3.19)';
+            } else {
+                $('dna-alpha-val').innerText = 'N/A'; $('dna-alpha-status').className = 'dna-status-veto';
+                $('dna-alpha-status').innerText = has ? 'Not enough history' : 'Unknown asset';
+            }
+        } catch (e) { $('dna-alpha-val').innerText = 'Error'; $('dna-alpha-status').innerText = 'asset_dna.json unavailable'; }
+    }
+
+    // ---------- refresh + clock ----------
+    function scheduleRefresh() {
+        clearInterval(state.timer);
+        const sec = +pref('refreshSec', 60);
+        if (state.autoRefresh && sec > 0) state.timer = setInterval(loadData, sec * 1000);
+    }
+    function updateRefreshBtn() {
+        const on = state.autoRefresh && +pref('refreshSec', 60) > 0;
+        $('auto-refresh-btn').textContent = on ? '🟢 Auto Refresh' : '⏸️ Refresh paused';
+        $('auto-refresh-btn').title = on ? 'Click to pause automatic refresh' : 'Click to resume (and refresh now)';
+    }
+    function toggleAutoRefresh() {
+        state.autoRefresh = !state.autoRefresh;
+        if (state.autoRefresh && +pref('refreshSec', 60) === 0) { try { localStorage.setItem('v10.refreshSec', '60'); } catch (e) {} }
+        if (state.autoRefresh) loadData();
+        scheduleRefresh(); updateRefreshBtn(); toast(state.autoRefresh ? 'Auto refresh on' : 'Auto refresh paused');
+    }
+    function updateClock() {
+        const n = new Date(), d = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][n.getDay()], m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][n.getMonth()];
+        $('live-clock').innerText = `${d}, ${n.getDate()} ${m} ${n.getFullYear()} | ${n.toTimeString().split(' ')[0]}`;
+    }
+
+    // ---------- wiring ----------
+    document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
+        const [k, d] = sortSpec(), key = th.dataset.sort;
+        state.sort = key === k ? `${key}:${d === 'desc' ? 'asc' : 'desc'}` : `${key}:${['asset', 'engine'].includes(key) ? 'asc' : 'desc'}`;
+        state.page = 1; render();
+    }));
+    $('search-box').addEventListener('input', e => { state.search = e.target.value; state.page = 1; render(); });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#filters-panel')) $('filters-panel').classList.remove('open');
+        if (!e.target.closest('#custom-range')) $('custom-range').classList.remove('open');
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        closeTradeModal(); if ($('asset-dna-modal').style.display === 'flex') closeAssetDnaModal();
+        $('filters-panel').classList.remove('open'); $('custom-range').classList.remove('open');
+    });
+    state.autoRefresh = +pref('refreshSec', 60) > 0;
+    setInterval(updateClock, 1000); updateClock(); updateRefreshBtn();
+    loadData(); scheduleRefresh();
     </script>
 </body>
 </html>

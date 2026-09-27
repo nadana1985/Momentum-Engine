@@ -209,7 +209,6 @@ class TradoorHandler(http.server.SimpleHTTPRequestHandler):
             mode = query.get('mode', ['open'])[0]
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             data = build_api_response(mode)
             self.wfile.write(json.dumps(data).encode('utf-8'))
@@ -221,6 +220,24 @@ class TradoorHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({"asset": asset, "alpha": alpha}).encode('utf-8'))
+        elif parsed.path.startswith('/data/') and parsed.path.endswith('.json'):
+            name = parsed.path[len('/data/'):]
+            payload = None
+            if name == 'asset_dna.json':
+                from momentum_v10.site_export import dna_map
+                payload = dna_map()
+            else:
+                from momentum_v10.dashboard_data import data_file
+                payload = data_file(name)
+            if payload is None:
+                self.send_error(404, "unknown data file")
+                return
+            from momentum_v10.site_export import _clean
+            body = json.dumps(_clean(payload), allow_nan=False).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(body)
         elif parsed.path == '/' or parsed.path == '/index.html':
             html_file = Path(__file__).parent / 'dashboard_v10.html'
             if html_file.exists():
@@ -232,16 +249,18 @@ class TradoorHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 self.send_error(404, "dashboard_v10.html not found")
         else:
-            super().do_GET()
+            # Only the page and its data are served (previously: any file under cwd).
+            self.send_error(404, "not found")
 
 import sys
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
 def run_server():
-    print(f"[TRADOOR] Command Center Server running on http://localhost:{PORT}")
+    print(f"[TRADOOR] Command Center Server running on http://127.0.0.1:{PORT}")
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), TradoorHandler) as httpd:
+    host = os.environ.get("V10_DASHBOARD_HOST", "127.0.0.1")   # localhost only by default
+    with socketserver.TCPServer((host, PORT), TradoorHandler) as httpd:
         httpd.serve_forever()
 
 if __name__ == '__main__':

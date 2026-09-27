@@ -354,10 +354,107 @@ def test_empty_premium_index_does_not_mark_everything_delisted(tmp_path, monkeyp
 def test_patched_html_points_at_static_files():
     from momentum_v10.site_export import HTML_SRC, patched_html
     html = patched_html(HTML_SRC.read_text(encoding="utf-8"))
-    assert "/api/" not in html
-    assert "data/${currentMode}.json" in html and "data/asset_dna.json" in html
+    assert "/api/" not in html and "Math.random" not in html
+    for f in ("data/trades.json", "data/meta.json", "data/config.json", "data/asset_dna.json"):
+        assert f in html
     assert 'name="robots" content="noindex' in html
-    assert "setInterval(loadData, 60000)" in html
+
+
+def test_dashboard_script_wires_every_handler_and_id():
+    """Every onclick handler exists, and every $('id') the script touches exists in the markup."""
+    import re
+    from momentum_v10.site_export import HTML_SRC
+    html = HTML_SRC.read_text(encoding="utf-8")
+    script = html[html.rindex("<script>"):]
+    for fn in set(re.findall(r'on(?:click|change|input)="(\w+)\(', html)):
+        assert re.search(r"function " + fn + r"\b", script), fn
+    ids = set(re.findall(r'id="([\w-]+)"', html))
+    for i in set(re.findall(r"\$\('([\w-]+)'\)", script)):
+        assert i in ids, i
+    for key in ("id", "asset", "engine", "entry", "exit", "entry_px", "px", "hours", "mfe", "pnl", "stop_pct"):
+        assert f'data-sort="{key}"' in html, key
+
+
+def _write_books(tape, now):
+    pd.DataFrame([
+        {"asset": "NEW", "engine": "IGNITION", "entry": (now - pd.Timedelta(hours=2)).isoformat(), "entry_price": 1.0,
+         "pnl": 0.05, "mfe": 0.06, "mae": -0.01, "current_price": 1.05, "stop": 0.97, "stop_pct": -0.0762,
+         "duration_hours": 2.0, "reason": ""},
+        {"asset": "OLDLEDGER", "engine": "CONTINUATION", "entry": "2026-01-01T00:00:00", "entry_price": 2.0,
+         "pnl": 0.5, "mfe": 0.6, "mae": 0.0},
+    ]).to_csv(tape / "open_trades.csv", index=False)
+    closed = pd.DataFrame([
+        {"asset": "X", "engine": "IGNITION", "entry": "2026-02-01T00:00:00", "exit": "2026-02-02T05:00:00",
+         "entry_price": 1.0, "exit_price": 0.9, "pnl": -0.1, "mfe": 0.02, "mae": -0.1, "duration_hours": 29, "reason": "structural_stop"},
+        {"asset": "Y", "engine": "RETAIL_SQZ", "entry": "2026-03-01T00:00:00", "exit": "2026-03-01T00:00:00",
+         "entry_price": 1.0, "exit_price": 1.0, "pnl": 0.0, "mfe": 0, "mae": 0, "reason": "open_at_end"},
+    ])
+    pd.concat([closed, closed.iloc[[0]]]).to_csv(tape / "closed_trades.csv", index=False)   # duplicate row
+
+
+def test_dashboard_trades_json(tmp_path, monkeypatch):
+    import json
+    from momentum_v10 import dashboard_data as dd
+    now = pd.Timestamp.now(tz="UTC").tz_localize(None).floor("h")
+    _write_books(tmp_path, now)
+    monkeypatch.setattr(dd, "OPEN_CSV", tmp_path / "open_trades.csv")
+    monkeypatch.setattr(dd, "CLOSED_CSV", tmp_path / "closed_trades.csv")
+    out = dd.build_trades()
+    json.dumps(out, allow_nan=False)
+    assert [r["asset"] for r in out["closed"]] == ["X"]              # open_at_end + duplicate dropped
+    c = out["closed"][0]
+    assert c["status"] == "CLOSED" and c["px"] == 0.9 and c["pnl"] == -10.0 and c["exit"] == "2026-02-02 05:00"
+    assert c["stop"] is None and c["reason"] == "structural_stop"
+    new = next(r for r in out["open"] if r["asset"] == "NEW")
+    assert new["px"] == 1.05 and new["stop"] == 0.97 and new["stop_pct"] == -7.62 and new["hours"] == 2.0
+    old = next(r for r in out["open"] if r["asset"] == "OLDLEDGER")
+    assert old["px"] == 3.0 and old["stop"] is None and old["hours"] > 24 * 200   # fallbacks for old ledgers
+    ids = sorted(r["id"] for r in out["open"] + out["closed"])
+    assert ids == [1, 2, 3]
+
+
+def test_status_history_is_capped(tmp_path, monkeypatch):
+    from momentum_v10 import dashboard_data as dd
+    monkeypatch.setattr(dd, "HISTORY_JSONL", tmp_path / "h.jsonl")
+    monkeypatch.setattr(dd, "STATUS_JSON", tmp_path / "s.json")
+    monkeypatch.setattr(dd, "HISTORY_KEEP", 5)
+    for i in range(8):
+        dd.append_status_history({"started_utc": f"t{i}", "ok": True, "new_signals": [{}] * i, "secret": "x"})
+    lines = (tmp_path / "h.jsonl").read_text().splitlines()
+    assert len(lines) == 5 and '"t7"' in lines[-1] and "secret" not in lines[-1]
+    meta = dd.build_meta({"open": [1], "closed": []})
+    assert meta["history"][0]["started_utc"] == "t7" and meta["history"][0]["new_signals"] == 7
+    assert meta["counts"] == {"open": 1, "closed": 0}
+
+
+def test_config_json_is_serialisable():
+    import json
+    from momentum_v10 import dashboard_data as dd
+    cfg = dd.build_config()
+    json.dumps(cfg, allow_nan=False)
+    assert cfg["notes"]["fees_modelled"] is False and "cta_config" in cfg
+
+
+def test_local_server_only_serves_known_files(tmp_path, monkeypatch):
+    import http.client, threading
+    from http.server import ThreadingHTTPServer
+    from momentum_v10 import dashboard_server as ds, dashboard_data as dd
+    monkeypatch.setattr(dd, "data_file", lambda n: {"ok": n} if n == "trades.json" else None)
+    handler = ds.TradoorHandler
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        def get(p):
+            c = http.client.HTTPConnection("127.0.0.1", srv.server_address[1], timeout=5); c.request("GET", p)
+            r = c.getresponse(); body = r.read(); return r.status, body, r.getheader("Access-Control-Allow-Origin")
+        assert get("/")[0] == 200
+        st, body, cors = get("/data/trades.json")
+        assert st == 200 and b'"ok"' in body and cors is None
+        assert get("/data/secret.json")[0] == 404
+        assert get("/../momentum_v10/config.py")[0] == 404
+        assert get("/momentum_v10/config.py")[0] == 404
+    finally:
+        srv.shutdown()
 
 
 def test_clean_makes_strict_json():

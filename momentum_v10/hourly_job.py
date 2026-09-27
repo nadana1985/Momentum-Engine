@@ -246,6 +246,11 @@ def _run() -> int:
     TAPE_DIR.mkdir(parents=True, exist_ok=True)
     status["run_seconds"] = round(time.perf_counter() - t_run_start, 1)
     atomic_write_text(TAPE_DIR / "hourly_status.json", json.dumps(status, indent=2))
+    try:
+        from momentum_v10.dashboard_data import append_status_history
+        append_status_history(status)
+    except Exception as e:
+        logger.warning(f"[hourly] could not append status history: {e}")
 
     from momentum_v10 import ops
     try:

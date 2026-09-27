@@ -115,3 +115,15 @@ On the instance:
 - logs: `/var/log/v10`
 - settings: `/etc/v10/v10.env`
 - service: `v10-hourly.service` runs as the unprivileged `v10` user under systemd sandboxing.
+
+## Costed, position-sized backtest
+
+`momentum_v10/backtest_costed.py` replays the trade ledger as one account: next-bar-open fills, taker fees, square-root market impact, funding, risk-based sizing with portfolio caps and trimming of winners, daily mark-to-market, plus engine-subset, walk-forward, start-date and sensitivity runs. `momentum_v10/backtest_report.py` renders the results as a single HTML page.
+
+```bash
+export V10_DATA_ROOT=../data V10_BT_DIR=../backtest
+for i in 0 1 2 3 4 5 6 7; do python -m momentum_v10.backtest_costed extract $i 8; done   # per-trade fills, liquidity, funding
+python -m momentum_v10.backtest_costed merge
+python -m momentum_v10.backtest_costed report                                               # -> results.json, equity_curves.csv, trades_C.csv
+python -m momentum_v10.backtest_report ../backtest ../backtest/findings.json              # -> backtest_report.html
+```
