@@ -16,14 +16,18 @@ Old-file drift map (see README.md):
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SHARD_DIR = ROOT / 'data' / 'raw_shards'
-EXOTIC_DIR = ROOT / 'data' / 'exotic_shards'
-TAPE_DIR = ROOT / 'data' / 'all_tapes' / 'v10_production'
-L5_PATH = ROOT / 'data' / 'l5_ranking.parquet'
+# One data root for shards, state and tapes. Defaults to <repo>/data;
+# set V10_DATA_ROOT to point at a data directory elsewhere.
+DATA_ROOT = Path(os.environ.get('V10_DATA_ROOT') or (ROOT / 'data')).resolve()
+SHARD_DIR = DATA_ROOT / 'raw_shards'
+EXOTIC_DIR = DATA_ROOT / 'exotic_shards'
+TAPE_DIR = DATA_ROOT / 'all_tapes' / 'v10_production'
+L5_PATH = DATA_ROOT / 'l5_ranking.parquet'
 BARS_24H = 24
 BARS_4H = 4
 BARS_30D = 720

@@ -4,7 +4,9 @@ import pytest
 
 from momentum_v10.fd_ofi import compute_fd_ofi_kernel
 # Reference oracle for golden snapshot comparison only:
-from kronos.quant_spec.overrides.point_24 import _compute_point_24_kernel
+# The oracle lives in the private kronos research package; skip when absent.
+_oracle = pytest.importorskip("kronos.quant_spec.overrides.point_24")
+_compute_point_24_kernel = _oracle._compute_point_24_kernel
 
 
 def test_fd_ofi_kernel_golden_snapshot():

@@ -95,8 +95,9 @@ def write_book(tape_dir: Path | None = None, closed: pd.DataFrame | None = None,
     trades = build_trades(closed, open_trades)
     scorecard = build_scorecard(trades)
     tape_dir.mkdir(parents=True, exist_ok=True)
-    trades.to_parquet(tape_dir / "trades.parquet", index=False)
-    scorecard.to_parquet(tape_dir / "scorecard.parquet", index=False)
+    from momentum_v10.io_utils import atomic_to_parquet
+    atomic_to_parquet(trades, tape_dir / "trades.parquet")
+    atomic_to_parquet(scorecard, tape_dir / "scorecard.parquet")
     print(
         f"[book] trades={len(trades)} still_open={int(trades['still_open'].sum()) if not trades.empty else 0} "
         f"scorecard={len(scorecard)} -> {tape_dir}",

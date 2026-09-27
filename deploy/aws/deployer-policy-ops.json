@@ -1,0 +1,219 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3Bucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket",
+        "s3:ListBucket",
+        "s3:GetBucketLocation",
+        "s3:PutBucketPublicAccessBlock",
+        "s3:PutEncryptionConfiguration",
+        "s3:PutLifecycleConfiguration",
+        "s3:PutBucketTagging"
+      ],
+      "Resource": "arn:aws:s3:::v10-momentum-*"
+    },
+    {
+      "Sid": "S3Objects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:AbortMultipartUpload"
+      ],
+      "Resource": "arn:aws:s3:::v10-momentum-*/*"
+    },
+    {
+      "Sid": "SnsTopic",
+      "Effect": "Allow",
+      "Action": [
+        "sns:CreateTopic",
+        "sns:TagResource",
+        "sns:Subscribe",
+        "sns:ListSubscriptionsByTopic",
+        "sns:GetTopicAttributes",
+        "sns:DeleteTopic"
+      ],
+      "Resource": "arn:aws:sns:eu-west-2:ACCOUNT_ID:v10-momentum-*"
+    },
+    {
+      "Sid": "SnsList",
+      "Effect": "Allow",
+      "Action": "sns:ListTopics",
+      "Resource": "*"
+    },
+    {
+      "Sid": "Ec2Read",
+      "Effect": "Allow",
+      "Action": "ec2:Describe*",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "eu-west-2"
+        }
+      }
+    },
+    {
+      "Sid": "Ec2CreateSg",
+      "Effect": "Allow",
+      "Action": "ec2:CreateSecurityGroup",
+      "Resource": [
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:vpc/*",
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:security-group/*"
+      ]
+    },
+    {
+      "Sid": "Ec2TagOnCreateOnly",
+      "Effect": "Allow",
+      "Action": "ec2:CreateTags",
+      "Resource": "arn:aws:ec2:eu-west-2:ACCOUNT_ID:*/*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:CreateAction": [
+            "RunInstances",
+            "CreateSecurityGroup",
+            "CreateVpc",
+            "CreateSubnet",
+            "CreateInternetGateway",
+            "CreateRouteTable"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "Ec2RunOnlySmallTaggedInstance",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:eu-west-2:ACCOUNT_ID:instance/*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:InstanceType": "t4g.small",
+          "aws:RequestTag/Project": "v10-momentum"
+        }
+      }
+    },
+    {
+      "Sid": "Ec2RunSupportingResources",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+        "arn:aws:ec2:eu-west-2::image/*",
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:subnet/*",
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:security-group/*",
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:network-interface/*",
+        "arn:aws:ec2:eu-west-2:ACCOUNT_ID:volume/*"
+      ]
+    },
+    {
+      "Sid": "Ec2ManageOwnInstanceOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifyInstanceAttribute",
+        "ec2:TerminateInstances",
+        "ec2:StopInstances",
+        "ec2:StartInstances"
+      ],
+      "Resource": "arn:aws:ec2:eu-west-2:ACCOUNT_ID:instance/*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:ResourceTag/Project": "v10-momentum"
+        }
+      }
+    },
+    {
+      "Sid": "Ec2DeleteOwnSgOnly",
+      "Effect": "Allow",
+      "Action": "ec2:DeleteSecurityGroup",
+      "Resource": "arn:aws:ec2:eu-west-2:ACCOUNT_ID:security-group/*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:ResourceTag/Project": "v10-momentum"
+        }
+      }
+    },
+    {
+      "Sid": "OwnVpcCreateAndWire",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateVpc",
+        "ec2:CreateSubnet",
+        "ec2:CreateInternetGateway",
+        "ec2:CreateRouteTable",
+        "ec2:ModifyVpcAttribute",
+        "ec2:ModifySubnetAttribute",
+        "ec2:AttachInternetGateway",
+        "ec2:CreateRoute",
+        "ec2:AssociateRouteTable"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "eu-west-2"
+        }
+      }
+    },
+    {
+      "Sid": "OwnVpcDeleteTaggedOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DeleteVpc",
+        "ec2:DeleteSubnet",
+        "ec2:DeleteInternetGateway",
+        "ec2:DetachInternetGateway",
+        "ec2:DeleteRouteTable",
+        "ec2:DisassociateRouteTable"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:ResourceTag/Project": "v10-momentum",
+          "aws:RequestedRegion": "eu-west-2"
+        }
+      }
+    },
+    {
+      "Sid": "AmiLookup",
+      "Effect": "Allow",
+      "Action": "ssm:GetParameter",
+      "Resource": "arn:aws:ssm:eu-west-2:*:parameter/aws/service/ami-amazon-linux-latest/*"
+    },
+    {
+      "Sid": "SsmRunOnOwnInstanceOnly",
+      "Effect": "Allow",
+      "Action": "ssm:SendCommand",
+      "Resource": "arn:aws:ec2:eu-west-2:ACCOUNT_ID:instance/*",
+      "Condition": {
+        "StringEquals": {
+          "ssm:resourceTag/Project": "v10-momentum"
+        }
+      }
+    },
+    {
+      "Sid": "SsmShellDocument",
+      "Effect": "Allow",
+      "Action": "ssm:SendCommand",
+      "Resource": "arn:aws:ssm:eu-west-2:*:document/AWS-RunShellScript"
+    },
+    {
+      "Sid": "SsmReadResults",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "HeartbeatAlarm",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:DescribeAlarms"
+      ],
+      "Resource": "arn:aws:cloudwatch:eu-west-2:ACCOUNT_ID:alarm:v10-momentum-*"
+    }
+  ]
+}

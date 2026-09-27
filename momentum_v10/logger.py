@@ -182,7 +182,7 @@ def quarantine_corrupted_shard(shard_path: Path | str, quarantine_dir: Path | st
     if not src.exists():
         return None
 
-    q_dir = Path(quarantine_dir) if quarantine_dir is not None else ROOT / "data" / "quarantine"
+    q_dir = Path(quarantine_dir) if quarantine_dir is not None else Path(os.environ.get("V10_DATA_ROOT") or (ROOT / "data")) / "quarantine"
     q_dir.mkdir(parents=True, exist_ok=True)
 
     dest = q_dir / f"{src.stem}_{int(os.path.getmtime(src))}{src.suffix}.corrupt"
