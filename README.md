@@ -127,3 +127,9 @@ python -m momentum_v10.backtest_costed merge
 python -m momentum_v10.backtest_costed report                                               # -> results.json, equity_curves.csv, trades_C.csv
 python -m momentum_v10.backtest_report ../backtest ../backtest/findings.json              # -> backtest_report.html
 ```
+
+## Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): how the hourly run works, the six engines, and which file and function does each job
+- [`docs/code-map.html`](docs/code-map.html): the same map with diagrams (download it and open it in a browser)
+- [`docs/backtest/backtest-report.html`](docs/backtest/backtest-report.html): the latest costed, position-sized backtest report (see `docs/backtest/findings.json` for its written findings)

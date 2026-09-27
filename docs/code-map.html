@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<title>Momentum Finder Code Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root {
+  --bg: #f4f6f4; --surface: #ffffff; --ink: #16201b; --muted: #58655e; --line: #d6ddd8;
+  --accent: #0b7a63; --accent-soft: #e2f1ec; --warn: #9a5b00; --warn-soft: #fbf0dc; --node: #fbfcfb;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1412; --surface: #161d1a; --ink: #e3eae6; --muted: #9aa8a0; --line: #2b3632;
+    --accent: #43c9a6; --accent-soft: #15332b; --warn: #e2a64a; --warn-soft: #33270f; --node: #1b2320; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1412; --surface: #161d1a; --ink: #e3eae6; --muted: #9aa8a0; --line: #2b3632;
+  --accent: #43c9a6; --accent-soft: #15332b; --warn: #e2a64a; --warn-soft: #33270f; --node: #1b2320; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 var(--sans); padding-inline: 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 32px 72px; }
+h1, h2, h3 { font-family: var(--cond); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+h2 { font-size: 1.35rem; font-weight: 600; margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; font-weight: 600; margin-top: 22px; }
+p { max-width: 72ch; margin: 8px 0; }
+.lede { color: var(--muted); font-size: 1.02rem; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--accent-soft); color: var(--ink); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 4px; }
+nav.toc a { font-family: var(--cond); font-weight: 500; font-size: 0.9rem; color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--surface); padding: 4px 10px; border-radius: 999px; }
+nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+figure { margin: 18px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.svgwrap { overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 860px; height: auto; color: var(--ink); }
+figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 10px; max-width: 90ch; }
+svg .n { fill: var(--node); stroke: var(--line); stroke-width: 1.2; }
+svg .n.hl { fill: var(--accent-soft); stroke: var(--accent); }
+svg .n.ext { fill: none; stroke: var(--muted); stroke-dasharray: 4 3; }
+svg .nt { font: 600 13px var(--sans); fill: var(--ink); }
+svg .ns { font: 11.5px var(--mono); fill: var(--muted); }
+svg .e { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+svg .e.hl { stroke: var(--accent); }
+svg .el { font: 11px var(--sans); fill: var(--muted); }
+svg .ah { fill: var(--muted); }
+.tw { overflow-x: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th { text-align: left; font-family: var(--cond); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { white-space: nowrap; }
+td.fn { font-family: var(--mono); font-size: 0.82rem; white-space: nowrap; color: var(--accent); }
+tr.grp td { background: var(--accent-soft); font-family: var(--cond); font-weight: 600; font-size: 0.95rem; }
+.tag { display: inline-block; font-family: var(--cond); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); margin-left: 6px; vertical-align: 1px; }
+.tag.live { color: var(--accent); border-color: var(--accent); }
+.tag.off { color: var(--warn); border-color: var(--warn); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 12px; }
+.cols.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+.card code { white-space: normal; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+.card h3 { margin-top: 0; }
+.card ul { margin: 8px 0 0; padding-left: 18px; }
+.card li { margin: 4px 0; }
+.finding { background: var(--warn-soft); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 6px; padding: 12px 14px; margin-top: 10px; }
+.finding b { font-family: var(--cond); font-weight: 600; font-size: 1rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
+.sw { display: inline-block; width: 22px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; border: 1px solid var(--line); background: var(--node); }
+.sw.hl { background: var(--accent-soft); border-color: var(--accent); }
+.sw.ext { background: none; border: 1px dashed var(--muted); }
+@media (max-width: 640px) { h1 { font-size: 1.6rem; } td:first-child { white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<h1>Momentum Finder code map</h1>
+<p class="lede">How the V10 momentum engine works, from the hourly timer to the dashboard, and which file and function does each job. Mapped from branch <code>production-hardening-aws</code> (34 files changed from <code>main</code>, about 11,400 lines).</p>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#hourly">Hourly run</a>
+  <a href="#bar">One bar through the engine</a>
+  <a href="#engines">Engines</a>
+  <a href="#features">Features</a>
+  <a href="#modules">Every module</a>
+  <a href="#data">Data files</a>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#deploy">Deployment</a>
+  <a href="#findings">Code that never fires</a>
+</nav>
+
+<h2 id="hourly">1 · The hourly run</h2>
+<p>Everything in production starts from one systemd timer at five past each hour. <code>hourly_job._run()</code> runs four phases in order, and a failure in one phase is recorded in the status, not raised to the timer.</p>
+<figure>
+<div class="svgwrap">
+<svg viewBox="0 0 1280 510" role="img" aria-label="Hourly pipeline: timer starts hourly_job, which ingests Binance data into shards, computes the live book from shards and engine state, gates and records status, then backs up to S3, publishes the dashboard, emails the report and sends a heartbeat.">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+  </defs>
+  <!-- external: Binance -->
+  <rect class="n ext" x="250" y="20" width="200" height="56" rx="6"/>
+  <text class="nt" x="350" y="43" text-anchor="middle">Binance USDT-M API</text>
+  <text class="ns" x="350" y="62" text-anchor="middle">klines · funding · OI</text>
+  <!-- main row -->
+  <rect class="n" x="20" y="150" width="180" height="56" rx="6"/>
+  <text class="nt" x="110" y="173" text-anchor="middle">systemd timer</text>
+  <text class="ns" x="110" y="192" text-anchor="middle">v10-hourly.timer  :05</text>
+  <rect class="n hl" x="250" y="150" width="200" height="56" rx="6"/>
+  <text class="nt" x="350" y="173" text-anchor="middle">1 · Ingest</text>
+  <text class="ns" x="350" y="192" text-anchor="middle">live_bridger.run_bridger()</text>
+  <rect class="n hl" x="500" y="150" width="200" height="56" rx="6"/>
+  <text class="nt" x="600" y="173" text-anchor="middle">2 · Compute live book</text>
+  <text class="ns" x="600" y="192" text-anchor="middle">live_runner.run()</text>
+  <rect class="n hl" x="750" y="150" width="200" height="56" rx="6"/>
+  <text class="nt" x="850" y="173" text-anchor="middle">3 · Gate + status</text>
+  <text class="ns" x="850" y="192" text-anchor="middle">hourly_job._run()</text>
+  <rect class="n hl" x="1000" y="150" width="260" height="56" rx="6"/>
+  <text class="nt" x="1130" y="173" text-anchor="middle">4 · Publish</text>
+  <text class="ns" x="1130" y="192" text-anchor="middle">ops.py · send_report()</text>
+  <!-- main edges -->
+  <line class="e" x1="200" y1="178" x2="248" y2="178" marker-end="url(#a1)"/>
+  <text class="el" x="224" y="170" text-anchor="middle">starts</text>
+  <line class="e" x1="450" y1="178" x2="498" y2="178" marker-end="url(#a1)"/>
+  <line class="e" x1="700" y1="178" x2="748" y2="178" marker-end="url(#a1)"/>
+  <line class="e" x1="950" y1="178" x2="998" y2="178" marker-end="url(#a1)"/>
+  <!-- ingest <-> binance -->
+  <line class="e" x1="350" y1="148" x2="350" y2="78" marker-start="url(#a1)" marker-end="url(#a1)"/>
+  <text class="el" x="360" y="110">paced GET per rate pool</text>
+  <text class="el" x="360" y="125">3/s · 1.5/s · 10/s, stop on 418/451</text>
+  <!-- data row -->
+  <rect class="n" x="250" y="290" width="200" height="56" rx="6"/>
+  <text class="nt" x="350" y="313" text-anchor="middle">Market data shards</text>
+  <text class="ns" x="350" y="332" text-anchor="middle">raw_ + exotic_shards/</text>
+  <rect class="n" x="500" y="290" width="200" height="56" rx="6"/>
+  <text class="nt" x="600" y="313" text-anchor="middle">Ledgers + engine state</text>
+  <text class="ns" x="600" y="332" text-anchor="middle">open/closed_trades.csv</text>
+  <rect class="n" x="750" y="290" width="200" height="56" rx="6"/>
+  <text class="nt" x="850" y="313" text-anchor="middle">Run status</text>
+  <text class="ns" x="850" y="332" text-anchor="middle">hourly_status.json</text>
+  <line class="e" x1="350" y1="206" x2="350" y2="288" marker-end="url(#a1)"/>
+  <text class="el" x="342" y="252" text-anchor="end">atomic append</text>
+  <path class="e" d="M450,300 L540,208" marker-end="url(#a1)"/>
+  <text class="el" x="482" y="238" text-anchor="end">load_with_oi</text>
+  <line class="e" x1="570" y1="206" x2="570" y2="288" marker-end="url(#a1)"/>
+  <text class="el" x="562" y="262" text-anchor="end">ledgers,</text>
+  <text class="el" x="562" y="276" text-anchor="end">then state</text>
+  <line class="e" x1="650" y1="288" x2="650" y2="208" marker-end="url(#a1)"/>
+  <text class="el" x="658" y="252">resume from</text>
+  <text class="el" x="658" y="266">last bar</text>
+  <line class="e" x1="850" y1="206" x2="850" y2="288" marker-end="url(#a1)"/>
+  <text class="el" x="858" y="252">writes + history</text>
+  <!-- publish fan-out -->
+  <line class="e" x1="1015" y1="206" x2="1015" y2="470"/>
+  <rect class="n ext" x="1040" y="250" width="220" height="44" rx="6"/>
+  <text class="nt" x="1052" y="268">S3 backups</text>
+  <text class="ns" x="1052" y="285">ops.backup() latest/ daily/</text>
+  <rect class="n ext" x="1040" y="306" width="220" height="44" rx="6"/>
+  <text class="nt" x="1052" y="324">S3 site/ → CloudFront</text>
+  <text class="ns" x="1052" y="341">ops.publish_site()</text>
+  <rect class="n ext" x="1040" y="362" width="220" height="44" rx="6"/>
+  <text class="nt" x="1052" y="380">SNS email (SES fallback)</text>
+  <text class="ns" x="1052" y="397">send_report()</text>
+  <rect class="n ext" x="1040" y="418" width="220" height="44" rx="6"/>
+  <text class="nt" x="1052" y="436">CloudWatch HourlyOK</text>
+  <text class="ns" x="1052" y="453">ops.heartbeat()</text>
+  <line class="e" x1="1015" y1="272" x2="1038" y2="272" marker-end="url(#a1)"/>
+  <line class="e" x1="1015" y1="328" x2="1038" y2="328" marker-end="url(#a1)"/>
+  <line class="e" x1="1015" y1="384" x2="1038" y2="384" marker-end="url(#a1)"/>
+  <line class="e" x1="1015" y1="440" x2="1015" y2="440"/>
+  <path class="e" d="M1015,440 L1038,440" marker-end="url(#a1)"/>
+  <text class="el" x="1000" y="492" text-anchor="end">publish reads the ledgers and status written in steps 2–3</text>
+</svg>
+</div>
+<figcaption>One hour, left to right. Green boxes are phases inside <code>hourly_job</code>; dashed boxes are outside services. Step 2 writes the ledgers before <code>engine_state.json</code>, so a crash replays the hour instead of losing exits. A file lock (<code>io_utils.run_lock</code>) makes a second overlapping run exit with code 3.</figcaption>
+</figure>
+
+<div class="cols two">
+  <div class="card">
+    <h3>1 · Ingest <span class="tag live">live</span></h3>
+    <p><code>live_bridger.run_bridger()</code> loads symbols, funding schedules and intervals once (<code>get_symbols</code>, <code>prefetch_global_funding</code>), then runs <code>process_symbol</code> in threads for every symbol:</p>
+    <ul>
+      <li><code>_update_klines</code>: new closed 1h candles, paginated, with the cheapest weight bucket (<code>_kline_limit</code>)</li>
+      <li><code>_update_funding</code>: only when <code>funding_call_needed</code> says a settlement has closed</li>
+      <li><code>_update_metrics</code> via <code>_fetch_metrics_pages</code>: open interest and top-trader long/short (Binance keeps 30 days)</li>
+      <li>Every write goes through <code>_append_shard</code> (atomic); watermarks live in <code>SyncStateManager</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>2 · Compute <span class="tag live">live</span></h3>
+    <p><code>live_runner.run()</code> finds assets (<code>discover_assets</code>), loads <code>engine_state.json</code>, and runs <code>process_live_asset</code> in a process pool:</p>
+    <ul>
+      <li><code>load_with_oi</code> joins the price shard with OI, long/short and funding</li>
+      <li><code>validate_asset_data</code> is the circuit breaker: 720+ bars, current, no bad prices</li>
+      <li><code>compute_features</code> over full history, then <code>step_cta</code> for each <i>new, closed</i> bar only (<code>bar_is_closed</code>)</li>
+      <li>Closed trades are de-duplicated (<code>dedupe_new_trades</code>) and appended; open trades are rebuilt with <code>active_trade_record</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>3 · Gate + status <span class="tag live">live</span></h3>
+    <ul>
+      <li>Fails closed if the data root has under <code>V10_MIN_SHARDS</code> shards</li>
+      <li><code>write_all_trades_view</code> rebuilds <code>all_trades.csv</code></li>
+      <li><code>new_signals</code> lists positions entered in the last 24h</li>
+      <li><code>raw_fresh_pct</code> and failure ratios decide <code>ok</code> (80% fresh, ≤20% failures)</li>
+      <li>Status goes to <code>hourly_status.json</code>, and <code>append_status_history</code> adds it to the history</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>4 · Publish <span class="tag live">live</span></h3>
+    <ul>
+      <li><code>ops.backup</code>: ledgers and state to <code>latest/</code> every hour, <code>daily/</code> at 00 UTC, and the shard mirror once a day</li>
+      <li><code>ops.publish_site</code> calls <code>site_export.export_site</code>, then uploads with cache headers</li>
+      <li><code>send_report</code> builds the email with <code>render_report</code> and sends it with <code>send_report_sns</code>, or SES as a fallback</li>
+      <li><code>ops.heartbeat</code> puts the <code>V10/HourlyOK</code> metric; the alarm fires on missing data</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="bar">2 · One hourly bar through the engine</h2>
+<p><code>cta_dual.step_cta(ts, row, state, cfg, asset)</code> is the whole trading logic. It runs once per closed bar per asset, with that asset's saved state: open trades, the ignition "armed" countdown and the PHOENIX watch list.</p>
+<figure>
+<div class="svgwrap">
+<svg viewBox="0 0 1180 400" role="img" aria-label="step_cta per bar: first manage open trades and write exits to the closed ledger, then arm the ignition window, then check the entry gate, then test the five engines in order; a new trade joins active trades and the open ledger.">
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+  </defs>
+  <rect class="n" x="20" y="160" width="170" height="70" rx="6"/>
+  <text class="nt" x="105" y="186" text-anchor="middle">Closed 1h bar</text>
+  <text class="ns" x="105" y="204" text-anchor="middle">row of ~90 features</text>
+  <text class="ns" x="105" y="219" text-anchor="middle">+ asset state</text>
+  <line class="e" x1="190" y1="195" x2="212" y2="195"/>
+  <line class="e" x1="212" y1="75" x2="212" y2="290"/>
+  <line class="e" x1="212" y1="75" x2="228" y2="75" marker-end="url(#a2)"/>
+  <line class="e" x1="212" y1="195" x2="228" y2="195" marker-end="url(#a2)"/>
+  <line class="e" x1="212" y1="290" x2="228" y2="290" marker-end="url(#a2)"/>
+  <text class="el" x="200" y="66" text-anchor="end">in order</text>
+  <rect class="n hl" x="230" y="20" width="240" height="110" rx="6"/>
+  <text class="nt" x="244" y="42">① Manage open trades</text>
+  <text class="ns" x="244" y="62">update peak and trough</text>
+  <text class="ns" x="244" y="79">check the exit for the engine family</text>
+  <text class="ns" x="244" y="96">stop-out → add to PHOENIX watch</text>
+  <text class="ns" x="244" y="113">(14 days, non-PHOENIX trades)</text>
+  <rect class="n hl" x="230" y="160" width="240" height="70" rx="6"/>
+  <text class="nt" x="244" y="182">② Arm ignition</text>
+  <text class="ns" x="244" y="202">hyper_ignition → 12-bar window</text>
+  <text class="ns" x="244" y="219">stop = that bar's low</text>
+  <rect class="n hl" x="230" y="255" width="240" height="70" rx="6"/>
+  <text class="nt" x="244" y="277">③ Entry gate</text>
+  <text class="ns" x="244" y="297">not a trap regime</text>
+  <text class="ns" x="244" y="314">and &lt; 1 open trade on the asset</text>
+  <!-- exits output -->
+  <line class="e" x1="470" y1="45" x2="918" y2="45" marker-end="url(#a2)"/>
+  <text class="el" x="700" y="37" text-anchor="middle">exit fill = close × (1 − 0.2%)</text>
+  <rect class="n" x="920" y="20" width="240" height="52" rx="6"/>
+  <text class="nt" x="934" y="42">Exit → completed trade</text>
+  <text class="ns" x="934" y="60">closed_trades.csv</text>
+  <!-- engines -->
+  <line class="e" x1="470" y1="290" x2="520" y2="290"/>
+  <line class="e" x1="520" y1="120" x2="520" y2="360"/>
+  <text class="el" x="514" y="112" text-anchor="end">first match</text>
+  <g>
+    <line class="e" x1="520" y1="123" x2="558" y2="123" marker-end="url(#a2)"/>
+    <rect class="n" x="560" y="100" width="300" height="46" rx="6"/>
+    <text class="nt" x="574" y="119">PHOENIX_*</text>
+    <text class="ns" x="574" y="136">reclaims original entry within 14d</text>
+    <line class="e" x1="520" y1="183" x2="558" y2="183" marker-end="url(#a2)"/>
+    <rect class="n" x="560" y="160" width="300" height="46" rx="6"/>
+    <text class="nt" x="574" y="179">IGNITION</text>
+    <text class="ns" x="574" y="196">armed + flow confirms, funding ≥ 0</text>
+    <line class="e" x1="520" y1="243" x2="558" y2="243" marker-end="url(#a2)"/>
+    <rect class="n" x="560" y="220" width="300" height="46" rx="6"/>
+    <text class="nt" x="574" y="239">SQUEEZE_IGN</text>
+    <text class="ns" x="574" y="256">armed + funding &lt; 0 and accelerating</text>
+    <line class="e" x1="520" y1="303" x2="558" y2="303" marker-end="url(#a2)"/>
+    <rect class="n" x="560" y="280" width="300" height="46" rx="6"/>
+    <text class="nt" x="574" y="299">CONTINUATION</text>
+    <text class="ns" x="574" y="316">continuation_long flag</text>
+    <line class="e" x1="520" y1="360" x2="558" y2="360" marker-end="url(#a2)"/>
+    <rect class="n" x="560" y="340" width="300" height="46" rx="6"/>
+    <text class="nt" x="574" y="359">RETAIL_SQZ</text>
+    <text class="ns" x="574" y="376">retail_squeeze_long flag</text>
+  </g>
+  <line class="e" x1="860" y1="123" x2="890" y2="123"/>
+  <line class="e" x1="860" y1="183" x2="890" y2="183"/>
+  <line class="e" x1="860" y1="243" x2="890" y2="243"/>
+  <line class="e" x1="860" y1="303" x2="890" y2="303"/>
+  <line class="e" x1="860" y1="363" x2="890" y2="363"/>
+  <line class="e" x1="890" y1="123" x2="890" y2="363"/>
+  <line class="e hl" x1="890" y1="243" x2="918" y2="243" marker-end="url(#a2)"/>
+  <rect class="n hl" x="920" y="217" width="240" height="52" rx="6"/>
+  <text class="nt" x="934" y="239">New trade (entry close +0.2%)</text>
+  <text class="ns" x="934" y="257">active_trades → open_trades.csv</text>
+</svg>
+</div>
+<figcaption>Exits are always checked before entries. PHOENIX is tried first; if it fires, the other engines are skipped for that bar. IGNITION and SQUEEZE_IGN need the armed window from step ②; CONTINUATION and RETAIL_SQZ read flags pre-computed by <code>compute_features</code>. Every entry also needs <code>is_idiosyncratic</code> (30-day BTC correlation &lt; 0.5) and <code>has_long_memory_accumulation</code> (fractionally differenced order-flow &gt; 0).</figcaption>
+</figure>
+
+<h2 id="engines">3 · The six engines: entries, stops and exits</h2>
+<p>All thresholds below are hard-coded in <code>cta_dual.step_cta</code> and <code>compute_features</code>. Most <code>CtaConfig</code> fields describe them but are not read (see <a href="#findings">code that never fires</a>).</p>
+<div class="tw"><table>
+<thead><tr><th>Engine</th><th>Enters when</th><th>Initial stop</th><th>Exits (reason in the ledger)</th></tr></thead>
+<tbody>
+<tr><td><b>IGNITION</b></td><td>Armed (a <i>hyper_ignition</i> bar within the last 12: volume above its own 1-year p99 shock, dormant order book, close above 24h high) and on this bar: aggressive taker flow, institutional trade size, no whale trap, not over-extended without OI confirmation, funding ≥ 0</td><td>Low of the ignition bar</td><td>Close below stop, unless funding is above its p99 (<code>structural_stop</code>). In a toxic regime: 25% below the peak after +5% (<code>toxic_trail</code>) or −20% (<code>toxic_hard</code>)</td></tr>
+<tr><td><b>SQUEEZE_IGN</b></td><td>Same as IGNITION but funding &lt; 0, plus funding falling further or a 3σ taker-buy burst</td><td>−20%</td><td>Toxic regime (<code>regime_bailout</code>), close below −20% (<code>20pct_hard_stop</code>), 25% below peak after +5% (<code>25pct_trailing_stop</code>)</td></tr>
+<tr><td><b>CONTINUATION</b></td><td><code>continuation_long</code>: close above SMA-200, 24h breakout, aggressive flow, institutional trade size, bar range &gt; 2.5× its 30-day average, OI change above its 30-day p90, no whale trap, funding not overheated</td><td>Entry-bar low</td><td>Close below max(stop, 21-day low once the peak gain reaches +50%) → <code>donchian_trail</code> or <code>structural_stop</code></td></tr>
+<tr><td><b>RETAIL_SQZ</b></td><td><code>retail_squeeze_long</code>: uptrend and breakout with aggressive flow, but <i>not</i> institutional; top traders net short (L/S &lt; 1); OI down more than 5% (liquidations); fat-tailed asset (Hill α ≤ 2.5)</td><td>−20%</td><td>As SQUEEZE_IGN</td></tr>
+<tr><td><b>PHOENIX_IGNITION</b><br><b>PHOENIX_CONTINUATION</b></td><td>Within 14 days of a structural stop on the original engine: close back above the original entry, with aggressive flow</td><td>Re-entry bar low (−20% if the original was a squeeze)</td><td>Same as its family. A PHOENIX stop-out does not add another PHOENIX watch.</td></tr>
+</tbody></table></div>
+<p style="font-size:.9rem;color:var(--muted)">Trap regime (no new entries): <code>is_toxic_distribution</code>, where the 90-day order-flow z-score is below −1.5. Fills are the bar close ± 0.2% slippage.</p>
+
+<h2 id="features">4 · Features: where each signal column comes from</h2>
+<p>Features are computed once per asset over its full history, then stepped bar by bar. All baselines use data up to the previous bar (<code>shift(1)</code>), so a bar never sees its own future.</p>
+<div class="tw"><table>
+<thead><tr><th>Function</th><th>Columns it adds</th><th>Used by</th></tr></thead>
+<tbody>
+<tr><td class="fn">features.load_asset</td><td>Reads a 1h shard; epoch-ms timestamps become the index</td><td>load_with_oi</td></tr>
+<tr><td class="fn">universe_generator.load_with_oi</td><td>Joins <code>sum_open_interest</code>, <code>oi_change</code>, <code>sum_open_interest_value</code>, <code>topLongShortAccountRatio</code> (metrics shard) and <code>funding_rate</code> (funding shard), hourly and forward-filled</td><td>live_runner, build_v10_tape, universe_generator</td></tr>
+<tr><td class="fn">features.enrich</td><td><code>shock_mult</code> (volume ÷ 24h average), <code>shock_thresh</code> (own 1-year p99), <code>is_dormant_book</code> (30-day median notional &lt; 1-year median), <code>breakout</code>/<code>breakdown</code> (24h high/low), <code>taker_ratio</code>, <code>is_aggressive_flow</code>, <code>hyper_ignition</code>, <code>strict_ignition</code>, <code>ignition_signal</code></td><td>compute_features</td></tr>
+<tr><td class="fn">fd_ofi.compute_fd_ofi_kernel</td><td>Numba kernel: fractionally differenced order-flow imbalance (d = 0.45, window 100) → <code>fd_ofi</code></td><td>compute_features</td></tr>
+<tr><td class="fn">cta_dual.compute_features</td><td><code>is_3sigma_taker</code>, <code>btc_corr</code> → <code>is_idiosyncratic</code>, <code>has_long_memory_accumulation</code>, <code>sma_200</code>/<code>is_uptrend</code>, <code>ext_mult</code> (4h move ÷ 24h ATR), <code>whale_trap</code>, <code>funding_p99</code>/<code>is_overheated</code>/<code>funding_accelerating_negative</code>, <code>is_institutional_flow</code> (avg trade size &gt; 30-day p90), <code>oi_value_change</code>, <code>is_aggressive_flow_quote</code>, <code>macro_z_score</code> → <code>is_toxic_distribution</code>, <code>continuation_long</code>, <code>retail_squeeze_long</code> (+ <code>get_hill_estimator</code>), <code>donchian_low_504</code>, <code>is_early_stage</code></td><td>step_cta</td></tr>
+<tr><td class="fn">bar_clock.bar_is_closed</td><td>A bar opening at T counts only once now ≥ T + 1h</td><td>live_runner</td></tr>
+</tbody></table></div>
+
+<h2 id="modules">5 · Every module, by job</h2>
+<p><span class="tag live">live</span> runs in the hourly job. <span class="tag">research</span> is run by hand. <span class="tag off">legacy</span> is kept for reference and not used in production.</p>
+<div class="tw"><table>
+<thead><tr><th>File</th><th>Functions / blocks</th><th>What it does</th></tr></thead>
+<tbody>
+<tr class="grp"><td colspan="3">Schedule and orchestration</td></tr>
+<tr><td>deploy/v10-hourly.timer · .service <span class="tag live">live</span></td><td class="fn">OnCalendar *:05</td><td>Starts the job as user <code>v10</code> with a read-only code tree; exit code 3 (already running) is not a failure</td></tr>
+<tr><td>momentum_v10/hourly_job.py <span class="tag live">live</span></td><td class="fn">main · _run<br>raw_fresh_pct<br>render_report<br>send_report · send_report_sns</td><td>Takes the run lock and runs the four phases; measures data freshness; builds the email text (including the new-signals table); sends via SNS, falling back to SES</td></tr>
+<tr class="grp"><td colspan="3">Market data ingestion</td></tr>
+<tr><td>config/ingestion/live_bridger.py <span class="tag live">live</span></td><td class="fn">run_bridger · process_symbol<br>api_get · get_session<br>prefetch_global_funding<br>funding_call_needed<br>_update_klines · _kline_limit<br>_update_funding<br>_update_metrics · _fetch_metrics_pages<br>_append_shard · safe_read_parquet</td><td>Brings every shard up to the last closed hour through pacing limiters per Binance pool. Stops on 418/451 (<code>IpBannedError</code>), skips delisted contracts, quarantines corrupt shards and sweeps orphaned <code>.tmp</code> files</td></tr>
+<tr><td>config/ingestion/sync_state_manager.py <span class="tag live">live</span></td><td class="fn">SyncStateManager (get · set · save)<br>build_sync_state</td><td>Last-fetched timestamp per symbol and stream in <code>sync_state.json</code>; rebuilds it by scanning the shards</td></tr>
+<tr class="grp"><td colspan="3">Signals and trading logic</td></tr>
+<tr><td>momentum_v10/config.py <span class="tag live">live</span></td><td class="fn">DATA_ROOT · SHARD_DIR · TAPE_DIR<br>FeatureConfig · CtaConfig<br>DONCHIAN_*</td><td>Paths (from <code>V10_DATA_ROOT</code>) and knobs. The live run uses p99 shock, relative dormant book, a taker buffer of 0.01 and first-of-run de-duplication</td></tr>
+<tr><td>momentum_v10/features.py <span class="tag live">live</span></td><td class="fn">load_asset · enrich</td><td>Shared causal feature core (see section 4)</td></tr>
+<tr><td>momentum_v10/fd_ofi.py <span class="tag live">live</span></td><td class="fn">compute_fd_ofi_kernel</td><td>Numba JIT order-flow kernel</td></tr>
+<tr><td>momentum_v10/cta_dual.py <span class="tag live">live</span></td><td class="fn">compute_features · get_hill_estimator<br>step_cta · run_cta</td><td>All engine flags, then the per-bar state machine (section 2). <code>run_cta</code> loops <code>step_cta</code> over a whole history for research and marks the rest <code>open_at_end</code></td></tr>
+<tr><td>momentum_v10/bar_clock.py <span class="tag live">live</span></td><td class="fn">bar_is_closed · drop_forming_*</td><td>Never trade the forming hour</td></tr>
+<tr class="grp"><td colspan="3">Live book</td></tr>
+<tr><td>momentum_v10/live_runner.py <span class="tag live">live</span></td><td class="fn">run · process_live_asset<br>validate_asset_data<br>effective_stop · active_trade_record</td><td>Steps each asset from its saved state, circuit-breaks bad data (keeping open positions), writes the ledgers, then state. Open rows carry current price, stop, distance to stop and age</td></tr>
+<tr><td>momentum_v10/live_book.py <span class="tag live">live</span></td><td class="fn">trade_key · dedupe_new_trades<br>count_open · count_closed<br>preserve_research_open<br>new_signals</td><td>Ledger helpers: no duplicate exits after a cold start, counts that ignore <code>open_at_end</code> marks, and the 24h new-signal list</td></tr>
+<tr><td>momentum_v10/universe_generator.py <span class="tag live">live</span> <span class="tag">research</span></td><td class="fn">discover_assets · load_with_oi<br>process_asset · render_tear_sheet<br>compute_scorecard · contextual_reason</td><td>Asset discovery and the data join are used live. <code>main</code> runs the full engine over every asset in parallel and prints Markdown tear sheets</td></tr>
+<tr><td>momentum_v10/build_csv.py <span class="tag live">live</span></td><td class="fn">write_all_trades_view</td><td>Joins open + closed ledgers into <code>all_trades.csv</code></td></tr>
+<tr><td>momentum_v10/book_store.py <span class="tag">research</span></td><td class="fn">build_trades · build_scorecard<br>write_book · render_asset</td><td><code>trades.parquet</code> and <code>scorecard.parquet</code>; renders one asset's tear sheet from the stored book</td></tr>
+<tr class="grp"><td colspan="3">Operations, publishing and plumbing</td></tr>
+<tr><td>momentum_v10/ops.py <span class="tag live">live</span></td><td class="fn">backup · restore · heartbeat<br>publish_site · ledger_files · shard_files</td><td>S3 backup and restore (seeds a new host), CloudWatch heartbeat and the dashboard upload. CLI: <code>python -m momentum_v10.ops backup|restore|backup-all|publish-site</code></td></tr>
+<tr><td>momentum_v10/site_export.py <span class="tag live">live</span></td><td class="fn">export_site · dna_map<br>patched_html · _clean</td><td>Writes <code>site/index.html</code> and <code>data/*.json</code> (NaN-safe), and the per-asset tail index for Asset DNA</td></tr>
+<tr><td>momentum_v10/dashboard_data.py <span class="tag live">live</span></td><td class="fn">build_trades · build_meta<br>build_config · append_status_history<br>latest_bar_utc · data_file</td><td>Turns the ledgers into the dashboard's JSON (one row format for open and closed), keeps the last 500 run statuses, and exposes engine parameters</td></tr>
+<tr><td>momentum_v10/io_utils.py <span class="tag live">live</span></td><td class="fn">atomic_to_parquet · atomic_to_csv<br>atomic_write_text · RateLimiter<br>run_lock</td><td>Temp file + fsync + rename writes, thread-safe request pacing, and the single-run lock</td></tr>
+<tr><td>momentum_v10/logger.py <span class="tag live">live</span></td><td class="fn">init_logging · get_logger<br>check_disk_space<br>quarantine_corrupted_shard</td><td>Rotating logs plus a separate trade-audit log; moves corrupt shards aside</td></tr>
+<tr class="grp"><td colspan="3">Dashboard</td></tr>
+<tr><td>momentum_v10/dashboard_v10.html <span class="tag live">live</span></td><td class="fn">see section 7</td><td>The static page served by CloudFront</td></tr>
+<tr><td>momentum_v10/dashboard_server.py <span class="tag">local</span></td><td class="fn">TradoorHandler.do_GET · run_server<br>build_api_response · calc_point_72</td><td>Local preview on 127.0.0.1:8050: serves the page and <code>/data/*.json</code> built live from the ledgers; everything else returns 404. The old <code>/api/data</code> endpoint is kept</td></tr>
+<tr class="grp"><td colspan="3">Research and reporting</td></tr>
+<tr><td>momentum_v10/backtest_costed.py <span class="tag">research</span></td><td class="fn">extract · simulate · metrics<br>run_report · per_trade_costed<br>Params · _slip · _funding</td><td>Costed, position-sized replay of the ledger. CLI: <code>extract i n</code> → <code>merge</code> → <code>report</code></td></tr>
+<tr><td>momentum_v10/backtest_report.py <span class="tag">research</span></td><td class="fn">render · main</td><td>Renders <code>results.json</code> to one HTML report</td></tr>
+<tr><td>build_v10_tape.py <span class="tag">research</span></td><td class="fn">process_asset · main</td><td>Full-history engine run on every shard → <code>master_raw_tape.csv</code></td></tr>
+<tr><td>momentum_v10/l5_generator.py <span class="tag">research</span></td><td class="fn">generate_l5_rankings</td><td>Cross-sectional relative-strength ranks → <code>l5_ranking.parquet</code> (read into a column no engine uses)</td></tr>
+<tr><td>pipeline_v10.ps1 <span class="tag">research</span></td><td class="fn">5 steps</td><td>Windows research rebuild: bridger → live_runner → build_v10_tape → build_csv → Markdown reports</td></tr>
+<tr><td>generate_artifact.py · build_open_artifact.py <span class="tag">research</span></td><td class="fn">scripts</td><td>Markdown summaries of the closed and open books</td></tr>
+<tr class="grp"><td colspan="3">Legacy and disabled</td></tr>
+<tr><td>cta.py · cta_armed.py · cta_concurrent.py <span class="tag off">legacy</span></td><td class="fn">compute_features · run_cta</td><td>Earlier engine versions, marked DEPRECATED</td></tr>
+<tr><td>scan.py · tape.py · outcomes.py <span class="tag off">legacy</span></td><td class="fn">scan_asset · build_tape · event_stats</td><td>Old ignition scanner and forward-outcome labels</td></tr>
+<tr><td>experiments/baseline.py · exp_avwap.py · exp_fuel.py <span class="tag off">legacy</span></td><td class="fn">compute_features · run_cta</td><td>One-off V6 dual-engine experiments</td></tr>
+<tr><td>dashboard.py (Streamlit) · dashboard_nicegui.py <span class="tag off">legacy</span></td><td class="fn">load_trades · calc_point_72</td><td>Earlier dashboards; the Asset DNA tail estimator started here</td></tr>
+<tr><td>websocket_daemon.py <span class="tag off">disabled</span></td><td class="fn">main</td><td>Exits with code 2 on purpose: it used to append partial candles and corrupt shards</td></tr>
+</tbody></table></div>
+
+<h2 id="data">6 · Data files: who writes, who reads</h2>
+<p>All paths are under <code>V10_DATA_ROOT</code> (<code>/var/lib/v10/data</code> on the server, <code>&lt;repo&gt;/data</code> locally). Every write is atomic.</p>
+<div class="tw"><table>
+<thead><tr><th>File</th><th>Written by</th><th>Read by</th></tr></thead>
+<tbody>
+<tr><td><code>raw_shards/{A}_USDT_1h.parquet</code></td><td>live_bridger._update_klines</td><td>load_with_oi, raw_fresh_pct, dna_map, l5_generator, backtest extract</td></tr>
+<tr><td><code>exotic_shards/{A}USDT_funding.parquet</code><br><code>exotic_shards/{A}USDT_metrics.parquet</code></td><td>_update_funding · _update_metrics</td><td>load_with_oi, backtest extract (funding)</td></tr>
+<tr><td><code>sync_state.json</code></td><td>SyncStateManager</td><td>live_bridger, dashboard_data.latest_bar_utc</td></tr>
+<tr><td><code>engine_state.json</code></td><td>live_runner.run (after the ledgers)</td><td>live_runner.run (next hour)</td></tr>
+<tr><td><code>all_tapes/v10_production/closed_trades.csv</code></td><td>live_runner.run (append, de-duplicated)</td><td>dashboard_data, build_csv, backtest, reports</td></tr>
+<tr><td><code>…/open_trades.csv</code></td><td>live_runner.run (rebuilt each hour)</td><td>dashboard_data, new_signals, backtest</td></tr>
+<tr><td><code>…/all_trades.csv</code></td><td>build_csv.write_all_trades_view</td><td>dashboard_server <code>/api/data</code> (legacy)</td></tr>
+<tr><td><code>…/research_open_at_end.csv</code></td><td>live_book.preserve_research_open</td><td>People, for research</td></tr>
+<tr><td><code>…/hourly_status.json</code> · <code>status_history.jsonl</code></td><td>hourly_job · append_status_history</td><td>build_meta (Reports page), email</td></tr>
+<tr><td><code>…/trades.parquet</code> · <code>scorecard.parquet</code></td><td>book_store.write_book</td><td>book_store.render_asset</td></tr>
+<tr><td><code>l5_ranking.parquet</code></td><td>l5_generator</td><td>compute_features (unused column)</td></tr>
+<tr><td><code>quarantine/</code></td><td>quarantine_corrupted_shard</td><td>People</td></tr>
+<tr><td><code>site/</code> (outside the data root)</td><td>site_export.export_site</td><td>ops.publish_site → S3 <code>site/</code></td></tr>
+<tr><td>S3 <code>v10/latest/</code> · <code>daily/</code> · <code>data/</code></td><td>ops.backup</td><td>ops.restore</td></tr>
+</tbody></table></div>
+
+<h2 id="dashboard">7 · Dashboard: which block does what</h2>
+<p>The page is one HTML file. <code>loadData()</code> fetches <code>data/trades.json</code> and <code>meta.json</code>; every panel below is computed in the browser from the rows that survive the pipeline in <code>currentRows()</code>: <b>mode → time range → filters → search → sort</b>.</p>
+<div class="tw"><table>
+<thead><tr><th>On screen</th><th>JavaScript</th><th>Behaviour</th></tr></thead>
+<tbody>
+<tr><td>Open / Closed / All buttons, sidebar</td><td class="fn">setMode · navigate · showView</td><td>Chooses the rows (open, closed, both) or switches to Engines, Risk, Reports or Settings</td></tr>
+<tr><td>1D · 7D · 30D · ALL · Custom, date box</td><td class="fn">setRange · rangeWindow · inRange<br>toggleCustomRange · applyCustomRange</td><td>Window ends at the newest closed bar; open trades by entry time, closed trades by exit time</td></tr>
+<tr><td>KPI cards and sparklines</td><td class="fn">renderKpis · renderSparks · dailyBuckets</td><td>Count, win %, cumulative and mean PnL, top runner; 30 daily buckets per sparkline</td></tr>
+<tr><td>Trend chart and pills</td><td class="fn">renderTrend · setTrendRange</td><td>Cumulative PnL by exit time (closed) or entry time (open)</td></tr>
+<tr><td>Engine donut · holding-time bars</td><td class="fn">renderDonut · renderDurations</td><td>Share by engine; age or holding-time buckets</td></tr>
+<tr><td>New Signals panel</td><td class="fn">renderSignals</td><td>Open trades entered in the last 24h with stop and distance to stop</td></tr>
+<tr><td>Table, headers, pager</td><td class="fn">renderTable · sortSpec · renderPager · changePage</td><td>Click a header to sort; datetime columns sort as time; blanks go last</td></tr>
+<tr><td>Filters panel</td><td class="fn">toggleFilters · applyFilters · resetFilters<br>passesFilters</td><td>Engines, winners/losers, within 5% of stop, older than 30 days</td></tr>
+<tr><td>Search box</td><td class="fn">input listener in currentRows</td><td>Asset, engine, exit reason or trade number</td></tr>
+<tr><td>Checkboxes · Export</td><td class="fn">toggleRow · toggleSelectAll · exportCsv · toCsv</td><td>Exports the selected rows, or all filtered rows if none are selected</td></tr>
+<tr><td>Row 📈 · 📋 · ⋮</td><td class="fn">Binance link · copyRow · openTrade</td><td>Futures chart, copy a one-line summary, details with the engine description</td></tr>
+<tr><td>Engine Performance</td><td class="fn">renderEngines · scorecard</td><td>Per-engine expectancy, exit reasons, profit concentration</td></tr>
+<tr><td>Risk Monitor</td><td class="fn">renderRisk</td><td>Near-stop list, position age, oldest positions, exposure</td></tr>
+<tr><td>Reports</td><td class="fn">renderReports · downloadBook · downloadScorecard</td><td>Last run, run history, results by year, CSV downloads</td></tr>
+<tr><td>Settings</td><td class="fn">renderSettings · setPref · pref</td><td>Rows per page, default sort, refresh (browser storage); engine parameters from <code>config.json</code></td></tr>
+<tr><td>Asset DNA</td><td class="fn">openAssetDnaModal · fetchAssetDna</td><td>Hill tail index from <code>asset_dna.json</code>: ≤ 3.19 fat-tailed (valid), above that vetoed</td></tr>
+<tr><td>Auto Refresh · clock</td><td class="fn">toggleAutoRefresh · scheduleRefresh · updateClock</td><td>Reloads the JSON every 60 s by default; the data itself changes hourly</td></tr>
+</tbody></table></div>
+
+<h2 id="deploy">8 · Deployment and infrastructure</h2>
+<div class="cols">
+  <div class="card">
+    <h3>deploy/aws/deploy.sh (run on your Mac)</h3>
+    <ul>
+      <li><code>deploy</code>: S3 bucket and lifecycle, SNS, IAM role, own VPC if needed, EC2 t4g.small, alarm</li>
+      <li><code>update</code>: packages the code (<code>build_release</code>) and runs <code>refresh.sh</code> on the server over SSM</li>
+      <li><code>dashboard</code>: publishes the site and sets up CloudFront with origin access control</li>
+      <li><code>run-now</code>, <code>status</code>, <code>logs</code>, <code>verify</code>, <code>diag</code>, <code>resubscribe</code>, <code>destroy</code> (keeps the bucket)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>On the server</h3>
+    <ul>
+      <li><code>bootstrap.sh</code> (first boot): Python venv at <code>/opt/v10_venv</code>, user <code>v10</code>, <code>ops restore</code>, timer on</li>
+      <li><code>refresh.sh</code>: unpacks a release into the read-only <code>/opt/v10_standalone</code></li>
+      <li>Settings in <code>/etc/v10/v10.env</code> (template: <code>deploy/v10.env.example</code>)</li>
+      <li>Writable paths are only <code>/var/lib/v10</code> and <code>/var/log/v10</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Access and alternatives</h3>
+    <ul>
+      <li><code>create-deployer-user.sh</code> + <code>deployer-policy-*.json</code>: scoped IAM for the person deploying</li>
+      <li><code>Dockerfile</code>: the same hourly job in a container, with data mounted at <code>/app/data</code></li>
+      <li><code>requirements*.txt</code>: pinned runtime, dashboard extras, and test tools</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="findings">9 · Code that exists but never fires</h2>
+<p>Found while mapping. None of these change what runs today; they explain gaps between the documented design and the live behaviour.</p>
+<div class="finding"><b>The upper-wick filter and the exhaustion exit are inactive.</b> <code>step_cta</code> reads <code>upper_wick_ratio</code>, but nothing computes it, so it is always 0. The "wick ≤ 0.65" entry veto always passes, and the <code>exhaustion</code> exit (which needs a wick above 0.40) can never trigger. There are no <code>exhaustion</code> exits among the 4,009 closed trades.</div>
+<div class="finding"><b>Two trap regimes are never set.</b> <code>regime_euphoria</code> and <code>regime_dead_cat</code> are read by the entry gate and the squeeze exits but never computed. Only <code>is_toxic_distribution</code> actually blocks entries or triggers <code>regime_bailout</code>.</div>
+<div class="finding"><b>Most CtaConfig knobs are not wired in.</b> <code>step_cta</code> reads only the Donchian fields (and a <code>slippage</code> attribute CtaConfig doesn't define, so the 0.2% default applies). The −20%, +5%, 25% trail, 12-bar arming, 14-day PHOENIX window, 0.65 wick and 0.8 OI ratio are literals in the code. Changing <code>hard_stop_pct</code>, <code>volume_shock_mult</code> or <code>max_ignition_wick_ratio</code> in <code>config.py</code> does nothing.</div>
+<div class="finding"><b>Computed and unused:</b> <code>l5_rank_pctile</code> (the whole L5 ranking pipeline), <code>oversold_squeeze_long</code>, <code>is_overheated</code> in exits, and <code>strict_ignition</code>/<code>ignition_signal</code> from <code>features.enrich</code>. The engines use <code>hyper_ignition</code>.</div>
+<div class="finding"><b>The toxic-trail exit books the trail level, not the price.</b> <code>exit_price = trade_max_high × 0.75</code> even when the hourly close is lower. The costed backtest measured it: +59.6% booked against +32.4% when filled at the next open.</div>
+</div>
+</body>
+</html>
