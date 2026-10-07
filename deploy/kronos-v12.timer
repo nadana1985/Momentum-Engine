@@ -1,0 +1,12 @@
+[Unit]
+Description=Hourly Timer for Kronos V12 Pipeline
+Requires=kronos-v12.service
+
+[Timer]
+# Run every hour at 4 minutes past the hour (gives exchange candles time to close and settle)
+OnCalendar=*-*-* *:04:00
+Persistent=true
+Unit=kronos-v12.service
+
+[Install]
+WantedBy=timers.target

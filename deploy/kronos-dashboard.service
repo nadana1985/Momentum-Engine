@@ -1,0 +1,34 @@
+[Unit]
+Description=Kronos V12 Intelligence Command Center (NiceGUI Dashboard on Port 8056)
+After=network.target
+# Fix #5 — Start dashboard only after pipeline service has registered
+After=kronos-v12.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/kronos_v12
+Environment="NICEGUI_HOST=0.0.0.0"
+Environment="NICEGUI_PORT=8056"
+ExecStart=/home/ubuntu/kronos_v12/.venv/bin/python momentum_v12/dashboard_nicegui.py
+
+# Automatic restart on crash (Fix #10 WebSocket crash recovery)
+Restart=always
+RestartSec=10
+
+# Fix #5 — OOM Killer protection: Dashboard gets its own dedicated 2 GB slice
+# This isolates it from the backtest — backtest RAM spike cannot OOM-kill the dashboard
+MemoryMax=2G
+MemorySwapMax=0
+# OOMPolicy=continue means systemd will NOT kill this service if system OOM hits
+OOMPolicy=continue
+
+# Fix #4 — journald rate limits for WebSocket/Plotly noise
+LogRateLimitIntervalSec=60
+LogRateLimitBurst=500
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

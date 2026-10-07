@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. NiceGUI Command Center Dashboard (24/7 Web UI on Port 8056)
+  dashboard:
+    build: .
+    container_name: kronos_v12_dashboard
+    restart: unless-stopped
+    ports:
+      - "8056:8056"
+    environment:
+      - NICEGUI_HOST=0.0.0.0
+      - NICEGUI_PORT=8056
+      - KRONOS_PROFILE=book3_flush
+      - KRONOS_TAPE_DIR=data/all_tapes/v12_book3_flush_reclaim_arm
+    volumes:
+      - ./data:/app/data
+      - ./telemetry:/app/telemetry
+      - ./reports:/app/reports
+    env_file:
+      - .env
+
+  # 2. Hourly Pipeline Cron Runner (Live Ingestion, Backtest Matrix, Telemetry)
+  pipeline:
+    build: .
+    container_name: kronos_v12_pipeline
+    restart: unless-stopped
+    command: >
+      sh -c "while true; do
+        echo '[Cron] Starting hourly Kronos pipeline execution...';
+        ./pipeline_v12.sh;
+        echo '[Cron] Sleeping for 3600 seconds until next cycle...';
+        sleep 3600;
+      done"
+    environment:
+      - KRONOS_PROFILE=book3_flush
+      - KRONOS_TAPE_DIR=data/all_tapes/v12_book3_flush_reclaim_arm
+    volumes:
+      - ./data:/app/data
+      - ./telemetry:/app/telemetry
+      - ./reports:/app/reports
+    env_file:
+      - .env

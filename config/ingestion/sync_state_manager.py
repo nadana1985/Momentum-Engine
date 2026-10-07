@@ -38,7 +38,7 @@ import pandas as pd
 # Paths
 # ---------------------------------------------------------------------------
 
-ROOT = Path(__file__).resolve().parent.parent.parent   # package root (this repo)
+ROOT = Path(__file__).resolve().parent.parent.parent   # f:/kronos_v1_alt
 SYNC_STATE_PATH = ROOT / "data" / "sync_state.json"
 
 RAW_DIR     = ROOT / "data" / "raw_shards"

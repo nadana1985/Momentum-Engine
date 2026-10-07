@@ -1,0 +1,29 @@
+[Unit]
+Description=Kronos V12 Universal Momentum Engine Hourly Pipeline
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/kronos_v12
+ExecStart=/bin/bash /home/ubuntu/kronos_v12/pipeline_v12.sh
+StandardOutput=journal
+StandardError=journal
+# 3 = previous run still holding flock; not a failure
+SuccessExitStatus=3
+
+# Fix #5 — OOM Killer protection: Reserve 1.5 GB headroom for pipeline
+# MemoryMax prevents runaway backtests from killing dashboard or other processes
+MemoryMax=6G
+MemorySwapMax=0
+
+# Fix #4 — Limit logs this service can produce per run
+LogRateLimitIntervalSec=60
+LogRateLimitBurst=3000
+
+# Timeout: 30 minutes max for full pipeline (bridger + backtest + artifacts)
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=multi-user.target
