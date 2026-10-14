@@ -14,7 +14,7 @@
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
 | **Cumulative Net Log Return** | **`-2.6%`** | `> 0.0%` | 🛑 Drawdown |
 | **Compounded Capital Growth** | **`0.97x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-1.28%`** | `> +1.0%` | Normal |
+| **Mean Net Log Return / Trade** | **`-1.32%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`-2.1%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`126.5h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+5.1% / -2.9%`** | MFE > 2x MAE | High Asymmetry |
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-08-26 13:00` | `2026-08-30 23:00` | 106.0h | `$150.2347` | `$149.5153` | **-0.48%** | **-0.48%** | +2.7% | -2.9% | `fast_decay_cut` |
-| 2 | Book 2 | `2026-09-04 10:00` | `2026-09-10 13:00` | 147.0h | `$159.0867` | `$155.8195` | **-2.05%** | **-2.08%** | +7.4% | -2.9% | `fast_decay_cut` |
+| 1 | Book 2 | `2026-08-26 13:00` | `2026-08-30 23:00` | 106.0h | `$150.2347` | `$149.5153` | **-0.51%** | **-0.51%** | +2.7% | -2.9% | `fast_decay_cut` |
+| 2 | Book 2 | `2026-09-04 10:00` | `2026-09-10 13:00` | 147.0h | `$159.0867` | `$155.8195` | **-2.11%** | **-2.14%** | +7.4% | -2.9% | `fast_decay_cut` |
 
 ---
 

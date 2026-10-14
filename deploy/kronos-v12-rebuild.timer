@@ -1,0 +1,12 @@
+[Unit]
+Description=Kronos V12 Weekly Full Cold Rebuild (Every Sunday 03:00 UTC)
+
+[Timer]
+# Every Sunday at 03:00 UTC — forces build_v12_tape.py full cold backtest
+# to keep the master tape perfectly consistent and purge any state drift.
+OnCalendar=Sun 03:00 UTC
+Persistent=true
+Unit=kronos-v12-rebuild.service
+
+[Install]
+WantedBy=timers.target

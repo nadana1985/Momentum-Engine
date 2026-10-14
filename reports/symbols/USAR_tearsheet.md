@@ -12,10 +12,10 @@
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-2.30%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-1.3%`** | `< -30%` | ✅ Contained |
+| **Cumulative Net Log Return** | **`-5.3%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.95x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-2.64%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-1.5%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`42.0h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+2.2% / -2.9%`** | MFE > 2x MAE | High Asymmetry |
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-14 15:00` | `2026-09-16 03:00` | 36.0h | `$15.9899` | `$15.4712` | **-3.24%** | **-3.30%** | +0.6% | -4.2% | `stall_bailout` |
-| 2 | Book 2 | `2026-09-21 13:00` | `2026-09-23 13:00` | 48.0h | `$16.5011` | `$16.2892` | **-1.28%** | **-1.29%** | +3.9% | -1.5% | `fast_decay_cut` |
+| 1 | Book 2 | `2026-09-14 15:00` | `2026-09-16 03:00` | 36.0h | `$15.9899` | `$15.4712` | **-3.76%** | **-3.82%** | +0.6% | -4.2% | `stall_bailout` |
+| 2 | Book 2 | `2026-09-21 13:00` | `2026-09-23 13:00` | 48.0h | `$16.5011` | `$16.2892` | **-1.46%** | **-1.47%** | +3.9% | -1.5% | `fast_decay_cut` |
 
 ---
 
@@ -34,8 +34,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `1` | `0.0%` | **`-1.3%`** |
-| `stall_bailout` | `1` | `0.0%` | **`-3.3%`** |
+| `fast_decay_cut` | `1` | `0.0%` | **`-1.5%`** |
+| `stall_bailout` | `1` | `0.0%` | **`-3.8%`** |
 
 ---
 

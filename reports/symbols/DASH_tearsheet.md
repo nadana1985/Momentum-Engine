@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `DASH`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `4` (`4` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `8` (`8` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `4` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`25.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.007`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-38.0%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.68x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-9.49%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-26.5%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`65.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+7.9% / -9.5%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `8` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`75.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`2.829`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+80.4%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`2.23x`** | `> 1.0x` | 🚀 Alpha Driver |
+| **Mean Net Log Return / Trade** | **`+10.05%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`-43.9%`** | `< -30%` | ⚠️ High Drawdown |
+| **Average Trade Duration** | **`121.1h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+12.4% / -8.2%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,10 +25,14 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 1 | `2023-11-12 20:00` | `2023-11-14 20:00` | 48.0h | `$33.8945` | `$30.5335` | **-10.85%** | **-11.48%** | +1.3% | -12.1% | `fast_decay_cut` |
-| 2 | Book 1 | `2023-12-27 12:00` | `2023-12-30 12:00` | 72.0h | `$37.4935` | `$32.8178` | **-16.59%** | **-18.14%** | +3.7% | -14.4% | `stagnation_bailout` |
-| 3 | Book 2 | `2025-10-26 08:00` | `2025-10-28 15:00` | 55.0h | `$46.4157` | `$46.5312` | **+0.25%** | **+0.25%** | +16.8% | -3.4% | `breakeven_ratchet` |
-| 4 | Book 2 | `2026-09-17 01:00` | `2026-09-20 14:00` | 85.0h | `$59.2477` | `$54.3717` | **-8.23%** | **-8.59%** | +9.8% | -8.1% | `initial_stop` |
+| 1 | Book 4 | `2021-08-11 01:00` | `2021-08-15 23:00` | 118.0h | `$179.1383` | `$214.9660` | **+23.14%** | **+21.16%** | +21.6% | -4.9% | `target_reclaim` |
+| 2 | Book 4 | `2023-01-20 20:00` | `2023-01-27 20:00` | 168.0h | `$51.6173` | `$51.7423` | **+0.63%** | **+0.63%** | +4.6% | -7.5% | `stagnation_cut` |
+| 3 | Book 1 | `2023-11-12 20:00` | `2023-11-14 20:00` | 48.0h | `$33.8945` | `$30.5335` | **-16.40%** | **-17.75%** | +1.3% | -12.1% | `fast_decay_cut` |
+| 4 | Book 1 | `2023-12-27 12:00` | `2023-12-30 12:00` | 72.0h | `$37.4935` | `$32.8178` | **-23.65%** | **-26.19%** | +3.7% | -14.4% | `stagnation_bailout` |
+| 5 | Book 3 | `2024-02-28 17:00` | `2024-02-29 04:00` | 11.0h | `$29.4240` | `$32.7200` | **+11.20%** | **+10.62%** | +12.5% | -5.9% | `target_reclaim` |
+| 6 | Book 4 | `2024-11-13 14:00` | `2024-11-23 09:00` | 235.0h | `$26.2994` | `$31.5593` | **+63.43%** | **+50.92%** | +20.6% | -6.5% | `target_reclaim` |
+| 7 | Book 3 | `2024-12-05 06:00` | `2024-12-05 14:00` | 8.0h | `$52.9471` | `$59.4700` | **+12.32%** | **+11.62%** | +14.2% | -3.1% | `target_reclaim` |
+| 8 | Book 4 | `2026-08-22 05:00` | `2026-09-04 02:00` | 309.0h | `$41.3519` | `$49.6223` | **+33.46%** | **+29.37%** | +21.0% | -10.9% | `target_reclaim` |
 
 ---
 
@@ -36,28 +40,30 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `breakeven_ratchet` | `1` | `100.0%` | **`+0.2%`** |
-| `fast_decay_cut` | `1` | `0.0%` | **`-11.5%`** |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
-| `stagnation_bailout` | `1` | `0.0%` | **`-18.1%`** |
+| `target_reclaim` | `5` | `100.0%` | **`+123.7%`** |
+| `fast_decay_cut` | `1` | `0.0%` | **`-17.8%`** |
+| `stagnation_bailout` | `1` | `0.0%` | **`-26.2%`** |
+| `stagnation_cut` | `1` | `100.0%` | **`+0.6%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `DASH`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `217`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `108` (49.8% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `56`
-* **Saved Capital Losses Avoided:** `+1,429.7%`
-* **Missed Upside Forgone:** `-2,628.9%`
-* **Net Veto Alpha:** `+-1,199.3%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `711`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `381` (53.6% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `134`
+* **Saved Capital Losses Avoided:** `+4,266.0%`
+* **Missed Upside Forgone:** `-4,393.3%`
+* **Net Veto Alpha:** `+-127.3%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 0: Zero-Tolerance Data Firewall` | `115` | `53.0%` |
-| `Core 1: Macro Bear Veto` | `80` | `36.9%` |
-| `Core 4: Funding Rate Cap` | `22` | `10.1%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `508` | `71.4%` |
+| `Core 1: Macro Bear Veto` | `178` | `25.0%` |
+| `Core 4: Funding Rate Cap` | `22` | `3.1%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `2` | `0.3%` |
+| `Core 4: Whale Firewall` | `1` | `0.1%` |
 
 ---
 

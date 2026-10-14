@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `SPK`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
 | **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+12.8%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.14x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+12.78%`** | `> +1.0%` | ✅ Strong Edge |
+| **Cumulative Net Log Return** | **`+22.9%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.26x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+11.47%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`13.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+23.3% / -1.2%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`7.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+31.0% / -0.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2025-07-21 07:00` | `2025-07-21 20:00` | 13.0h | `$0.0411` | `$0.0467` | **+13.64%** | **+12.78%** | +23.3% | -1.2% | `target_reclaim` |
+| 1 | Book 4 | `2025-07-21 22:00` | `2025-07-21 23:00` | 1.0h | `$0.0513` | `$0.0616` | **+11.58%** | **+11.05%** | +39.8% | -0.6% | `target_reclaim` |
+| 2 | Book 4 | `2026-04-22 00:00` | `2026-04-22 13:00` | 13.0h | `$0.0288` | `$0.0345` | **+12.50%** | **+11.89%** | +22.2% | -0.1% | `target_reclaim` |
 
 ---
 
@@ -33,24 +34,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `target_reclaim` | `1` | `100.0%` | **`+12.8%`** |
+| `target_reclaim` | `2` | `100.0%` | **`+22.9%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `SPK`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `34`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `16` (47.1% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `22`
-* **Saved Capital Losses Avoided:** `+294.1%`
-* **Missed Upside Forgone:** `-2,207.7%`
-* **Net Veto Alpha:** `+-1,913.6%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `745`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `483` (64.8% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `220`
+* **Saved Capital Losses Avoided:** `+7,274.7%`
+* **Missed Upside Forgone:** `-13,756.0%`
+* **Net Veto Alpha:** `+-6,481.3%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `24` | `70.6%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `10` | `29.4%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `387` | `51.9%` |
+| `Core 1: Macro Bear Veto` | `260` | `34.9%` |
+| `Core 4: Defensible Whale Dump` | `98` | `13.2%` |
 
 ---
 

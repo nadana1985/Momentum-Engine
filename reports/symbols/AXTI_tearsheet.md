@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `AXTI`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-1.9%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.98x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-1.91%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`36.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+0.2% / -3.1%`** | MFE > 2x MAE | High Asymmetry |
+| **Cumulative Net Log Return** | **`-19.3%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.82x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-9.67%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-6.3%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`132.5h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+5.8% / -8.5%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-25 16:00` | `2026-09-27 04:00` | 36.0h | `$80.2301` | `$78.7127` | **-1.89%** | **-1.91%** | +0.2% | -3.1% | `stall_bailout` |
+| 1 | Book 4 | `2026-09-21 14:00` | `2026-09-23 20:00` | 54.0h | `$79.4582` | `$72.4265` | **-12.19%** | **-13.00%** | +3.6% | -9.2% | `initial_stop` |
+| 2 | Book 1 | `2026-09-29 13:00` | `2026-10-08 08:00` | 211.0h | `$81.7739` | `$77.2065` | **-6.13%** | **-6.33%** | +8.0% | -7.8% | `initial_stop` |
 
 ---
 
@@ -33,23 +34,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stall_bailout` | `1` | `0.0%` | **`-1.9%`** |
+| `initial_stop` | `2` | `0.0%` | **`-19.3%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `AXTI`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `17`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `15` (88.2% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+265.9%`
-* **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+265.9%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `217`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `168` (77.4% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `46`
+* **Saved Capital Losses Avoided:** `+3,098.2%`
+* **Missed Upside Forgone:** `-950.3%`
+* **Net Veto Alpha:** `+2,148.0%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `17` | `100.0%` |
+| `Core 1: Macro Bear Veto` | `210` | `96.8%` |
+| `Core 3: Min Turnover Velocity` | `6` | `2.8%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `1` | `0.5%` |
 
 ---
 

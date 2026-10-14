@@ -350,14 +350,14 @@ def run_bridger():
         logger.critical("Aborting live ingestion: Binance IP ban (418) or geo-block (451) triggered during prefetch.")
         return
 
-    logger.info(f"Bridging gap for {total} active symbols via Hyper-Fast Bulk REST API...")
-    logger.info("Workers: 10 | Token-Bucket Paced (3 req/sec metrics limiter) | Atomic Parquet Enabled")
+    workers = min(6, (os.cpu_count() or 1) * 3)
+    logger.info(f"Workers: {workers} (Tuned for vCPU count) | Token-Bucket Paced (3 req/sec metrics limiter) | Atomic Parquet Enabled")
 
     success = 0
     failed  = 0
     skipped = 0
 
-    with ThreadPoolExecutor(max_workers=10) as pool:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(process_symbol, sym): sym for sym in symbols}
         for i, fut in enumerate(as_completed(futures), 1):
             sym, ok, reason = fut.result()

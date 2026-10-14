@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `BTC`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `10` (`10` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `8` (`8` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `10` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`20.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.603`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-9.1%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.91x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.91%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-9.4%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`79.8h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+3.2% / -3.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `8` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`62.5%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.700`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+18.0%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.20x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+2.25%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`-17.2%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`241.8h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+9.1% / -6.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,16 +25,14 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2023-07-13 18:00` | `2023-07-14 18:00` | 24.0h | `$31325.8193` | `$29949.6881` | **-4.39%** | **-4.49%** | +1.7% | -4.2% | `initial_stop` |
-| 2 | Book 2 | `2023-12-08 21:00` | `2023-12-10 09:00` | 36.0h | `$44683.4300` | `$43516.0373` | **-2.61%** | **-2.65%** | +0.2% | -2.5% | `stall_bailout` |
-| 3 | Book 2 | `2023-12-20 14:00` | `2023-12-23 14:00` | 72.0h | `$44004.6372` | `$43708.5548` | **-0.67%** | **-0.68%** | +1.1% | -1.7% | `stagnation_cut` |
-| 4 | Book 2 | `2024-05-15 15:00` | `2024-05-22 15:00` | 168.0h | `$64847.2137` | `$70309.4858` | **+8.42%** | **+8.09%** | +11.2% | -0.8% | `time_cap` |
-| 5 | Book 2 | `2024-10-29 14:00` | `2024-11-01 14:00` | 72.0h | `$72026.3167` | `$71095.2165` | **-1.29%** | **-1.30%** | +2.3% | -4.4% | `stagnation_cut` |
-| 6 | Book 2 | `2025-01-06 15:00` | `2025-01-07 19:00` | 28.0h | `$102359.7612` | `$96224.3679` | **-5.99%** | **-6.18%** | +0.4% | -5.9% | `initial_stop` |
-| 7 | Book 2 | `2025-04-21 01:00` | `2025-04-28 01:00` | 168.0h | `$87467.0222` | `$92665.9545` | **+5.94%** | **+5.77%** | +9.5% | -1.3% | `time_cap` |
-| 8 | Book 2 | `2025-06-16 14:00` | `2025-06-17 16:00` | 26.0h | `$107749.8028` | `$103549.8029` | **-3.90%** | **-3.98%** | +1.1% | -4.0% | `initial_stop` |
-| 9 | Book 2 | `2025-10-02 19:00` | `2025-10-09 19:00` | 168.0h | `$121089.8697` | `$120595.3560` | **-0.41%** | **-0.41%** | +4.2% | -1.6% | `time_cap` |
-| 10 | Book 2 | `2026-05-06 09:00` | `2026-05-07 21:00` | 36.0h | `$82164.1983` | `$79484.4907` | **-3.26%** | **-3.32%** | +0.8% | -3.3% | `stall_bailout` |
+| 1 | Book 3 | `2020-11-26 03:00` | `2020-11-26 08:00` | 5.0h | `$18271.9488` | `$16768.1674` | **-8.23%** | **-8.59%** | +0.8% | -10.7% | `stop_loss` |
+| 2 | Book 3 | `2021-01-04 09:00` | `2021-01-04 10:00` | 1.0h | `$31117.6936` | `$28556.7074` | **-8.23%** | **-8.59%** | +3.6% | -10.7% | `stop_loss` |
+| 3 | Book 3 | `2021-02-22 12:00` | `2021-02-22 14:00` | 2.0h | `$52789.4160` | `$48444.8471` | **-8.23%** | **-8.59%** | +3.8% | -9.5% | `stop_loss` |
+| 4 | Book 4 | `2021-07-27 22:00` | `2021-08-13 20:00` | 406.0h | `$39205.7505` | `$47046.9007` | **+23.98%** | **+21.86%** | +22.4% | -4.9% | `target_reclaim` |
+| 5 | Book 4 | `2023-01-14 03:00` | `2023-02-13 02:00` | 719.0h | `$21027.7945` | `$21717.5747` | **+4.11%** | **+4.04%** | +15.5% | -3.7% | `time_expiry` |
+| 6 | Book 3 | `2024-01-03 12:00` | `2024-01-06 12:00` | 72.0h | `$43372.6080` | `$43498.3815` | **+0.29%** | **+0.29%** | +3.4% | -7.0% | `time_expiry` |
+| 7 | Book 3 | `2024-03-05 19:00` | `2024-03-06 05:00` | 10.0h | `$61471.0943` | `$65331.4000` | **+6.28%** | **+6.09%** | +8.2% | -3.8% | `target_reclaim` |
+| 8 | Book 4 | `2026-08-20 08:00` | `2026-09-19 07:00` | 719.0h | `$71667.9409` | `$80955.3845` | **+12.27%** | **+11.53%** | +14.8% | -0.8% | `time_expiry` |
 
 ---
 
@@ -42,29 +40,30 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `3` | `0.0%` | **`-14.6%`** |
-| `time_cap` | `3` | `66.7%` | **`+13.5%`** |
-| `stagnation_cut` | `2` | `0.0%` | **`-2.0%`** |
-| `stall_bailout` | `2` | `0.0%` | **`-6.0%`** |
+| `stop_loss` | `3` | `0.0%` | **`-25.8%`** |
+| `time_expiry` | `3` | `100.0%` | **`+15.9%`** |
+| `target_reclaim` | `2` | `100.0%` | **`+27.9%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `BTC`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `258`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `114` (44.2% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `287`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `131` (45.6% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `5`
-* **Saved Capital Losses Avoided:** `+805.8%`
+* **Saved Capital Losses Avoided:** `+886.6%`
 * **Missed Upside Forgone:** `-113.3%`
-* **Net Veto Alpha:** `+692.5%`
+* **Net Veto Alpha:** `+773.2%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 4: Defensible Whale Dump` | `120` | `46.5%` |
-| `Core 1: Macro Bear Veto` | `61` | `23.6%` |
-| `Core 4: Funding Rate Cap` | `58` | `22.5%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `19` | `7.4%` |
+| `Core 4: Defensible Whale Dump` | `134` | `46.7%` |
+| `Core 1: Macro Bear Veto` | `61` | `21.3%` |
+| `Core 4: Funding Rate Cap` | `58` | `20.2%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `19` | `6.6%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `10` | `3.5%` |
+| `Core 4: Whale Firewall` | `5` | `1.7%` |
 
 ---
 

@@ -12,9 +12,9 @@
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
+| **Cumulative Net Log Return** | **`-10.6%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.90x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-10.57%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`16.0h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+2.9% / -8.8%`** | MFE > 2x MAE | High Asymmetry |
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-14 12:00` | `2026-09-15 04:00` | 16.0h | `$0.0723` | `$0.0663` | **-8.23%** | **-8.59%** | +2.9% | -8.8% | `initial_stop` |
+| 1 | Book 2 | `2026-09-14 12:00` | `2026-09-15 04:00` | 16.0h | `$0.0723` | `$0.0663` | **-10.13%** | **-10.57%** | +2.9% | -8.8% | `initial_stop` |
 
 ---
 
@@ -33,7 +33,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
+| `initial_stop` | `1` | `0.0%` | **`-10.6%`** |
 
 ---
 

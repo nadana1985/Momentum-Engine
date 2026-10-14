@@ -11,13 +11,13 @@
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`1.356`** | `> 1.50` | 🟢 Viable |
-| **Cumulative Net Log Return** | **`+3.1%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.03x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+1.53%`** | `> +1.0%` | ✅ Strong Edge |
+| **Profit Factor (Log-Space)** | **`1.614`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+5.4%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.06x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+2.71%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`135.5h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+19.3% / -5.4%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`44.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+8.3% / -5.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-19 16:00` | `2026-09-20 03:00` | 11.0h | `$0.0258` | `$0.0237` | **-8.23%** | **-8.59%** | +0.0% | -8.1% | `initial_stop` |
-| 2 | Book 1 | `2026-09-25 07:00` | `2026-10-06 03:00` | 260.0h | `$0.0259` | `$0.0293` | **+12.36%** | **+11.65%** | +38.6% | -2.7% | `trail_stop` |
+| 1 | Book 2 | `2026-09-19 16:00` | `2026-09-20 03:00` | 11.0h | `$0.0258` | `$0.0237` | **-8.44%** | **-8.81%** | +0.0% | -8.1% | `initial_stop` |
+| 2 | Book 1 | `2026-09-25 07:00` | `2026-09-28 12:00` | 77.0h | `$0.0259` | `$0.0297` | **+15.34%** | **+14.23%** | +16.6% | -2.7% | `target_reclaim` |
 
 ---
 
@@ -34,8 +34,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
-| `trail_stop` | `1` | `100.0%` | **`+11.7%`** |
+| `initial_stop` | `1` | `0.0%` | **`-8.8%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+14.2%`** |
 
 ---
 

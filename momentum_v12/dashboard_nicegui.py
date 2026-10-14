@@ -16,6 +16,28 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+# On Windows, silence benign WinError 10054 (connection forcibly closed by remote host)
+# on ProactorBasePipeTransport when a browser disconnects or refreshes.
+if sys.platform == "win32":
+    import asyncio
+    from asyncio.proactor_events import _ProactorBasePipeTransport
+
+    _orig_call_connection_lost = _ProactorBasePipeTransport._call_connection_lost
+
+    def _silenced_call_connection_lost(self, exc=None):
+        try:
+            _orig_call_connection_lost(self, exc)
+        except (ConnectionResetError, BrokenPipeError):
+            pass
+        except OSError as e:
+            if getattr(e, "winerror", None) in (10054, 10053):
+                pass
+            else:
+                raise
+
+    _ProactorBasePipeTransport._call_connection_lost = _silenced_call_connection_lost
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -41,9 +63,13 @@ ASSET_TIERS_PARQUET = ROOT / "data" / "asset_tiers.parquet"
 def get_available_arms() -> List[str]:
     base = ROOT / "data" / "all_tapes"
     if not base.exists():
-        return ["v12_production"]
+        return ["v13_production", "v12_11_production", "v12_production"]
     arms = [d.name for d in base.iterdir() if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists())]
     ordered = []
+    if "v13_production" in arms:
+        ordered.append("v13_production")
+    if "v12_11_production" in arms:
+        ordered.append("v12_11_production")
     if "v12_production" in arms:
         ordered.append("v12_production")
     if "v12_book3_flush_reclaim_arm" in arms:
@@ -61,7 +87,7 @@ def get_available_arms() -> List[str]:
     for a in arms:
         if a not in ordered:
             ordered.append(a)
-    return ordered or ["v12_production"]
+    return ordered or ["v13_production", "v12_11_production", "v12_production"]
 
 
 def get_initial_arm() -> str:
@@ -71,11 +97,15 @@ def get_initial_arm() -> str:
         if slug in get_available_arms():
             return slug
     available = get_available_arms()
+    if "v13_production" in available:
+        return "v13_production"
+    if "v12_11_production" in available:
+        return "v12_11_production"
     if "v12_production" in available:
         return "v12_production"
     if "v12_book3_flush_reclaim_arm" in available:
         return "v12_book3_flush_reclaim_arm"
-    return "v12_production"
+    return "v13_production"
 
 
 CURRENT_ARM: str = get_initial_arm()
@@ -337,49 +367,45 @@ def load_coin_research_data(symbol: str, lookback_bars: int = 720):
     return chart_df, diagnostics
 
 
-def build_coin_deep_research_chart(
-    symbol: str, chart_df: pd.DataFrame, coin_trades: pd.DataFrame,
-    open_trade: Optional[pd.Series] = None, coin_vetoes: Optional[pd.DataFrame] = None
-) -> go.Figure:
-    if chart_df.empty:
-        return go.Figure()
+def _add_price_traces(fig, chart_df: pd.DataFrame, dt_str_list: List[str], coin_trades: pd.DataFrame, open_trade: Optional[pd.Series], coin_vetoes: Optional[pd.DataFrame], row=None, col=None):
+    kw = {} if row is None else {'row': row, 'col': col}
 
-    # Convert timestamps to pure string format for guaranteed JSON serialization
-    dt_str_list = [str(t)[:19] for t in chart_df['dt']]
-
-    fig = make_subplots(
-        rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.03,
-        row_heights=[0.58, 0.24, 0.18],
-        specs=[[{}], [{'secondary_y': True}], [{}]]
-    )
-
-    # 1. Candlestick
+    # 1. Candlestick (Anti-Slop Muted Institutional Palette)
     fig.add_trace(go.Candlestick(
         x=dt_str_list,
         open=chart_df['open'].tolist(),
         high=chart_df['high'].tolist(),
         low=chart_df['low'].tolist(),
         close=chart_df['close'].tolist(),
-        name='Price', increasing_line_color='#00ff87', decreasing_line_color='#ff4655',
+        name='Price',
+        increasing_line_color='#26a69a',
+        decreasing_line_color='#ef5350',
+        increasing_fillcolor='#26a69a',
+        decreasing_fillcolor='#ef5350',
         showlegend=False
-    ), row=1, col=1)
+    ), **kw)
 
     # 72h Coiled Shelf Box
-    fig.add_trace(go.Scatter(
-        x=dt_str_list, y=chart_df['shelf_high_72h'].tolist(), line=dict(color='rgba(0, 240, 255, 0.35)', dash='dot', width=1),
-        name='72h Shelf High', showlegend=False
-    ), row=1, col=1)
-    fig.add_trace(go.Scatter(
-        x=dt_str_list, y=chart_df['shelf_low_72h'].tolist(), line=dict(color='rgba(0, 240, 255, 0.35)', dash='dot', width=1),
-        fill='tonexty', fillcolor='rgba(0, 240, 255, 0.04)',
-        name='72h Coiled Compression Shelf', showlegend=True
-    ), row=1, col=1)
+    if 'shelf_high_72h' in chart_df.columns:
+        fig.add_trace(go.Scatter(
+            x=dt_str_list, y=chart_df['shelf_high_72h'].tolist(),
+            line=dict(color='rgba(56, 189, 248, 0.4)', dash='dot', width=1),
+            name='72h Shelf High', showlegend=False
+        ), **kw)
+        fig.add_trace(go.Scatter(
+            x=dt_str_list, y=chart_df['shelf_low_72h'].tolist(),
+            line=dict(color='rgba(56, 189, 248, 0.4)', dash='dot', width=1),
+            fill='tonexty', fillcolor='rgba(56, 189, 248, 0.03)',
+            name='72h Compression Shelf', showlegend=True
+        ), **kw)
 
     # Donchian 14d Floor
-    fig.add_trace(go.Scatter(
-        x=dt_str_list, y=chart_df['donchian_floor_14d'].tolist(), line=dict(color='rgba(168, 85, 247, 0.7)', dash='dash', width=1.5),
-        name='Donchian 14d Floor', showlegend=True
-    ), row=1, col=1)
+    if 'donchian_floor_14d' in chart_df.columns:
+        fig.add_trace(go.Scatter(
+            x=dt_str_list, y=chart_df['donchian_floor_14d'].tolist(),
+            line=dict(color='rgba(168, 85, 247, 0.65)', dash='dash', width=1.4),
+            name='Donchian 14d Floor', showlegend=True
+        ), **kw)
 
     # Plot Trade Markers
     min_chart_t = chart_df['dt'].iloc[0]
@@ -408,37 +434,37 @@ def build_coin_deep_research_chart(
             if en_t >= min_chart_t:
                 fig.add_trace(go.Scatter(
                     x=[en_t_str], y=[en_px], mode='markers+text',
-                    marker=dict(symbol='triangle-up', size=13, color='#00ff87', line=dict(width=1, color='#ffffff')),
-                    text=['Entry'], textposition='bottom center', textfont=dict(size=10, color='#00ff87'),
+                    marker=dict(symbol='triangle-up', size=11, color='#26a69a', line=dict(width=1, color='#ffffff')),
+                    text=['Entry'], textposition='bottom center', textfont=dict(size=10, color='#26a69a'),
                     name=f'{book} Entry', showlegend=False,
                     hoverinfo='text',
                     hovertext=f'<b>ENTRY: {book}</b><br>Time: {en_t_str}<br>Price: ${en_px:,.4f}'
-                ), row=1, col=1)
+                ), **kw)
 
             if is_op:
                 fig.add_trace(go.Scatter(
                     x=[en_t_str, max_t_str], y=[stop_px, stop_px], mode='lines+text',
-                    line=dict(color='#00f0ff', dash='dash', width=2),
+                    line=dict(color='#00f0ff', dash='dash', width=1.5),
                     text=['', f'  Resting Stop ${stop_px:,.4f}'], textposition='middle right',
-                    textfont=dict(size=11, color='#00f0ff'),
+                    textfont=dict(size=10, color='#00f0ff'),
                     name='Native Resting Stop', showlegend=True,
                     hoverinfo='text',
                     hovertext=f'<b>NATIVE RESTING STOP</b><br>Price: ${stop_px:,.4f}<br>Audited on Orderbook'
-                ), row=1, col=1)
+                ), **kw)
             else:
                 if ex_t >= min_chart_t:
-                    ex_color = '#00ff87' if pnl >= 0 else '#ff4655'
+                    ex_color = '#26a69a' if pnl >= 0 else '#ef5350'
                     ex_sym = 'triangle-down' if pnl >= 0 else 'x'
                     fig.add_trace(go.Scatter(
                         x=[ex_t_str], y=[ex_px], mode='markers+text',
-                        marker=dict(symbol=ex_sym, size=12, color=ex_color, line=dict(width=1, color='#ffffff')),
+                        marker=dict(symbol=ex_sym, size=11, color=ex_color, line=dict(width=1, color='#ffffff')),
                         text=[f'{reason[:12]} ({pnl:+.1f}%)'], textposition='top center', textfont=dict(size=9, color=ex_color),
                         name='Exit', showlegend=False,
                         hoverinfo='text',
                         hovertext=f'<b>EXIT: {reason}</b><br>Time: {ex_t_str}<br>Exit Px: ${ex_px:,.4f}<br>PnL: {pnl:+.2f}% ({log_ret:+.2f}% Log)'
-                    ), row=1, col=1)
+                    ), **kw)
 
-    # Plot Vetoed Signals on Pane 1
+    # Plot Vetoed Signals
     if coin_vetoes is not None and not coin_vetoes.empty:
         v_sub = coin_vetoes.copy()
         v_sub['ts_dt'] = pd.to_datetime(v_sub['timestamp'])
@@ -450,63 +476,139 @@ def build_coin_deep_research_chart(
             for _, vr in v_sub.iterrows():
                 gate = str(vr.get('veto_gate', 'Veto Gate'))
                 fwd_ret = float(vr.get('ret_72h_fwd', 0.0)) * 100.0
+                is_comp = bool(vr.get('is_complete_72h', True))
+                n_fwd = int(vr.get('fwd_hours_elapsed', 72 if is_comp else 0))
                 is_dodged = bool(vr.get('is_dodged_bullet', False))
-                out_label = '🛡️ DODGED BULLET' if is_dodged else 'CHURN FILTERED'
-                v_texts.append(f"<b>VETOED BREAKOUT</b><br>Gate: {gate}<br>Outcome: {out_label}<br>72h Fwd Drift: {fwd_ret:+.1f}%")
+                is_missed = bool(vr.get('is_missed_opportunity', False))
+                if not is_comp:
+                    out_label = '⚠️ MISSED RUNNER' if is_missed else f'⏳ IN-FLIGHT ({n_fwd}h)'
+                    v_texts.append(f"<b>VETOED BREAKOUT</b><br>Gate: {gate}<br>Outcome: {out_label}<br>Fwd Drift ({n_fwd}h): {fwd_ret:+.1f}%")
+                else:
+                    out_label = '🛡️ DODGED BULLET' if is_dodged else ('⚠️ MISSED RUNNER' if is_missed else 'CHURN FILTERED')
+                    v_texts.append(f"<b>VETOED BREAKOUT</b><br>Gate: {gate}<br>Outcome: {out_label}<br>72h Fwd Drift: {fwd_ret:+.1f}%")
 
             fig.add_trace(go.Scatter(
                 x=v_x, y=v_y, mode='markers',
-                marker=dict(symbol='x', size=7, color='#ff7b72', opacity=0.8, line=dict(width=1.5, color='#ff4655')),
+                marker=dict(symbol='x', size=7, color='rgba(255, 123, 114, 0.75)', line=dict(width=1.2, color='#ef5350')),
                 name='🛡️ Vetoed Signals (Dodged)', showlegend=True,
                 hoverinfo='text', hovertext=v_texts
-            ), row=1, col=1)
+            ), **kw)
 
-    # 2. Derivatives Pane: Open Interest ($M) & Top Trader L/S
+
+def _add_derivatives_traces(fig, chart_df: pd.DataFrame, dt_str_list: List[str], row=None, col=None):
+    kw_p = {} if row is None else {'row': row, 'col': col}
+    kw_s = {'secondary_y': True} if row is None else {'row': row, 'col': col, 'secondary_y': True}
+
     if 'sum_open_interest_value' in chart_df.columns and chart_df['sum_open_interest_value'].notna().any():
         oi_m = (chart_df['sum_open_interest_value'] / 1e6).tolist()
         fig.add_trace(go.Scatter(
-            x=dt_str_list, y=oi_m, line=dict(color='#a855f7', width=2),
-            name='Open Interest ($M)', fill='tozeroy', fillcolor='rgba(168, 85, 247, 0.08)'
-        ), row=2, col=1, secondary_y=False)
+            x=dt_str_list, y=oi_m, line=dict(color='#8b5cf6', width=2),
+            name='Open Interest ($M)', fill='tozeroy', fillcolor='rgba(139, 92, 246, 0.08)'
+        ), **kw_p)
 
     if 'count_toptrader_long_short_ratio' in chart_df.columns and chart_df['count_toptrader_long_short_ratio'].notna().any():
         fig.add_trace(go.Scatter(
-            x=dt_str_list, y=chart_df['count_toptrader_long_short_ratio'].tolist(), line=dict(color='#fbbf24', width=1.8),
+            x=dt_str_list, y=chart_df['count_toptrader_long_short_ratio'].tolist(), line=dict(color='#f59e0b', width=1.8),
             name='Top Trader L/S'
-        ), row=2, col=1, secondary_y=True)
+        ), **kw_s)
 
+        line_kw = {'secondary_y': True} if row is None else {'row': row, 'col': col, 'secondary_y': True}
         fig.add_hline(
-            y=0.85, line_dash='dash', line_color='#ff4655',
+            y=0.85, line_dash='dash', line_color='rgba(239, 83, 80, 0.75)',
             annotation_text='Whale Short Trap (0.85)', annotation_position='top left',
-            row=2, col=1, secondary_y=True
+            annotation_font=dict(size=10, color='#ef5350'),
+            **line_kw
         )
 
-    # 3. Volume Pane
-    bar_cols = ['#00ff87' if c >= o else '#ff4655' for c, o in zip(chart_df['close'], chart_df['open'])]
+
+def _add_volume_traces(fig, chart_df: pd.DataFrame, dt_str_list: List[str], row=None, col=None):
+    kw = {} if row is None else {'row': row, 'col': col}
+    bar_cols = ['#26a69a' if c >= o else '#ef5350' for c, o in zip(chart_df['close'], chart_df['open'])]
     fig.add_trace(go.Bar(
         x=dt_str_list, y=chart_df['volume'].tolist(), marker_color=bar_cols, name='1h Volume'
-    ), row=3, col=1)
+    ), **kw)
 
     if 'vol_ma_168h' in chart_df.columns:
         fig.add_trace(go.Scatter(
-            x=dt_str_list, y=chart_df['vol_ma_168h'].tolist(), line=dict(color='rgba(255, 255, 255, 0.4)', dash='dot', width=1),
+            x=dt_str_list, y=chart_df['vol_ma_168h'].tolist(), line=dict(color='rgba(255, 255, 255, 0.35)', dash='dot', width=1.2),
             name='168h Vol Baseline', showlegend=False
-        ), row=3, col=1)
+        ), **kw)
 
-    fig.update_layout(
-        template='plotly_dark', paper_bgcolor='#0d1117', plot_bgcolor='#07090e',
-        font=dict(family='JetBrains Mono, monospace', color='#e6edf3'),
-        height=720, margin=dict(l=25, r=25, t=30, b=25),
-        xaxis3=dict(rangeslider=dict(visible=False), gridcolor='rgba(255, 255, 255, 0.05)', title='Timeline (UTC)'),
-        xaxis=dict(gridcolor='rgba(255, 255, 255, 0.05)'),
-        xaxis2=dict(gridcolor='rgba(255, 255, 255, 0.05)'),
-        yaxis=dict(gridcolor='rgba(255, 255, 255, 0.05)', title='Price ($)'),
-        yaxis2=dict(gridcolor='rgba(255, 255, 255, 0.05)', title='OI ($M)'),
-        yaxis3=dict(title='Top Trader L/S', showgrid=False),
-        yaxis4=dict(gridcolor='rgba(255, 255, 255, 0.05)', title='Volume'),
-        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
-    )
-    return fig
+
+def build_coin_deep_research_chart(
+    symbol: str, chart_df: pd.DataFrame, coin_trades: pd.DataFrame,
+    open_trade: Optional[pd.Series] = None, coin_vetoes: Optional[pd.DataFrame] = None,
+    active_tab: str = 'price'
+) -> go.Figure:
+    if chart_df.empty:
+        return go.Figure()
+
+    dt_str_list = [str(t)[:19] for t in chart_df['dt']]
+
+    if active_tab == 'price':
+        fig = go.Figure()
+        _add_price_traces(fig, chart_df, dt_str_list, coin_trades, open_trade, coin_vetoes)
+        fig.update_layout(
+            template='plotly_dark', paper_bgcolor='#0e1117', plot_bgcolor='#0e1117',
+            font=dict(family='JetBrains Mono, monospace', color='#e6edf3', size=11),
+            height=620, margin=dict(l=20, r=65, t=25, b=25),
+            xaxis=dict(rangeslider=dict(visible=False), gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)', title='Timeline (UTC)'),
+            yaxis=dict(side='right', gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)', title='Price ($)'),
+            legend=dict(orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0.01, bgcolor='rgba(14, 17, 23, 0.85)', bordercolor='rgba(255, 255, 255, 0.1)', borderwidth=1, font=dict(size=10))
+        )
+        return fig
+
+    elif active_tab == 'derivatives':
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        _add_derivatives_traces(fig, chart_df, dt_str_list)
+        fig.update_layout(
+            template='plotly_dark', paper_bgcolor='#0e1117', plot_bgcolor='#0e1117',
+            font=dict(family='JetBrains Mono, monospace', color='#e6edf3', size=11),
+            height=600, margin=dict(l=60, r=65, t=25, b=25),
+            xaxis=dict(rangeslider=dict(visible=False), gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)', title='Timeline (UTC)'),
+            yaxis=dict(title=dict(text='Open Interest ($M)', font=dict(color='#8b5cf6')), gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)', tickfont=dict(color='#8b5cf6')),
+            yaxis2=dict(title=dict(text='Top Trader L/S', font=dict(color='#f59e0b')), side='right', showgrid=False, showline=True, linecolor='rgba(255, 255, 255, 0.1)', tickfont=dict(color='#f59e0b')),
+            legend=dict(orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0.01, bgcolor='rgba(14, 17, 23, 0.85)', bordercolor='rgba(255, 255, 255, 0.1)', borderwidth=1, font=dict(size=10))
+        )
+        return fig
+
+    elif active_tab == 'volume':
+        fig = go.Figure()
+        _add_volume_traces(fig, chart_df, dt_str_list)
+        fig.update_layout(
+            template='plotly_dark', paper_bgcolor='#0e1117', plot_bgcolor='#0e1117',
+            font=dict(family='JetBrains Mono, monospace', color='#e6edf3', size=11),
+            height=600, margin=dict(l=20, r=65, t=25, b=25),
+            xaxis=dict(rangeslider=dict(visible=False), gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)', title='Timeline (UTC)'),
+            yaxis=dict(side='right', title='1h Volume', gridcolor='rgba(255, 255, 255, 0.04)', showline=True, linecolor='rgba(255, 255, 255, 0.1)'),
+            legend=dict(orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0.01, bgcolor='rgba(14, 17, 23, 0.85)', bordercolor='rgba(255, 255, 255, 0.1)', borderwidth=1, font=dict(size=10))
+        )
+        return fig
+
+    else:  # 'overview' (3-Pane Overview)
+        fig = make_subplots(
+            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.03,
+            row_heights=[0.58, 0.24, 0.18],
+            specs=[[{}], [{'secondary_y': True}], [{}]]
+        )
+        _add_price_traces(fig, chart_df, dt_str_list, coin_trades, open_trade, coin_vetoes, row=1, col=1)
+        _add_derivatives_traces(fig, chart_df, dt_str_list, row=2, col=1)
+        _add_volume_traces(fig, chart_df, dt_str_list, row=3, col=1)
+
+        fig.update_layout(
+            template='plotly_dark', paper_bgcolor='#0e1117', plot_bgcolor='#0e1117',
+            font=dict(family='JetBrains Mono, monospace', color='#e6edf3', size=11),
+            height=720, margin=dict(l=25, r=65, t=25, b=25),
+            xaxis3=dict(rangeslider=dict(visible=False), gridcolor='rgba(255, 255, 255, 0.04)', title='Timeline (UTC)'),
+            xaxis=dict(gridcolor='rgba(255, 255, 255, 0.04)'),
+            xaxis2=dict(gridcolor='rgba(255, 255, 255, 0.04)'),
+            yaxis=dict(gridcolor='rgba(255, 255, 255, 0.04)', title='Price ($)', side='right'),
+            yaxis2=dict(gridcolor='rgba(255, 255, 255, 0.04)', title='OI ($M)'),
+            yaxis3=dict(title='Top Trader L/S', showgrid=False, side='right'),
+            yaxis4=dict(gridcolor='rgba(255, 255, 255, 0.04)', title='Volume', side='right'),
+            legend=dict(orientation='h', yanchor='bottom', y=1.01, xanchor='left', x=0.01, bgcolor='rgba(14, 17, 23, 0.85)', bordercolor='rgba(255, 255, 255, 0.1)', borderwidth=1, font=dict(size=10))
+        )
+        return fig
 
 
 def get_macro_weather() -> Dict:
@@ -1037,30 +1139,61 @@ def coin_research_page(symbol: str):
                 ui.label(f"+{saved_loss:.0f}% Saved ({dodged_cnt} Dodged)").classes('text-xs text-gray-400 mono')
 
         with ui.card().classes('card-glass p-4 border border-[#21262d] w-full'):
-            with ui.row().classes('w-full justify-between items-center mb-2'):
-                with ui.row().classes('items-center gap-2'):
-                    ui.label(f'{clean_sym} 3-PANE QUANTITATIVE RESEARCH CHART').classes('text-xs font-bold tracking-wider text-[#00f0ff] mono')
-                    ui.html('<span class="badge-tag badge-purple">Pane 1: Price Action</span> <span class="badge-tag badge-amber">Pane 2: Derivatives Whale Tracker</span> <span class="badge-tag badge-cyan">Pane 3: Tape Aggression</span>')
+            chart_state = {'tab': 'price', 'lookback': 30}
 
-                lookback_box = ui.row().classes('items-center gap-1')
+            with ui.row().classes('w-full justify-between items-center mb-3 flex-wrap gap-2'):
+                tab_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
+                lookback_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
 
             chart_holder = ui.column().classes('w-full')
 
-            def update_chart_view(lookback_days: int):
+            def render_chart_and_controls():
+                tab_bar.clear()
+                lookback_bar.clear()
                 chart_holder.clear()
-                bars = lookback_days * 24 if lookback_days > 0 else 0
+
+                tabs = [
+                    ('price', 'Price Action'),
+                    ('derivatives', 'Derivatives & OI'),
+                    ('volume', 'Volume & Tape'),
+                    ('overview', '3-Pane Overview')
+                ]
+                with tab_bar:
+                    for t_key, t_label in tabs:
+                        is_active = (chart_state['tab'] == t_key)
+                        btn_cls = 'bg-[#21262d] text-white border-b-2 border-cyan-400 font-bold' if is_active else 'text-gray-400 hover:text-white'
+                        def make_tab_cb(k):
+                            return lambda: (chart_state.update({'tab': k}), render_chart_and_controls())
+                        ui.button(t_label, on_click=make_tab_cb(t_key)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-3 py-1 rounded-sm text-xs mono transition-all')
+
+                lookbacks = [
+                    (14, '14D'),
+                    (30, '30D'),
+                    (60, '60D'),
+                    (0, 'ALL')
+                ]
+                with lookback_bar:
+                    for lb_val, lb_label in lookbacks:
+                        is_active = (chart_state['lookback'] == lb_val)
+                        btn_cls = 'bg-[#21262d] text-white font-bold' if is_active else 'text-gray-400 hover:text-white'
+                        def make_lb_cb(v):
+                            return lambda: (chart_state.update({'lookback': v}), render_chart_and_controls())
+                        ui.button(lb_label, on_click=make_lb_cb(lb_val)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-2.5 py-1 rounded-sm text-xs mono transition-all')
+
+                bars = chart_state['lookback'] * 24 if chart_state['lookback'] > 0 else 0
                 sub_df, _ = load_coin_research_data(clean_sym, lookback_bars=bars)
                 with chart_holder:
-                    fig = build_coin_deep_research_chart(clean_sym, sub_df if sub_df is not None else chart_df, coin_trades, open_trade, coin_vetoes=coin_vetoes)
+                    fig = build_coin_deep_research_chart(
+                        clean_sym,
+                        sub_df if sub_df is not None else chart_df,
+                        coin_trades,
+                        open_trade,
+                        coin_vetoes=coin_vetoes,
+                        active_tab=chart_state['tab']
+                    )
                     ui.plotly(fig).classes('w-full')
 
-            with lookback_box:
-                ui.button('14D', on_click=lambda: update_chart_view(14)).props('dense outline size=sm').classes('mono text-xs')
-                ui.button('30D', on_click=lambda: update_chart_view(30)).props('dense outline size=sm').classes('mono text-xs')
-                ui.button('60D', on_click=lambda: update_chart_view(60)).props('dense outline size=sm').classes('mono text-xs')
-                ui.button('ALL', on_click=lambda: update_chart_view(0)).props('dense outline size=sm').classes('mono text-xs')
-
-            update_chart_view(30)
+            render_chart_and_controls()
 
         with ui.row().classes('w-full grid grid-cols-1 lg:grid-cols-2 gap-6'):
             # Card 1: Historical Performance Matrix
@@ -1266,21 +1399,30 @@ def coin_research_page(symbol: str):
                                 fwd72_val = float(vr.get('ret_72h_fwd', 0.0)) * 100.0
                                 mfe72_val = float(vr.get('mfe_72h_fwd', 0.0)) * 100.0
                                 mae72_val = float(vr.get('mae_72h_fwd', 0.0)) * 100.0
+                                is_comp = bool(vr.get('is_complete_72h', True))
+                                n_fwd = int(vr.get('fwd_hours_elapsed', 72 if is_comp else 0))
                                 is_dodged = bool(vr.get('is_dodged_bullet', False))
                                 is_missed = bool(vr.get('is_missed_opportunity', False))
 
-                                if is_dodged:
-                                    out_type = 'DODGED'
-                                    out_label = '🛡️ DODGED BULLET'
-                                elif is_missed:
-                                    out_type = 'MISSED'
-                                    out_label = '⚠️ MISSED RUNNER'
+                                if not is_comp:
+                                    out_type = 'IN_FLIGHT'
+                                    out_label = '⚠️ MISSED RUNNER' if is_missed else f'⏳ IN-FLIGHT ({n_fwd}h)'
+                                    fwd72_str = f"{fwd72_val:+.1f}% ({n_fwd}h)"
+                                    mfe_str = f"+{mfe72_val:.1f}% ({n_fwd}h)"
+                                    mae_str = f"{mae72_val:.1f}% ({n_fwd}h)"
                                 else:
-                                    out_type = 'FILTERED'
-                                    out_label = 'CHURN FILTERED'
-
-                                mfe_str = f"+{mfe72_val:.1f}%" if mfe72_val >= 0 else f"{mfe72_val:.1f}%"
-                                mae_str = f"{mae72_val:.1f}%" if mae72_val <= 0 else f"+{mae72_val:.1f}%"
+                                    if is_dodged:
+                                        out_type = 'DODGED'
+                                        out_label = '🛡️ DODGED BULLET'
+                                    elif is_missed:
+                                        out_type = 'MISSED'
+                                        out_label = '⚠️ MISSED RUNNER'
+                                    else:
+                                        out_type = 'FILTERED'
+                                        out_label = 'CHURN FILTERED'
+                                    fwd72_str = f"{fwd72_val:+.1f}%"
+                                    mfe_str = f"+{mfe72_val:.1f}%" if mfe72_val >= 0 else f"{mfe72_val:.1f}%"
+                                    mae_str = f"{mae72_val:.1f}%" if mae72_val <= 0 else f"+{mae72_val:.1f}%"
 
                                 v_rows.append({
                                     'id': f"{clean_sym}_v_{v_idx}_{ts_str}",
@@ -1290,7 +1432,7 @@ def coin_research_page(symbol: str):
                                     'price': px_val,
                                     'price_str': f"${px_val:,.4f}",
                                     'ret_72h': fwd72_val,
-                                    'ret_72h_str': f"{fwd72_val:+.1f}%",
+                                    'ret_72h_str': fwd72_str,
                                     'mfe_72h': mfe72_val,
                                     'mfe_72h_str': mfe_str,
                                     'mae_72h': mae72_val,
@@ -1343,6 +1485,9 @@ def coin_research_page(symbol: str):
                                         {{ props.row.out_label }}
                                     </span>
                                     <span v-else-if="props.row.out_type === 'MISSED'" class="badge-tag badge-amber">
+                                        {{ props.row.out_label }}
+                                    </span>
+                                    <span v-else-if="props.row.out_type === 'IN_FLIGHT'" class="badge-tag badge-cyan font-bold">
                                         {{ props.row.out_label }}
                                     </span>
                                     <span v-else class="badge-tag badge-gray">
@@ -1447,11 +1592,17 @@ def index_page():
         profit_factor = (gw / gl) if gl > 0 else 999.0
         tot_log = closed_df['log_ret'].sum() * 100.0
         cap_multiple = np.exp(tot_log / 100.0)
+        log_w = wins['log_ret'].clip(lower=0.0).sum()
+        log_l = abs(losses['log_ret'].clip(upper=0.0).sum())
+        log_profit_factor = (log_w / log_l) if log_l > 0 else 999.0
+        cap_multiple_str = f"{cap_multiple:.2e}x" if cap_multiple >= 1e12 else f"{cap_multiple:,.2f}x"
     else:
         win_rate = 0.0
         profit_factor = 0.0
+        log_profit_factor = 0.0
         tot_log = 0.0
         cap_multiple = 1.0
+        cap_multiple_str = "1.00x"
 
     # -----------------------------------------------------------------------
     # TOP HEADER & MACRO WEATHER STRIP
@@ -1468,12 +1619,21 @@ def index_page():
                     CURRENT_ARM = e.value
                     ui.navigate.to('/')
                 arm_labels = {
+                    'v13_production': '🛡️ Canonical V13.2 Production (Books 1-6)',
+                    'v12_11_production': '🛡️ Canonical V12.11 Production',
                     'v12_decoupling_arm': '⚡ V12.2 Decoupling + ATH Clamp',
                     'v12_production': '🛡️ Canonical V12 Production'
                 }
                 options = {a: arm_labels.get(a, a) for a in arms}
                 ui.select(options=options, value=CURRENT_ARM, on_change=set_arm).props('dense dark borderless options-dense').classes('text-xs mono w-64 text-cyan-300 font-bold')
-            arm_badge = '<span class="badge-tag badge-green">V12.2 Decoupling Active</span>' if CURRENT_ARM == "v12_decoupling_arm" else '<span class="badge-tag badge-cyan">V12 Production Active</span>'
+            if CURRENT_ARM == "v13_production":
+                arm_badge = '<span class="badge-tag badge-cyan">V13.2 Production Active (Books 1-6)</span>'
+            elif CURRENT_ARM == "v12_11_production":
+                arm_badge = '<span class="badge-tag badge-cyan">V12.11 Production Active</span>'
+            elif CURRENT_ARM == "v12_decoupling_arm":
+                arm_badge = '<span class="badge-tag badge-green">V12.2 Decoupling Active</span>'
+            else:
+                arm_badge = '<span class="badge-tag badge-cyan">V12 Production Active</span>'
             ui.html(arm_badge)
             ui.html('<span class="badge-tag badge-purple">Port 8056</span>')
 
@@ -1541,14 +1701,14 @@ def index_page():
             # Card 1: Capital Multiple
             with ui.card().classes('card-glass p-4 border-l-4 border-l-[#00f0ff]'):
                 ui.label('CAPITAL GROWTH').classes('text-xs text-gray-400 font-bold tracking-wider mono')
-                ui.label(f"{cap_multiple:.2f}x").classes('text-2xl font-black text-[#00f0ff] mono mt-1')
+                ui.label(cap_multiple_str).classes('text-2xl font-black text-[#00f0ff] mono mt-1')
                 ui.label(f"{tot_log:+.1f}% Total Log PnL").classes('text-xs text-gray-400 mono')
 
             # Card 2: Profit Factor
             with ui.card().classes('card-glass p-4 border-l-4 border-l-[#00ff87]'):
                 ui.label('PROFIT FACTOR').classes('text-xs text-gray-400 font-bold tracking-wider mono')
-                ui.label(f"{profit_factor:.3f}").classes('text-2xl font-black text-[#00ff87] mono mt-1')
-                ui.label(f"Win Rate: {win_rate:.1f}%").classes('text-xs text-gray-400 mono')
+                ui.label(f"{log_profit_factor:.3f}").classes('text-2xl font-black text-[#00ff87] mono mt-1')
+                ui.label(f"Win Rate: {win_rate:.1f}% | PnL PF: {profit_factor:.2f}").classes('text-xs text-gray-400 mono')
 
             # Card 3: Closed Trades
             with ui.card().classes('card-glass p-4 border-l-4 border-l-[#a855f7]'):
@@ -1634,10 +1794,16 @@ def index_page():
                         dist_to_stop = ((cur_px - stop_px) / cur_px) * 100.0 if cur_px > 0 else 0.0
                         is_reclaim = bool(r.get('is_reclaim', False))
                         b_val = str(r.get('book', ''))
-                        if b_val == 'Book 3':
+                        if b_val == 'Book 4':
+                            setup_name = "Book 4: 200d Reclaim"
+                        elif b_val == 'Book 3':
                             setup_name = "Book 3: Flush Reclaim"
                         elif b_val == 'Book 2':
                             setup_name = "Book 2: Coiled Squeeze"
+                        elif 'Book 5' in b_val:
+                            setup_name = "Book 5: Shelf Squeeze"
+                        elif 'Book 6' in b_val:
+                            setup_name = "Book 6: 3-SARE Base Reclaim"
                         elif is_reclaim:
                             setup_name = "Bear-Trap Reclaim"
                         else:
@@ -1782,7 +1948,7 @@ def index_page():
                                 'mfe': mfe_val,
                                 'entry_price_str': f"${en_px:,.4f}",
                                 'exit_price_str': f"${ex_px:,.4f}",
-                                'duration_str': f"{int(dur_val)}h",
+                                'duration_str': f"{int(dur_val)}h" if pd.notna(dur_val) else "N/A",
                                 'pnl_str': f"{pnl_val:+.2f}%",
                                 'log_ret_str': f"{log_val:+.2f}%",
                                 'mfe_str': f"+{mfe_val:.1f}%",
@@ -1832,7 +1998,7 @@ def index_page():
                     with filter_box:
                         sym_input = ui.input(placeholder='Search Symbol (e.g. SOL)...').classes('w-44 filter-input px-3 py-1 mono text-xs')
                         tier_select = ui.select(['All Tiers', 'Tier 1', 'Tier 2', 'Tier 3'], value='All Tiers').classes('w-32 mono text-xs')
-                        book_select = ui.select(['All Books', 'Book 1', 'Book 2', 'Book 3'], value='All Books').classes('w-32 mono text-xs')
+                        book_select = ui.select(['All Books', 'Book 1', 'Book 2', 'Book 3', 'Book 4', 'Book 5 (Shelf Absorption Squeeze)', 'Book 6 (Orderflow Base Reclaim)'], value='All Books').classes('w-48 mono text-xs')
                         outcome_select = ui.select(['All Outcomes', 'Winners Only', 'Losses Only'], value='All Outcomes').classes('w-36 mono text-xs')
                         # MEDIUM-8: Trade type filter for Reclaim / Continuation / Squeeze isolation
                         type_options = ['All Types']
@@ -1917,11 +2083,12 @@ def index_page():
                 # Historical Multi-Book Performance Attribution
                 ui.label('📊 HISTORICAL MULTI-BOOK ATTRIBUTION').classes('text-sm font-bold tracking-wider text-[#00f0ff] mono mt-4')
                 if not closed_df.empty:
-                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-3 gap-4'):
+                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-4 gap-4'):
                         for b_name, b_badge, b_col in [
                             ('Book 1', 'Continuation Trend', '#00f0ff'),
                             ('Book 2', 'Coiled Squeeze', '#00ff87'),
-                            ('Book 3', 'Flush Reclaim', '#a855f7')
+                            ('Book 3', 'Flush Reclaim', '#a855f7'),
+                            ('Book 4', '200d EMA Reclaim', '#ffb703')
                         ]:
                             b_df = closed_df[closed_df['book'] == b_name] if 'book' in closed_df.columns else pd.DataFrame()
                             n_b = len(b_df)
@@ -2037,14 +2204,10 @@ def index_page():
                         sub_data = filtered_tel.head(1000)
                         rows_data = []
                         for idx, r in sub_data.reset_index(drop=True).iterrows():
+                            is_comp = bool(r.get('is_complete_72h', True))
+                            n_fwd = int(r.get('fwd_hours_elapsed', 72 if is_comp else 0))
                             is_dodged = bool(r.get('is_dodged_bullet', False))
                             is_missed = bool(r.get('is_missed_opportunity', False))
-                            if is_dodged:
-                                outcome_tag = '🛡️ DODGED BULLET'
-                            elif is_missed:
-                                outcome_tag = '⚠️ MISSED MFE'
-                            else:
-                                outcome_tag = 'FLAT DRIFT'
 
                             px_f  = float(r.get('price', 0.0))
                             r24_f = float(r.get('ret_24h_fwd', 0.0)) * 100.0
@@ -2053,6 +2216,24 @@ def index_page():
                             mae_f = float(r.get('mae_72h_fwd', 0.0)) * 100.0
                             ts_str = str(r.get('timestamp', ''))[:16]
                             sym_str = str(r.get('asset', ''))
+
+                            if not is_comp:
+                                outcome_tag = '⚠️ MISSED MFE' if is_missed else f'⏳ IN-FLIGHT ({n_fwd}h)'
+                                r72_str = f"{r72_f:+.2f}% ({n_fwd}h live)"
+                                mfe_str = f"+{mfe_f:.1f}% ({n_fwd}h live)"
+                                mae_str = f"{mae_f:.1f}% ({n_fwd}h live)"
+                                r24_str = f"{r24_f:+.2f}% ({n_fwd}h live)" if n_fwd < 24 else f"{r24_f:+.2f}%"
+                            else:
+                                if is_dodged:
+                                    outcome_tag = '🛡️ DODGED BULLET'
+                                elif is_missed:
+                                    outcome_tag = '⚠️ MISSED MFE'
+                                else:
+                                    outcome_tag = 'FLAT DRIFT'
+                                r24_str = f"{r24_f:+.2f}%"
+                                r72_str = f"{r72_f:+.2f}%"
+                                mfe_str = f"+{mfe_f:.1f}%"
+                                mae_str = f"{mae_f:.1f}%"
 
                             rows_data.append({
                                 'id': f"{sym_str}_{ts_str}_{idx}",
@@ -2068,10 +2249,10 @@ def index_page():
                                 'mae_72h_fwd': mae_f,
                                 'outcome': outcome_tag,
                                 'price_str': f"${px_f:,.4f}",
-                                'ret_24h_fwd_str': f"{r24_f:+.2f}%",
-                                'ret_72h_fwd_str': f"{r72_f:+.2f}%",
-                                'mfe_72h_fwd_str': f"+{mfe_f:.1f}%",
-                                'mae_72h_fwd_str': f"{mae_f:.1f}%",
+                                'ret_24h_fwd_str': r24_str,
+                                'ret_72h_fwd_str': r72_str,
+                                'mfe_72h_fwd_str': mfe_str,
+                                'mae_72h_fwd_str': mae_str,
                             })
 
                         cols = [
@@ -2103,6 +2284,14 @@ def index_page():
                             ''')
                             tt.add_slot('body-cell-mfe_72h_fwd', '<q-td :props="props" class="text-right text-[#00f0ff] font-bold">{{ props.row.mfe_72h_fwd_str }}</q-td>')
                             tt.add_slot('body-cell-mae_72h_fwd', '<q-td :props="props" class="text-right text-[#ff4655]">{{ props.row.mae_72h_fwd_str }}</q-td>')
+                            tt.add_slot('body-cell-outcome', '''
+                                <q-td :props="props" class="text-center">
+                                    <span v-if="props.row.outcome.includes('DODGED')" class="badge-tag badge-green">{{ props.row.outcome }}</span>
+                                    <span v-else-if="props.row.outcome.includes('MISSED')" class="badge-tag badge-amber">{{ props.row.outcome }}</span>
+                                    <span v-else-if="props.row.outcome.includes('IN-FLIGHT')" class="badge-tag badge-cyan font-bold">{{ props.row.outcome }}</span>
+                                    <span v-else class="badge-tag badge-gray">{{ props.row.outcome }}</span>
+                                </q-td>
+                            ''')
 
                     # Interactive Filter Controls
                     with tel_filter_box:
@@ -2112,8 +2301,8 @@ def index_page():
                             'Core 4: Whale Firewall', 'Core 4: Funding Rate Cap'
                         ], value='All Gates').classes('w-48 mono text-xs')
                         v_outcome_select = ui.select([
-                            'All Outcomes', 'Dodged Bullets (Loss Saved)', 'Missed Opportunities (>= +20% MFE)'
-                        ], value='All Outcomes').classes('w-56 mono text-xs')
+                            'All Outcomes', 'Dodged Bullets (Loss Saved)', 'Missed Opportunities (>= +20% MFE)', 'In-Flight Telemetry (<72h Horizon)'
+                        ], value='All Outcomes').classes('w-64 mono text-xs')
 
                         def apply_veto_filters():
                             df_v = vetoed_records.copy()
@@ -2123,9 +2312,15 @@ def index_page():
                             if v_gate_select.value != 'All Gates':
                                 df_v = df_v[df_v['veto_gate'] == v_gate_select.value]
                             if v_outcome_select.value == 'Dodged Bullets (Loss Saved)':
-                                df_v = df_v[df_v['is_dodged_bullet']]
+                                is_c = df_v['is_complete_72h'] if 'is_complete_72h' in df_v.columns else True
+                                df_v = df_v[df_v['is_dodged_bullet'] & is_c]
                             elif v_outcome_select.value == 'Missed Opportunities (>= +20% MFE)':
                                 df_v = df_v[df_v['is_missed_opportunity']]
+                            elif v_outcome_select.value == 'In-Flight Telemetry (<72h Horizon)':
+                                if 'is_complete_72h' in df_v.columns:
+                                    df_v = df_v[~df_v['is_complete_72h']]
+                                else:
+                                    df_v = df_v.iloc[0:0]
                             render_veto_table(df_v)
 
                         v_sym_input.on('update:model-value', lambda _: apply_veto_filters())

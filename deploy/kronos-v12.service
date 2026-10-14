@@ -13,10 +13,10 @@ StandardError=journal
 # 3 = previous run still holding flock; not a failure
 SuccessExitStatus=3
 
-# Fix #5 — OOM Killer protection: Reserve 1.5 GB headroom for pipeline
-# MemoryMax prevents runaway backtests from killing dashboard or other processes
-MemoryMax=6G
-MemorySwapMax=0
+# Fix #5 — OOM Killer protection: Tuned for t4g.medium (4 GB RAM + 4 GB swap)
+# Allocates up to 3.4 GB physical RAM before paging to swap, leaving 600 MB for OS & Dashboard
+MemoryMax=3.4G
+MemorySwapMax=2.5G
 
 # Fix #4 — Limit logs this service can produce per run
 LogRateLimitIntervalSec=60

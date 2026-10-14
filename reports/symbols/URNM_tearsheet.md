@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `URNM`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `2` (`1` Closed, `1` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -12,12 +12,12 @@
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-0.7%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.99x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.73%`** | `> +1.0%` | Normal |
+| **Cumulative Net Log Return** | **`-5.8%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.94x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-5.76%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`48.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+4.1% / -2.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Mean Peak MFE / Max MAE** | **`+3.0% / -5.6%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-08-25 16:00` | `2026-08-27 16:00` | 48.0h | `$61.5234` | `$61.0769` | **-0.73%** | **-0.73%** | +4.1% | -2.0% | `fast_decay_cut` |
-| 2 | Book 2 | `2026-10-06 13:00` | `_Open Live_` | 15.9h | `$49.7741` | `$50.4500` | **+1.36%** | **+1.35%** | +3.0% | -2.3% | `open_at_end` |
+| 1 | Book 2 | `2026-10-06 13:00` | `2026-10-08 13:00` | 48.0h | `$49.7741` | `$47.1219` | **-5.61%** | **-5.76%** | +3.0% | -5.6% | `fast_decay_cut` |
 
 ---
 
@@ -34,25 +33,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `1` | `0.0%` | **`-0.7%`** |
+| `fast_decay_cut` | `1` | `0.0%` | **`-5.8%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `URNM`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `16`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `8` (50.0% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `119`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `91` (76.5% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+39.7%`
+* **Saved Capital Losses Avoided:** `+290.5%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+39.7%`
+* **Net Veto Alpha:** `+290.5%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `8` | `50.0%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `7` | `43.8%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `1` | `6.2%` |
+| `Core 1: Macro Bear Veto` | `98` | `82.4%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `11` | `9.2%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `8` | `6.7%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `2` | `1.7%` |
 
 ---
 

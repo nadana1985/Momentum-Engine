@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `JST`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`1` Closed, `1` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+1.8%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.02x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+1.80%`** | `> +1.0%` | ✅ Strong Edge |
-| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`168.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+11.7% / -3.3%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
+| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
+| **Cumulative Net Log Return** | **`-4.6%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.95x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-2.32%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-2.2%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`120.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+3.3% / -2.3%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-01 08:00` | `2026-09-08 08:00` | 168.0h | `$0.1020` | `$0.1039` | **+1.82%** | **+1.80%** | +11.7% | -3.3% | `time_cap` |
-| 2 | Book 1 | `2026-10-03 02:00` | `_Open Live_` | 98.9h | `$0.1353` | `$0.1408` | **+2.93%** | **+2.88%** | +4.5% | -1.4% | `open_at_end` |
+| 1 | Book 4 | `2025-07-16 20:00` | `2025-07-23 20:00` | 168.0h | `$0.0376` | `$0.0368` | **-2.45%** | **-2.48%** | +4.5% | -2.3% | `stagnation_cut` |
+| 2 | Book 1 | `2026-09-15 02:00` | `2026-09-18 02:00` | 72.0h | `$0.1154` | `$0.1139` | **-2.13%** | **-2.15%** | +2.0% | -2.2% | `stagnation_bailout` |
 
 ---
 
@@ -34,24 +34,28 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `time_cap` | `1` | `100.0%` | **`+1.8%`** |
+| `stagnation_bailout` | `1` | `0.0%` | **`-2.2%`** |
+| `stagnation_cut` | `1` | `0.0%` | **`-2.5%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `JST`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `158`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `72` (45.6% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `359`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `196` (54.6% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+525.2%`
+* **Saved Capital Losses Avoided:** `+1,078.0%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+525.2%`
+* **Net Veto Alpha:** `+1,078.0%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `143` | `90.5%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `15` | `9.5%` |
+| `Core 1: Macro Bear Veto` | `194` | `54.0%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `162` | `45.1%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `1` | `0.3%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `1` | `0.3%` |
+| `Core 4: Whale Firewall` | `1` | `0.3%` |
 
 ---
 

@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-2.1%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.98x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-1.07%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-0.5%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`50.5h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+0.9% / -2.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`0.646`** | `> 1.50` | 🛑 Negative Drag |
+| **Cumulative Net Log Return** | **`-0.6%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.99x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-0.31%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`54.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+1.8% / -2.0%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-07 08:00` | `2026-09-08 20:00` | 36.0h | `$262.5748` | `$258.3026` | **-1.63%** | **-1.64%** | +0.6% | -2.2% | `stall_bailout` |
-| 2 | Book 2 | `2026-10-02 13:00` | `2026-10-05 06:00` | 65.0h | `$293.8929` | `$292.4570` | **-0.49%** | **-0.49%** | +1.3% | -1.8% | `fast_decay_cut` |
+| 1 | Book 2 | `2026-09-07 08:00` | `2026-09-08 20:00` | 36.0h | `$262.5748` | `$258.3026` | **-1.71%** | **-1.73%** | +0.6% | -2.2% | `stall_bailout` |
+| 2 | Book 3 | `2026-09-14 08:00` | `2026-09-17 08:00` | 72.0h | `$260.0736` | `$262.9909` | **+1.12%** | **+1.12%** | +3.1% | -1.8% | `time_expiry` |
 
 ---
 
@@ -34,25 +34,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `1` | `0.0%` | **`-0.5%`** |
-| `stall_bailout` | `1` | `0.0%` | **`-1.6%`** |
+| `stall_bailout` | `1` | `0.0%` | **`-1.7%`** |
+| `time_expiry` | `1` | `100.0%` | **`+1.1%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `TXN`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `11`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `7` (63.6% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `9`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `6` (66.7% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+30.9%`
+* **Saved Capital Losses Avoided:** `+30.4%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+30.9%`
+* **Net Veto Alpha:** `+30.4%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `8` | `72.7%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `3` | `27.3%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `6` | `66.7%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `3` | `33.3%` |
 
 ---
 

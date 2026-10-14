@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `AGLD`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `15` (`15` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `18` (`18` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `15` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`33.3%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.490`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-40.4%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.67x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-2.69%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-53.9%`** | `< -30%` | ⚠️ High Drawdown |
-| **Average Trade Duration** | **`18.5h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+10.2% / -7.9%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `18` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`55.6%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.273`** | `> 1.50` | 🟢 Viable |
+| **Cumulative Net Log Return** | **`+15.5%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.17x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+0.86%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-16.6%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`48.4h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+9.2% / -8.0%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,21 +25,24 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2023-10-25 16:00` | `2023-10-25 17:00` | 1.0h | `$0.9405` | `$0.8631` | **-8.23%** | **-8.59%** | +48.2% | -14.1% | `stop_loss` |
-| 2 | Book 3 | `2024-03-03 07:00` | `2024-03-04 05:00` | 22.0h | `$1.5347` | `$1.6682` | **+8.70%** | **+8.34%** | +11.1% | -2.8% | `target_reclaim` |
-| 3 | Book 3 | `2024-03-05 17:00` | `2024-03-05 19:00` | 2.0h | `$1.5655` | `$1.4366` | **-8.23%** | **-8.59%** | +4.2% | -18.9% | `stop_loss` |
-| 4 | Book 3 | `2024-05-23 20:00` | `2024-05-24 15:00` | 19.0h | `$1.0436` | `$1.1343` | **+8.70%** | **+8.34%** | +8.9% | -1.0% | `target_reclaim` |
-| 5 | Book 3 | `2024-06-07 10:00` | `2024-06-07 18:00` | 8.0h | `$1.6013` | `$1.4695` | **-8.23%** | **-8.59%** | +6.5% | -10.3% | `stop_loss` |
-| 6 | Book 3 | `2024-10-22 12:00` | `2024-10-22 13:00` | 1.0h | `$1.1341` | `$1.0407` | **-8.23%** | **-8.59%** | +5.5% | -8.6% | `stop_loss` |
-| 7 | Book 3 | `2024-11-12 10:00` | `2024-11-13 02:00` | 16.0h | `$1.3710` | `$1.2582` | **-8.23%** | **-8.59%** | +8.3% | -8.6% | `stop_loss` |
-| 8 | Book 3 | `2024-11-13 08:00` | `2024-11-13 10:00` | 2.0h | `$2.4502` | `$2.2486` | **-8.23%** | **-8.59%** | +12.7% | -12.6% | `stop_loss` |
-| 9 | Book 3 | `2024-12-23 00:00` | `2024-12-23 02:00` | 2.0h | `$1.5816` | `$1.4514` | **-8.23%** | **-8.59%** | +2.9% | -8.9% | `stop_loss` |
-| 10 | Book 3 | `2024-12-28 00:00` | `2024-12-28 08:00` | 8.0h | `$1.9729` | `$1.8106` | **-8.23%** | **-8.59%** | +5.2% | -8.4% | `stop_loss` |
-| 11 | Book 3 | `2025-05-12 14:00` | `2025-05-14 05:00` | 39.0h | `$1.0311` | `$1.1208` | **+8.70%** | **+8.34%** | +9.9% | -6.6% | `target_reclaim` |
-| 12 | Book 3 | `2025-05-15 01:00` | `2025-05-15 14:00` | 13.0h | `$1.0391` | `$0.9536` | **-8.23%** | **-8.59%** | +3.4% | -8.4% | `stop_loss` |
-| 13 | Book 3 | `2025-06-06 01:00` | `2025-06-09 01:00` | 72.0h | `$0.8067` | `$0.7917` | **-1.86%** | **-1.88%** | +3.4% | -5.4% | `time_expiry` |
-| 14 | Book 3 | `2026-08-22 05:00` | `2026-08-22 06:00` | 1.0h | `$0.1607` | `$0.1747` | **+8.70%** | **+8.34%** | +16.5% | -0.3% | `target_reclaim` |
-| 15 | Book 3 | `2026-09-15 07:00` | `2026-09-18 07:00` | 72.0h | `$0.1696` | `$0.1792` | **+5.60%** | **+5.45%** | +6.0% | -4.2% | `time_expiry` |
+| 1 | Book 3 | `2024-02-09 16:00` | `2024-02-12 16:00` | 72.0h | `$1.2739` | `$1.2685` | **-0.42%** | **-0.43%** | +4.2% | -3.1% | `time_expiry` |
+| 2 | Book 3 | `2024-03-03 07:00` | `2024-03-04 05:00` | 22.0h | `$1.5450` | `$1.6682` | **+7.97%** | **+7.67%** | +10.3% | -3.4% | `target_reclaim` |
+| 3 | Book 3 | `2024-03-05 19:00` | `2024-03-05 20:00` | 1.0h | `$1.5508` | `$1.4020` | **-9.60%** | **-10.09%** | +2.8% | -18.1% | `stop_loss` |
+| 4 | Book 3 | `2024-05-23 13:00` | `2024-05-24 15:00` | 26.0h | `$1.0889` | `$1.1343` | **+4.17%** | **+4.08%** | +4.4% | -5.1% | `target_reclaim` |
+| 5 | Book 3 | `2024-06-06 10:00` | `2024-06-07 08:00` | 22.0h | `$1.6412` | `$1.7405` | **+6.05%** | **+5.88%** | +6.5% | -1.6% | `target_reclaim` |
+| 6 | Book 3 | `2024-10-22 12:00` | `2024-10-25 12:00` | 72.0h | `$1.1207` | `$1.0779` | **-3.82%** | **-3.89%** | +6.7% | -7.8% | `time_expiry` |
+| 7 | Book 3 | `2024-11-13 08:00` | `2024-11-13 10:00` | 2.0h | `$2.4502` | `$2.2486` | **-8.23%** | **-8.59%** | +12.7% | -12.6% | `stop_loss` |
+| 8 | Book 3 | `2024-12-23 00:00` | `2024-12-24 00:00` | 24.0h | `$1.5059` | `$1.7191` | **+14.16%** | **+13.24%** | +17.4% | -4.4% | `target_reclaim` |
+| 9 | Book 3 | `2024-12-28 02:00` | `2024-12-29 00:00` | 22.0h | `$1.8744` | `$1.7201` | **-8.23%** | **-8.59%** | +2.7% | -8.0% | `stop_loss` |
+| 10 | Book 3 | `2025-05-12 15:00` | `2025-05-14 05:00` | 38.0h | `$0.9925` | `$1.1208` | **+12.93%** | **+12.16%** | +14.2% | -2.9% | `target_reclaim` |
+| 11 | Book 3 | `2025-05-14 08:00` | `2025-05-14 11:00` | 3.0h | `$1.0765` | `$1.1295` | **+4.92%** | **+4.81%** | +5.1% | -0.4% | `target_reclaim` |
+| 12 | Book 3 | `2025-05-14 21:00` | `2025-05-15 07:00` | 10.0h | `$1.0765` | `$0.9879` | **-8.23%** | **-8.59%** | +1.2% | -8.9% | `stop_loss` |
+| 13 | Book 3 | `2025-06-04 12:00` | `2025-06-05 00:00` | 12.0h | `$0.8418` | `$0.8769` | **+4.17%** | **+4.08%** | +5.8% | -0.7% | `target_reclaim` |
+| 14 | Book 5 (Shelf Absorption Squeeze) | `2026-02-21 15:00` | `2026-02-25 15:00` | Live | `$0.2514` | `$0.2728` | **+8.50%** | **+8.16%** | +23.9% | -24.1% | `shelf_target_reclaim` |
+| 15 | Book 5 (Shelf Absorption Squeeze) | `2026-06-26 13:00` | `2026-06-30 13:00` | Live | `$0.1559` | `$0.1692` | **+8.50%** | **+8.16%** | +27.4% | -15.8% | `shelf_target_reclaim` |
+| 16 | Book 3 | `2026-08-22 05:00` | `2026-08-22 06:00` | 1.0h | `$0.1677` | `$0.1747` | **+4.17%** | **+4.08%** | +11.7% | -4.4% | `target_reclaim` |
+| 17 | Book 3 | `2026-09-14 12:00` | `2026-09-17 12:00` | 72.0h | `$0.1755` | `$0.1735` | **-1.19%** | **-1.19%** | +1.5% | -7.4% | `time_expiry` |
+| 18 | Book 4 | `2026-09-22 23:00` | `2026-10-08 15:00` | 376.0h | `$0.2157` | `$0.1899` | **-14.48%** | **-15.43%** | +6.4% | -14.7% | `structural_stop` |
 
 ---
 
@@ -47,28 +50,30 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stop_loss` | `9` | `0.0%` | **`-77.3%`** |
-| `target_reclaim` | `4` | `100.0%` | **`+33.4%`** |
-| `time_expiry` | `2` | `50.0%` | **`+3.6%`** |
+| `target_reclaim` | `8` | `100.0%` | **`+56.0%`** |
+| `stop_loss` | `4` | `0.0%` | **`-35.9%`** |
+| `time_expiry` | `3` | `0.0%` | **`-5.5%`** |
+| `shelf_target_reclaim` | `2` | `100.0%` | **`+16.3%`** |
+| `structural_stop` | `1` | `0.0%` | **`-15.4%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `AGLD`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `181`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `123` (68.0% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `206`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `148` (71.8% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `28`
-* **Saved Capital Losses Avoided:** `+1,843.7%`
+* **Saved Capital Losses Avoided:** `+2,077.7%`
 * **Missed Upside Forgone:** `-1,395.2%`
-* **Net Veto Alpha:** `+448.5%`
+* **Net Veto Alpha:** `+682.5%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: ATH Tier-2 Protection Clamp` | `76` | `42.0%` |
-| `Core 1: Macro Bear Veto` | `52` | `28.7%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `32` | `17.7%` |
-| `Core 4: RS_BTC Over-Extension Climax Clamp` | `21` | `11.6%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `101` | `49.0%` |
+| `Core 1: Macro Bear Veto` | `52` | `25.2%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `32` | `15.5%` |
+| `Core 4: RS_BTC Over-Extension Climax Clamp` | `21` | `10.2%` |
 
 ---
 

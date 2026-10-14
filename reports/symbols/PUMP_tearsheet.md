@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `PUMP`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 1` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+45.8%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.58x`** | `> 1.0x` | 🚀 Alpha Driver |
+| **Mean Net Log Return / Trade** | **`+22.92%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`19.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+2.5% / -9.2%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`167.5h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+23.2% / -7.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-07 11:00` | `2026-09-08 06:00` | 19.0h | `$0.0045` | `$0.0042` | **-8.23%** | **-8.59%** | +2.5% | -9.2% | `initial_stop` |
+| 1 | Book 4 | `2025-09-05 06:00` | `2025-09-10 07:00` | 121.0h | `$0.0045` | `$0.0054` | **+21.68%** | **+19.93%** | +22.1% | -2.7% | `target_reclaim` |
+| 2 | Book 4 | `2026-07-26 22:00` | `2026-08-04 20:00` | 214.0h | `$0.0021` | `$0.0025` | **+30.24%** | **+25.91%** | +24.3% | -12.2% | `target_reclaim` |
 
 ---
 
@@ -33,23 +34,24 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
+| `target_reclaim` | `2` | `100.0%` | **`+45.8%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `PUMP`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `58`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `34` (58.6% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `12`
-* **Saved Capital Losses Avoided:** `+366.7%`
-* **Missed Upside Forgone:** `-356.0%`
-* **Net Veto Alpha:** `+10.6%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `473`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `147` (31.1% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `181`
+* **Saved Capital Losses Avoided:** `+1,641.1%`
+* **Missed Upside Forgone:** `-6,362.4%`
+* **Net Veto Alpha:** `+-4,721.3%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `58` | `100.0%` |
+| `Core 1: Macro Bear Veto` | `472` | `99.8%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `1` | `0.2%` |
 
 ---
 

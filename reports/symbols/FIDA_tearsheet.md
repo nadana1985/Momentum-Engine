@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `FIDA`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `4` (`4` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `5` (`5` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `4` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`0.971`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-0.5%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`1.00x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.13%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-8.8%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`28.8h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+6.9% / -5.2%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `5` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`60.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.340`** | `> 1.50` | 🟢 Viable |
+| **Cumulative Net Log Return** | **`+5.8%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.06x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+1.17%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`-8.6%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`12.6h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+7.9% / -4.5%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,10 +25,11 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2024-12-05 01:00` | `2024-12-05 23:00` | 22.0h | `$0.3469` | `$0.3770` | **+8.70%** | **+8.34%** | +8.8% | -2.0% | `target_reclaim` |
-| 2 | Book 3 | `2025-01-19 09:00` | `2025-01-19 16:00` | 7.0h | `$0.2744` | `$0.2518` | **-8.23%** | **-8.59%** | +6.4% | -8.5% | `stop_loss` |
-| 3 | Book 3 | `2025-07-04 08:00` | `2025-07-05 02:00` | 18.0h | `$0.0772` | `$0.0839` | **+8.70%** | **+8.34%** | +10.1% | -1.8% | `target_reclaim` |
-| 4 | Book 3 | `2026-09-07 00:00` | `2026-09-09 20:00` | 68.0h | `$0.0215` | `$0.0197` | **-8.23%** | **-8.59%** | +2.4% | -8.4% | `stop_loss` |
+| 1 | Book 3 | `2024-12-05 01:00` | `2024-12-05 23:00` | 22.0h | `$0.3424` | `$0.3770` | **+10.12%** | **+9.64%** | +10.3% | -0.7% | `target_reclaim` |
+| 2 | Book 3 | `2025-01-19 14:00` | `2025-01-19 22:00` | 8.0h | `$0.2585` | `$0.2373` | **-8.23%** | **-8.59%** | +5.6% | -8.4% | `stop_loss` |
+| 3 | Book 3 | `2025-05-13 03:00` | `2025-05-13 09:00` | 6.0h | `$0.0956` | `$0.1031` | **+7.84%** | **+7.55%** | +9.7% | -0.7% | `target_reclaim` |
+| 4 | Book 3 | `2025-07-04 07:00` | `2025-07-05 02:00` | 19.0h | `$0.0791` | `$0.0839` | **+6.01%** | **+5.83%** | +7.4% | -4.2% | `target_reclaim` |
+| 5 | Book 3 | `2026-09-06 21:00` | `2026-09-07 05:00` | 8.0h | `$0.0220` | `$0.0202` | **-8.23%** | **-8.59%** | +6.5% | -8.4% | `stop_loss` |
 
 ---
 
@@ -36,26 +37,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
+| `target_reclaim` | `3` | `100.0%` | **`+23.0%`** |
 | `stop_loss` | `2` | `0.0%` | **`-17.2%`** |
-| `target_reclaim` | `2` | `100.0%` | **`+16.7%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `FIDA`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `41`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `29` (70.7% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `13`
-* **Saved Capital Losses Avoided:** `+387.8%`
-* **Missed Upside Forgone:** `-636.5%`
-* **Net Veto Alpha:** `+-248.7%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `452`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `288` (63.7% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `105`
+* **Saved Capital Losses Avoided:** `+5,945.2%`
+* **Missed Upside Forgone:** `-3,074.0%`
+* **Net Veto Alpha:** `+2,871.2%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: ATH Tier-2 Protection Clamp` | `22` | `53.7%` |
-| `Core 1: Macro Bear Veto` | `18` | `43.9%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `1` | `2.4%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `296` | `65.5%` |
+| `Core 1: Macro Bear Veto` | `155` | `34.3%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `1` | `0.2%` |
 
 ---
 

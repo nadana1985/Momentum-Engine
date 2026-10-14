@@ -1,0 +1,27 @@
+[Unit]
+Description=Kronos V12 Weekly Full Cold Rebuild Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/kronos_v12
+# Pass KRONOS_FULL_REBUILD=1 so pipeline_v12.sh uses build_v12_tape.py
+# and regenerates ALL symbol tear sheets
+Environment=KRONOS_FULL_REBUILD=1
+ExecStart=/bin/bash /home/ubuntu/kronos_v12/pipeline_v12.sh
+StandardOutput=journal
+StandardError=journal
+
+# Tuned for t4g.medium (4 GB RAM + 4 GB swap)
+MemoryMax=3.4G
+MemorySwapMax=3.0G
+TimeoutStartSec=3600
+
+# Log rate limit
+LogRateLimitIntervalSec=60
+LogRateLimitBurst=5000
+
+[Install]
+WantedBy=multi-user.target

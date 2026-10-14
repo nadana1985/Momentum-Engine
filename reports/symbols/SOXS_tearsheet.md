@@ -16,8 +16,8 @@
 | **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
 | **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`50.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+3.4% / -8.3%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`60.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+6.2% / -9.3%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-09-04 10:00` | `2026-09-06 12:00` | 50.0h | `$48.9164` | `$44.8906` | **-8.23%** | **-8.59%** | +3.4% | -8.3% | `stop_loss` |
+| 1 | Book 3 | `2026-09-04 13:00` | `2026-09-07 01:00` | 60.0h | `$47.3920` | `$43.4916` | **-8.23%** | **-8.59%** | +6.2% | -9.3% | `stop_loss` |
 
 ---
 

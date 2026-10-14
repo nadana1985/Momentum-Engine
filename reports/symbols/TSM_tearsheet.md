@@ -45,11 +45,11 @@
 ## 4. Counterfactual Risk Gate Audit for `TSM`
 
 * **Total Candidate Breakouts Filtered (Vetoed):** `37`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `21` (56.8% Efficiency)
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `26` (70.3% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+115.2%`
+* **Saved Capital Losses Avoided:** `+119.8%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+115.2%`
+* **Net Veto Alpha:** `+119.8%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |

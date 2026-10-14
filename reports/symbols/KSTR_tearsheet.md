@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `KSTR`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-0.5%`** | `> 0.0%` | 🛑 Drawdown |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.751`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+0.4%`** | `> 0.0%` | ✅ Profitable |
 | **Compounded Capital Growth** | **`1.00x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.46%`** | `> +1.0%` | Normal |
+| **Mean Net Log Return / Trade** | **`+0.18%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`48.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+2.7% / -2.2%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`60.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+2.3% / -1.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-08-26 23:00` | `2026-08-28 23:00` | 48.0h | `$24.1803` | `$24.0697` | **-0.46%** | **-0.46%** | +2.7% | -2.2% | `fast_decay_cut` |
+| 1 | Book 2 | `2026-08-26 23:00` | `2026-08-28 23:00` | 48.0h | `$24.1803` | `$24.0697` | **-0.49%** | **-0.49%** | +2.7% | -2.2% | `fast_decay_cut` |
+| 2 | Book 3 | `2026-09-24 09:00` | `2026-09-27 09:00` | 72.0h | `$23.5968` | `$23.8004` | **+0.86%** | **+0.86%** | +1.9% | -0.7% | `time_expiry` |
 
 ---
 
@@ -34,6 +35,7 @@
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
 | `fast_decay_cut` | `1` | `0.0%` | **`-0.5%`** |
+| `time_expiry` | `1` | `100.0%` | **`+0.9%`** |
 
 ---
 

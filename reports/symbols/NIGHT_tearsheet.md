@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.2%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-4.15%`** | `> +1.0%` | Normal |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+14.7%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.16x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+14.71%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`72.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+2.6% / -8.6%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`19.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+16.1% / -2.5%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 1 | `2026-09-19 01:00` | `2026-09-22 01:00` | 72.0h | `$0.0249` | `$0.0241` | **-4.07%** | **-4.15%** | +2.6% | -8.6% | `stagnation_bailout` |
+| 1 | Book 4 | `2026-09-29 15:00` | `2026-09-30 10:00` | 19.0h | `$0.0318` | `$0.0366` | **+15.84%** | **+14.71%** | +16.1% | -2.5% | `target_reclaim` |
 
 ---
 
@@ -33,7 +33,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stagnation_bailout` | `1` | `0.0%` | **`-4.2%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+14.7%`** |
 
 ---
 

@@ -11,13 +11,13 @@
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`0.039`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.3%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-4.13%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`3.5h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+11.6% / -28.4%`** | MFE > 2x MAE | High Asymmetry |
+| **Profit Factor (Log-Space)** | **`1.580`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+2.1%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.02x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+1.04%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`-3.6%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`5.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+20.7% / -23.6%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-20 15:00` | `2026-09-20 17:00` | 2.0h | `$0.0265` | `$0.0243` | **-8.23%** | **-8.59%** | +6.4% | -11.1% | `initial_stop` |
-| 2 | Book 1 | `2026-09-26 11:00` | `2026-09-26 16:00` | 5.0h | `$0.0359` | `$0.0360` | **+0.34%** | **+0.34%** | +16.8% | -45.7% | `breakeven_ratchet` |
+| 1 | Book 4 | `2026-05-09 12:00` | `2026-05-09 17:00` | 5.0h | `$0.0143` | `$0.0172` | **+5.79%** | **+5.65%** | +24.7% | -1.6% | `target_reclaim` |
+| 2 | Book 1 | `2026-09-26 11:00` | `2026-09-26 16:00` | 5.0h | `$0.0359` | `$0.0353` | **-3.53%** | **-3.58%** | +16.8% | -45.7% | `breakeven_ratchet` |
 
 ---
 
@@ -34,28 +34,27 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `breakeven_ratchet` | `1` | `100.0%` | **`+0.3%`** |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
+| `breakeven_ratchet` | `1` | `0.0%` | **`-3.6%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+5.7%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `Q`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `62`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `54` (87.1% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `111`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `102` (91.9% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `29`
-* **Saved Capital Losses Avoided:** `+1,531.0%`
-* **Missed Upside Forgone:** `-1,710.4%`
-* **Net Veto Alpha:** `+-179.4%`
+* **Saved Capital Losses Avoided:** `+2,308.4%`
+* **Missed Upside Forgone:** `-982.1%`
+* **Net Veto Alpha:** `+1,326.4%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `43` | `69.4%` |
-| `Core 4: Funding Rate Cap` | `9` | `14.5%` |
-| `Core 3: Min Turnover Velocity` | `6` | `9.7%` |
-| `Core 4: Whale Firewall` | `3` | `4.8%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `1` | `1.6%` |
+| `Core 1: Macro Bear Veto` | `103` | `92.8%` |
+| `Core 4: Whale Firewall` | `6` | `5.4%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `1` | `0.9%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `1` | `0.9%` |
 
 ---
 

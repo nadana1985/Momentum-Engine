@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `5` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`60.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`1.042`** | `> 1.50` | 🟢 Viable |
-| **Cumulative Net Log Return** | **`+0.7%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.01x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+0.14%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-17.2%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`17.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+15.3% / -9.4%`** | MFE > 2x MAE | High Asymmetry |
+| **Win Rate** | **`20.0%`** | `> 40.0%` | ⚠️ Watch |
+| **Profit Factor (Log-Space)** | **`0.119`** | `> 1.50` | 🛑 Negative Drag |
+| **Cumulative Net Log Return** | **`-30.3%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.74x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-6.05%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-34.4%`** | `< -30%` | ⚠️ High Drawdown |
+| **Average Trade Duration** | **`12.2h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+14.6% / -11.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,11 +25,11 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2025-07-12 21:00` | `2025-07-13 05:00` | 8.0h | `$0.0027` | `$0.0029` | **+8.70%** | **+8.34%** | +8.9% | -0.2% | `target_reclaim` |
-| 2 | Book 3 | `2025-07-21 12:00` | `2025-07-21 15:00` | 3.0h | `$0.0044` | `$0.0048` | **+8.70%** | **+8.34%** | +8.7% | -2.2% | `target_reclaim` |
-| 3 | Book 3 | `2025-07-23 16:00` | `2025-07-23 17:00` | 1.0h | `$0.0048` | `$0.0044` | **-8.23%** | **-8.59%** | +26.4% | -12.0% | `stop_loss` |
+| 1 | Book 3 | `2025-07-12 19:00` | `2025-07-13 05:00` | 10.0h | `$0.0028` | `$0.0029` | **+4.17%** | **+4.08%** | +4.4% | -4.3% | `target_reclaim` |
+| 2 | Book 3 | `2025-07-21 16:00` | `2025-07-21 17:00` | 1.0h | `$0.0043` | `$0.0040` | **-8.23%** | **-8.59%** | +5.8% | -8.4% | `stop_loss` |
+| 3 | Book 3 | `2025-07-23 16:00` | `2025-07-24 19:00` | 27.0h | `$0.0045` | `$0.0041` | **-8.23%** | **-8.59%** | +35.4% | -8.4% | `stop_loss` |
 | 4 | Book 3 | `2025-10-07 07:00` | `2025-10-07 08:00` | 1.0h | `$0.0129` | `$0.0118` | **-8.23%** | **-8.59%** | +19.5% | -16.2% | `stop_loss` |
-| 5 | Book 3 | `2026-08-22 05:00` | `2026-08-25 05:00` | 72.0h | `$0.0014` | `$0.0014` | **+1.22%** | **+1.22%** | +12.8% | -16.3% | `time_expiry` |
+| 5 | Book 3 | `2026-08-22 05:00` | `2026-08-23 03:00` | 22.0h | `$0.0014` | `$0.0013` | **-8.23%** | **-8.59%** | +8.1% | -19.8% | `stop_loss` |
 
 ---
 
@@ -37,9 +37,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stop_loss` | `2` | `0.0%` | **`-17.2%`** |
-| `target_reclaim` | `2` | `100.0%` | **`+16.7%`** |
-| `time_expiry` | `1` | `100.0%` | **`+1.2%`** |
+| `stop_loss` | `4` | `0.0%` | **`-34.4%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+4.1%`** |
 
 ---
 

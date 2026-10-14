@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `3` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`33.3%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.485`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.8%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-2.95%`** | `> +1.0%` | Normal |
+| **Win Rate** | **`66.7%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.921`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+7.9%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.08x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+2.64%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`-8.6%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`11.7h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+4.2% / -6.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`15.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+9.4% / -8.6%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-08-28 15:00` | `2026-08-28 19:00` | 4.0h | `$6.3949` | `$5.8686` | **-8.23%** | **-8.59%** | +1.7% | -8.1% | `stop_loss` |
-| 2 | Book 3 | `2026-09-15 13:00` | `2026-09-15 18:00` | 5.0h | `$6.6074` | `$6.0636` | **-8.23%** | **-8.59%** | +1.9% | -8.9% | `stop_loss` |
+| 1 | Book 5 (Shelf Absorption Squeeze) | `2026-07-14 14:00` | `2026-07-18 14:00` | Live | `$4.1584` | `$4.5119` | **+8.50%** | **+8.16%** | +17.2% | -16.6% | `shelf_target_reclaim` |
+| 2 | Book 3 | `2026-08-28 15:00` | `2026-08-28 19:00` | 4.0h | `$6.3949` | `$5.8686` | **-8.23%** | **-8.59%** | +1.7% | -8.1% | `stop_loss` |
 | 3 | Book 3 | `2026-09-24 09:00` | `2026-09-25 11:00` | 26.0h | `$7.9433` | `$8.6340` | **+8.70%** | **+8.34%** | +9.1% | -0.9% | `target_reclaim` |
 
 ---
@@ -35,7 +35,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stop_loss` | `2` | `0.0%` | **`-17.2%`** |
+| `shelf_target_reclaim` | `1` | `100.0%` | **`+8.2%`** |
+| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
 | `target_reclaim` | `1` | `100.0%` | **`+8.3%`** |
 
 ---

@@ -1,148 +1,148 @@
-# Kronos V12: Universal 7-Core Multi-Tier Momentum Engine
-**Canonical Institutional Quantitative Production Architecture for Liquid Altcoin Shards**
+# Kronos V12.9: Production Execution Guide & Architecture Manual
 
-[![Architecture](https://img.shields.io/badge/Architecture-V12.2%20Universal%20Multi--Tier-blue.svg)](V12_ARCHITECTURE_SPEC.md)
-[![Tests](https://img.shields.io/badge/Tests-36%20Passed%20(100%25)-brightgreen.svg)](tests/)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](requirements.txt)
-[![Dashboard](https://img.shields.io/badge/Dashboard-NiceGUI%20Port%208056-purple.svg)](momentum_v12/dashboard_nicegui.py)
-[![AWS Ready](https://img.shields.io/badge/Deployment-AWS%20EC2%20Hardened-orange.svg)](AWS_EC2_DEPLOYMENT_RUNBOOK.md)
+This directory contains the canonical **V12.9 Master Unified Production Architecture** for the Kronos Altcoin Momentum Engine.
 
 ---
 
-## 1. Executive Summary & Production Performance
+## 1. Production Architecture Overview (V12.9)
 
-The **Kronos V12 Engine** represents the canonical production evolution of the Kronos algorithmic trading system, replacing legacy single-engine models with a hardened **7-Core Universal Multi-Tier Architecture** across 652 liquid altcoin shards.
+Kronos V12.9 operates an institutional 4-Book multi-strategy execution stack across all 652 liquid perpetual shards, powered by the Continuous Anti-Chase Sizing Multiplier Engine for Book 4 (Study S-BF), Two-Tranche Trajectory Exits (Study S-BE), Book 2 Sub-200d EMA Specialization (Study S-BC), and the Unified Compensatory Squeeze & Momentum Index (CSMI - Study S-BD):
 
-Operating in **strict continuous compounding log return space** ($\sum \ln(1 + R)$), V12 synthesizes three orthogonal books into a unified high-expectancy system:
+| Book | Name | Methodology | Primary Tiers | Performance Lift |
+| :--- | :--- | :--- | :--- | :--- |
+| **Book 1** | **Continuation Breakouts** | 21d rolling highs, flagpole clamped $\le 25\%$, Two-Tier target routing (Study S-AY), CSMI continuous sizing | Tier 1 (Macro) & Tier 2 (Mid-Cap) | **+823.4% Net Log** (Log PF 1.995 / PnL PF 2.500) |
+| **Book 2** | **Coiled Squeezes** | 72h compression shelves ($\le 25\%$), sub-200d EMA gate, CSMI sizing overlay, -1.5% cushion ratchet | Tier 1, Tier 2, Tier 3 (Micro-Cap) | **+1,436.2% Net Log** (Log PF 2.254 / PnL PF 2.568) |
+| **Book 3** | **Bull Flush Absorption** | Passive $-8.0\%$ discount limit bids on bull-regime defensive vetoes, $+8.70\%$ entry reclaim target | Tier 1 (Macro) & Tier 3 (Micro-Cap) | **+2,403.9% Net Log** (Log PF 1.349 / PnL PF 1.480) |
+| **Book 4** | **Two-Tranche Reclaim + Anti-Chase Sleeve** | $\ge 30\text{d}$ base below 200d EMA $\to$ touch $\to$ $-10\%$ to $-20\%$ retest dip $\to$ reclaim; Two-Tranche exits; Continuous Anti-Chase Sizing | Universal (Tiers 1, 2, 3) | **+6,539.1% Net Log** (Log PF 6.313 / PnL PF 7.960 / 75.8% WR) |
 
-* **Cumulative Net Log Return:** **+3,709.5%** (**12.89 Quadrillion x Capital Multiple** / `12,887,463,017,050,338.00x`)
-* **Portfolio Profit Factor:** **1.361 Log PF** (**1.705 PnL PF**) across **3,325 closed trades** (43 open trades)
-* **Zero Lottery Dependence:** Top-2 profit concentration is just **0.07%** (proven resilient against outlier bias)
-* **Capital Protection (Macro Bear Veto):** **98.7% bear market protection** in 2022 via the 200-Day Bitcoin EMA firewall
-
-### Production Tier & Book Matrix:
-| Domain | Universe / Mechanic | Closed Trades | Win Rate | Log PF | Net Log Return | Capital Multiple |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Tier 1 (Macro)** | Median OI ≥ $15M (14d Donchian floor) | 588 | 53.6% | **1.487** | **+1,109.1%** | 65,584.22x |
-| **Tier 2 (Mid-Cap)** | Median OI $2.5M–$15M (7d floor + 36h decay) | 270 | 38.5% | **1.968** | **+635.8%** | 576.84x |
-| **Tier 3 (Micro-Cap)**| Low-float coiled shelf squeezes & flush bids | 2,467 | 51.1% | **1.265** | **+1,964.6%** | 340,652,657.48x |
-| **Book 1 (Breakouts)** | Flagpole-clamped momentum breakouts | 163 | 39.3% | **2.025** | **+533.4%** | 207.28x |
-| **Book 2 (Squeezes)** | Tight 72h compression shelves ($L/S \le 0.95$) | 734 | 34.7% | **1.688** | **+1,192.5%** | 151,806.91x |
-| **Book 3 (Flush Bids)**| Bull-regime resting limit bids (-8.0% discount) | 2,428 | **56.1%** | **1.247** | **+1,983.6%** | 411,717,265.88x |
+**Total Production Stack Performance:** **+11,202.6% Cumulative Net Log Return ($4.49 \times 10^{48}\times$ Capital Multiple / 1,952x wealth expansion over V12.8)**, **Log PF 2.110**, **Win Rate 57.97%**, across **3,462 trades (3,443 closed)**.
 
 ---
 
-## 2. Quantitative Architecture (The 7 Cores)
+## 2. Quick Start: Running the Master Pipeline
 
-```mermaid
-flowchart TD
-    RawData["Raw Market Tape\n(1h OHLCV + Funding + OI + Top Trader L/S)"] --> Core1{"Core 1: BTC Macro Veto\n(BTC > EMA_4800h & 30d BTC > 0)"}
-    
-    Core1 -- "Bear Regime (Cash)" --> Cash["DEFAULT TO CASH\n(Saves 98.7% of Bear Losses)"]
-    Core1 -- "Bull Regime" --> Core2["Core 2: PIT Dynamic Tier Classifier\n• Tier 1: Macro ($15M+)\n• Tier 2: Mid-Cap ($2.5M-$15M)\n• Tier 3: Micro-Cap ($250k-$2.5M)"]
-    
-    Core2 --> SignalRouter{"Core 3 & 4: Multi-Book Routing"}
-    
-    SignalRouter -- "Flagpole Clamp <= 25%" --> Book1["Book 1: Trend Breakouts\n(Wide 14d Donchian Floor)"]
-    SignalRouter -- "Coiled Shelf <= 25% + L/S < 0.95" --> Book2["Book 2: Coiled Squeezes\n(Anchored 72h Stop Clamped at -8%)"]
-    SignalRouter -- "Bull Flush Absorption Bid" --> Book3["Book 3: Limit Absorption Engine\n(Resting Limit Bid @ 0.92 x P0)"]
-    
-    Book1 --> Core7["Core 7: Kyle-Lambda Position Sizing\n(Square-Root Market Impact Scaling)"]
-    Book2 --> Core7
-    Book3 --> Core7
-    
-    Core7 --> Execution["Native Resting Stop-Market Order Execution"]
+### Prerequisites
+- Python 3.11+ with packages installed (`pip install -r requirements.txt`).
+- Network access to Binance Futures API (`https://fapi.binance.com`). *Note: US IP addresses receive HTTP 451 geo-blocks and require a VPN or EU/Tokyo proxy/instance.*
+
+### Running via PowerShell (`pipeline_v12.ps1`)
+Because the pipeline uses relative paths for internal modules, shards, and scripts, **you must execute it with the current directory set to `v12_standalone`**:
+
+```powershell
+# 1. Navigate to the v12_standalone directory
+cd f:\kronos_v1_alt\v12_standalone
+
+# 2. Permit script execution for the current session (if restricted)
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# 3. Launch the master pipeline
+.\pipeline_v12.ps1
 ```
 
-1. **Core 1 (Macro Regime Primacy):** Altcoin momentum has zero mathematical expectation in Bitcoin bear markets. 200-day EMA (`BTC > EMA_4800h`) eliminated 223 out of 226 bear-market losses in 2022.
-2. **Core 2 (Dynamic Point-in-Time Tiering):** Classifies tokens dynamically based on trailing 30-day median Open Interest and turnover.
-3. **Core 3 & 4 (Microstructure & Whale Squeeze Invariants):** Evaluates taker aggression, funding rate arbitrage, and Top Trader Long/Short ratio.
-4. **Core 5 (Upstream Flagpole Clamp & Remediated Ceiling):** Clamps Book 1 breakouts to `dist_from_72h_low <= 0.25`, eliminating late chase tops.
-5. **Core 6 (Adaptive Exit & Stagnation Horizon):** Donchian trailing floors combined with a 36-hour stagnation stall bailout (exits non-performing trades at breakeven).
-6. **Core 7 (Kyle-$\lambda$ Dynamic Market Impact Sizing):** Scales trade leverage based on rolling Kyle's lambda ($\lambda = \frac{|\Delta p|}{V^{0.5}}$), penalizing illiquid assets.
+Or execute directly in a single one-liner from any terminal:
+```powershell
+powershell.exe -ExecutionPolicy Bypass -Command "cd f:\kronos_v1_alt\v12_standalone; .\pipeline_v12.ps1"
+```
 
----
-
-## 3. Production Hardening & Cloud Infrastructure
-
-* **Atomic File I/O (`atomic_to_parquet`):** All shard updates and master ledgers write to temporary sibling files before swapping via `os.replace`, guaranteeing zero corruptions on power loss.
-* **Binance Rate Limiting:** Token-bucket rate pacing (`max_per_second=3.0` for OI/L-S, `1.5` for funding) safely avoids HTTP 429 throttling.
-* **Mid-Ingest IP Ban Circuit Breaker:** Centralized `BANNED = threading.Event()` immediately aborts all worker threads upon detecting HTTP 418 or 451.
-* **Single-Run Overlap Lock (`flock`):** Exclusive file lock on `/tmp/kronos_v12_hourly.lock` cleanly skips duplicate executions (exit code 3).
-* **Clock Drift Prevention (`chrony` NTP):** Auto-configured NTP daemon guarantees sub-second candle boundary alignment.
-* **1-Click S3 Disaster Recovery (`restore_from_s3.py`):** Seeds a completely fresh EC2 instance from AWS S3 in seconds.
-* **AWS SNS Trade Signal Alerts (`notify_signals_sns.py`):** Dispatches high-priority email alerts containing entry price, stop-loss, risk %, and sizing for newly triggered signals.
-
----
-
-## 4. Quickstart & Usage
-
-### A. Local Execution
+### Running on Linux / Bash (`pipeline_v12.sh`)
 ```bash
-# 1. Clone repository & install dependencies
-git clone https://github.com/nadana1985/Momentum-Engine.git
-cd Momentum-Engine
-pip install -r requirements.txt
-
-# 2. Run master hourly pipeline
-# Linux / macOS:
+cd /path/to/kronos_v1_alt/v12_standalone
+chmod +x pipeline_v12.sh
 ./pipeline_v12.sh
+```
 
-# Windows PowerShell:
-.\pipeline_v12.ps1
+---
 
-# 3. Launch interactive NiceGUI Command Center (Port 8056)
+## 3. End-to-End Pipeline Stages
+
+The pipeline script automates the full operational sequence:
+
+| Stage | Step Name | Executable / Script | Description |
+| :---: | :--- | :--- | :--- |
+| **0** | **Pre-Flight Firewall** | `Invoke-WebRequest` | Pings Binance Futures API (`/fapi/v1/ping`). Halts immediately if blocked (HTTP 451). |
+| **PRE** | **Production Health Checks** | `scripts/health_monitor.py` | Validates disk space, data freshness, and package dependency integrity. |
+| **1/6** | **Live Ingestion & Gap Filling** | `config/ingestion/live_bridger.py` | Syncs latest 1h OHLCV and derivative funding/OI data via CCXT with HTTP connection pooling. |
+| **2/6** | **Clean Matrix Execution** | `build_v12_tape.py` | Executes the 4-Book production engine across all 652 liquid shards with single-thread CPU isolation. |
+| **3/6** | **Strict Compounding Tapes** | `momentum_v12/build_csv.py` | Exports canonical trade ledgers (`trades.parquet`, `closed_trades.csv`, `open_trades.csv`, and scorecards). |
+| **4/6** | **Institutional Artifacts** | `momentum_v12/generate_artifacts.py`<br>`scripts/generate_symbol_tearsheets.py --all` | Generates `v12_tear_tape.md`, open trade summaries, and asset-specific tear sheets. |
+| **5/6** | **Cloud S3 Backup** | `scripts/backup_to_s3.py` | Uploads trade tapes and state snapshots to AWS S3 (graceful localhost bypass if unconfigured). |
+| **5b** | **S3 Upload Validation** | `scripts/health_monitor.py --validate-s3` | Confirms non-zero payload bytes in cloud storage. |
+| **6/7** | **Liveness Heartbeat** | `scripts/send_heartbeat.py` | Pings Dead-Man's Switch (`HEARTBEAT_URL` / CloudWatch). |
+| **7/7** | **Trade Alerts** | `scripts/notify_signals_sns.py` | Dispatches new trade signal notifications via AWS SNS / Email. |
+
+---
+
+## 4. Launching the Live Command Center (Dashboard)
+
+To inspect active positions, execution statistics, counterfactual telemetry, and individual symbol tear sheets in the web UI:
+
+```powershell
+cd f:\kronos_v1_alt\v12_standalone
 python momentum_v12/dashboard_nicegui.py
 ```
-Open your browser at `http://localhost:8056`.
 
-### B. AWS EC2 Automated Deployment (1-Click)
-Deploy onto an Ubuntu 22.04 / 24.04 instance in **Frankfurt (`eu-central-1`)** or **Tokyo (`ap-northeast-1`)**:
+Access locally in your browser at **`http://localhost:8056`**.
+
+---
+
+## 5. Key Configuration & Environment Variables
+
+Copy `.env.example` to `.env` to customize settings:
+```env
+# Execution Profile (production, no_book4, legacy_3_books, baseline_no_book3)
+KRONOS_PROFILE=production
+KRONOS_TAPE_DIR=data/all_tapes/v12_production
+
+# Cloud Backups & Dead-Man's Switch
+AWS_DEFAULT_REGION=eu-central-1
+S3_BUCKET=your-s3-bucket-name
+HEARTBEAT_URL=https://hc-ping.com/your-uuid
+
+# Alerts
+SNS_TOPIC_ARN=arn:aws:sns:eu-central-1:123456789012:kronos-signals
+NOTIFY_ONLY_ON_NEW_SIGNALS=1
+
+# NiceGUI Dashboard Port
+NICEGUI_HOST=0.0.0.0
+NICEGUI_PORT=8056
+```
+
+---
+
+## 6. Troubleshooting & Safety Guardrails
+
+- **CPU Deadlocks / OpenBLAS Contention:** `pipeline_v12.ps1` automatically enforces `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, etc. Never run Python matrix workers without these thread clamps.
+- **PowerShell `UnauthorizedAccess`:** Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` before running `.ps1` scripts.
+- **Binance HTTP 451 Geo-Block:** If running in a US region, the pre-flight check will stop the pipeline. Use a non-US proxy or deploy to an EU/Tokyo AWS instance.
+- **Disk Space Warning:** On local development drives >80% capacity, `health_monitor.py` logs a warning but proceeds normally.
+
+---
+
+## 7. AWS Deployment & Upgrading: Mandatory State Flush Guide
+
+When deploying or upgrading an existing EC2 instance to **V12.7**:
+> [!IMPORTANT]
+> Because V12.7 introduced Book 2 Sub-200d EMA specialization (purging 299 drag trades) and continuous CSMI log-odds sizing, **you must safely archive and flush old runtime files** (`data/all_tapes/`, `data/v12_live_state.json`, and `telemetry/`) before launching the new engine.
+>
+> **DO NOT delete `data/raw_shards/` or `data/exotic_shards/`** (historical market data).
+
+Run this on your AWS EC2 instance:
 ```bash
-# SSH into EC2 instance and execute automated setup:
 cd /home/ubuntu/kronos_v12
-chmod +x deploy/setup_ec2.sh
-./deploy/setup_ec2.sh
+
+# 1. Stop hourly timer during upgrade
+sudo systemctl stop kronos-v12.timer
+
+# 2. Archive old runtime files safely (preserves raw_shards intact!)
+BACKUP_DIR="data/archive_pre_v12_7_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+mv data/all_tapes data/v12_live_state.json telemetry reports/symbols "$BACKUP_DIR/" 2>/dev/null || true
+rm -f v12_tear_tape.md v12_open_trades.md
+
+# 3. Bootstrap clean V12.7 canonical state (takes ~20-25 min once on EC2)
+KRONOS_FULL_REBUILD=1 ./pipeline_v12.sh
+
+# 4. Resume the hourly pipeline timer
+sudo systemctl start kronos-v12.timer
 ```
-This automatically configures:
-- Nginx reverse proxy with WebSocket upgrade support on Port 80
-- Systemd hourly pipeline timer (`kronos-v12.timer` at `*:04:00` UTC)
-- NiceGUI systemd service (`kronos-dashboard.service`)
-- `chrony` NTP clock synchronization
-- Journald log limit (500 MB max)
-- Weekly disk housekeeping cron job
-
-### C. Docker Compose Deployment
-```bash
-cp .env.example .env
-docker compose up -d
-```
-
----
-
-## 5. Verification & Test Suite
-
-The codebase features 100% passing test coverage across 36 comprehensive pytest tests:
-```bash
-pytest tests/
-```
-```text
-tests/test_audit_fixes.py ....                                           [ 11%]
-tests/test_book3_flush_reclaim.py .........                              [ 36%]
-tests/test_operational_hardening.py ......                               [ 52%]
-tests/test_remediation_v12.py ....                                       [ 63%]
-tests/test_shadow_reclaims.py ...                                        [ 72%]
-tests/test_sizing_v12.py ......                                          [ 88%]
-tests/test_standalone_compliance.py ....                                 [100%]
-
-============================= 36 passed in 3.29s ==============================
-```
-
----
-
-## 6. Repository Documentation Index
-
-* [`AWS_EC2_DEPLOYMENT_RUNBOOK.md`](AWS_EC2_DEPLOYMENT_RUNBOOK.md) — Comprehensive cloud operations guide, IAM policies, and runbook
-* [`V12_ARCHITECTURE_SPEC.md`](V12_ARCHITECTURE_SPEC.md) — Formal mathematical equations, parameter tables, and design invariants
-* [`V12_CLEAN_ROOM_VERIFICATION.md`](V12_CLEAN_ROOM_VERIFICATION.md) — P1 Null-World clean-room hypothesis testing audit
-* [`RETAIL_TRADER_PLAYBOOK.md`](RETAIL_TRADER_PLAYBOOK.md) — Operator guidelines for manual confluence checks and trade lifecycle management
+For the full cloud provisioning guide, see [AWS_EC2_DEPLOYMENT_RUNBOOK.md](AWS_EC2_DEPLOYMENT_RUNBOOK.md).

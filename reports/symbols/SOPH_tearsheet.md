@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `SOPH`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `4` (`4` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `4` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`75.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`2.015`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+8.7%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.09x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+2.18%`** | `> +1.0%` | ✅ Strong Edge |
-| **Maximum Log Drawdown** | **`-8.6%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`37.8h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+16.6% / -6.7%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+16.3%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.18x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+8.16%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`nanh`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+37.6% / -26.9%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,10 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2025-07-14 01:00` | `2025-07-17 01:00` | 72.0h | `$0.0350` | `$0.0359` | **+2.59%** | **+2.55%** | +6.0% | -3.8% | `time_expiry` |
-| 2 | Book 3 | `2025-08-06 04:00` | `2025-08-09 04:00` | 72.0h | `$0.0392` | `$0.0409` | **+4.24%** | **+4.15%** | +6.6% | -0.9% | `time_expiry` |
-| 3 | Book 2 | `2026-09-08 01:00` | `2026-09-08 04:00` | 3.0h | `$0.0070` | `$0.0085` | **+11.19%** | **+10.60%** | +47.2% | -10.0% | `trail_stop` |
-| 4 | Book 3 | `2026-09-09 15:00` | `2026-09-09 19:00` | 4.0h | `$0.0050` | `$0.0046` | **-8.23%** | **-8.59%** | +6.4% | -11.9% | `stop_loss` |
+| 1 | Book 5 (Shelf Absorption Squeeze) | `2025-12-19 18:00` | `2025-12-23 18:00` | Live | `$0.0139` | `$0.0151` | **+8.50%** | **+8.16%** | +8.1% | -21.0% | `shelf_target_reclaim` |
+| 2 | Book 5 (Shelf Absorption Squeeze) | `2026-09-07 09:00` | `2026-09-11 09:00` | Live | `$0.0046` | `$0.0050` | **+8.50%** | **+8.16%** | +67.1% | -32.8% | `shelf_target_reclaim` |
 
 ---
 
@@ -36,27 +34,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `time_expiry` | `2` | `100.0%` | **`+6.7%`** |
-| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
-| `trail_stop` | `1` | `100.0%` | **`+10.6%`** |
+| `shelf_target_reclaim` | `2` | `100.0%` | **`+16.3%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `SOPH`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `20`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `17` (85.0% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `4`
-* **Saved Capital Losses Avoided:** `+257.1%`
-* **Missed Upside Forgone:** `-365.5%`
-* **Net Veto Alpha:** `+-108.4%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `22`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `19` (86.4% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `5`
+* **Saved Capital Losses Avoided:** `+324.9%`
+* **Missed Upside Forgone:** `-413.0%`
+* **Net Veto Alpha:** `+-88.1%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `13` | `65.0%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `4` | `20.0%` |
-| `Core 4: Funding Rate Cap` | `3` | `15.0%` |
+| `Core 1: Macro Bear Veto` | `13` | `59.1%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `5` | `22.7%` |
+| `Core 4: Funding Rate Cap` | `3` | `13.6%` |
+| `Core 4: Whale Firewall` | `1` | `4.5%` |
 
 ---
 

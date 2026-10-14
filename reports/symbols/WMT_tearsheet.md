@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `WMT`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `4` (`4` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `5` (`4` Closed, `1` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -12,10 +12,10 @@
 | **Total Closed Trades** | `4` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.8%`** | `> 0.0%` | 🛑 Drawdown |
+| **Cumulative Net Log Return** | **`-5.0%`** | `> 0.0%` | 🛑 Drawdown |
 | **Compounded Capital Growth** | **`0.95x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-1.20%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-3.7%`** | `< -30%` | ✅ Contained |
+| **Mean Net Log Return / Trade** | **`-1.26%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-3.8%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`46.8h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+1.2% / -1.5%`** | MFE > 2x MAE | High Asymmetry |
 
@@ -25,10 +25,11 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-01 14:00` | `2026-09-03 02:00` | 36.0h | `$106.9567` | `$105.7450` | **-1.13%** | **-1.14%** | +-0.1% | -1.4% | `stall_bailout` |
-| 2 | Book 2 | `2026-09-14 01:00` | `2026-09-16 19:00` | 66.0h | `$107.7487` | `$107.4407` | **-0.29%** | **-0.29%** | +2.0% | -0.5% | `fast_decay_cut` |
-| 3 | Book 2 | `2026-09-22 05:00` | `2026-09-24 18:00` | 61.0h | `$108.4003` | `$108.0592` | **-0.31%** | **-0.32%** | +2.8% | -0.7% | `fast_decay_cut` |
-| 4 | Book 2 | `2026-09-28 13:00` | `2026-09-29 13:00` | 24.0h | `$109.3327` | `$106.0378` | **-3.01%** | **-3.06%** | +0.1% | -3.3% | `initial_stop` |
+| 1 | Book 2 | `2026-09-01 14:00` | `2026-09-03 02:00` | 36.0h | `$106.9567` | `$105.7450` | **-1.21%** | **-1.21%** | +-0.1% | -1.4% | `stall_bailout` |
+| 2 | Book 2 | `2026-09-14 01:00` | `2026-09-16 19:00` | 66.0h | `$107.7487` | `$107.4407` | **-0.30%** | **-0.30%** | +2.0% | -0.5% | `fast_decay_cut` |
+| 3 | Book 2 | `2026-09-22 05:00` | `2026-09-24 18:00` | 61.0h | `$108.4003` | `$108.0592` | **-0.33%** | **-0.33%** | +2.8% | -0.7% | `fast_decay_cut` |
+| 4 | Book 2 | `2026-09-28 13:00` | `2026-09-29 13:00` | 24.0h | `$109.3327` | `$106.0378` | **-3.13%** | **-3.18%** | +0.1% | -3.3% | `breakeven_ratchet` |
+| 5 | Book 2 | `2026-10-12 13:00` | `_Open Live_` | 23.2h | `$112.2499` | `$114.5500` | **+2.34%** | **+2.31%** | +2.2% | -0.7% | `open_at_end` |
 
 ---
 
@@ -37,8 +38,8 @@
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
 | `fast_decay_cut` | `2` | `0.0%` | **`-0.6%`** |
-| `initial_stop` | `1` | `0.0%` | **`-3.1%`** |
-| `stall_bailout` | `1` | `0.0%` | **`-1.1%`** |
+| `breakeven_ratchet` | `1` | `0.0%` | **`-3.2%`** |
+| `stall_bailout` | `1` | `0.0%` | **`-1.2%`** |
 
 ---
 

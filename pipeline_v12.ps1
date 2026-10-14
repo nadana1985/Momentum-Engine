@@ -58,9 +58,13 @@ if (Test-Path "data/sync_state.json") {
     Copy-Item -Path data/sync_state.json -Destination config/ingestion/sync_state.json -Force
 }
 
-Write-Host "`n[2/6] Executing Clean 6-Core Matrix & Counterfactual Telemetry..." -ForegroundColor Yellow
-python build_v12_tape.py
-if (-not $?) { Write-Host "Build tape failed!" -ForegroundColor Red; exit 1 }
+Write-Host "`n[2/6] Executing Clean 6-Core Matrix (Incremental Real-Time Runner)..." -ForegroundColor Yellow
+python momentum_v12/live_runner_v12.py
+if (-not $?) {
+    Write-Host "Live runner notice: falling back to build_v12_tape.py..." -ForegroundColor Yellow
+    python build_v12_tape.py
+    if (-not $?) { Write-Host "Build tape failed!" -ForegroundColor Red; exit 1 }
+}
 
 Write-Host "`n[3/6] Exporting Strict Log-Compounding Tapes & Precomputed Scorecard..." -ForegroundColor Yellow
 python momentum_v12/build_csv.py

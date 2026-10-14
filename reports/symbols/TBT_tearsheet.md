@@ -39,18 +39,18 @@
 
 ## 4. Counterfactual Risk Gate Audit for `TBT`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `6`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `4` (66.7% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `7`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `5` (71.4% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+10.5%`
+* **Saved Capital Losses Avoided:** `+15.1%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+10.5%`
+* **Net Veto Alpha:** `+15.1%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `5` | `83.3%` |
-| `Core 4: Defensible Whale Dump` | `1` | `16.7%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `6` | `85.7%` |
+| `Core 4: Defensible Whale Dump` | `1` | `14.3%` |
 
 ---
 

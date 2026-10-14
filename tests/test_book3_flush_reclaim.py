@@ -38,6 +38,12 @@ def test_book3_flush_config_immutability():
     assert cfg.max_initial_risk == 0.080
     assert cfg.target_reclaim_pct == 0.087
     assert cfg.require_btc_macro_bull is True
+    assert cfg.book3_shelf_mode == "shelf_fallback"
+    assert cfg.vp_lookback_bars == 2160
+    assert cfg.vp_bins == 35
+    assert cfg.corridor_lo == 0.85
+    assert cfg.corridor_hi == 0.96
+    assert cfg.hvn_mult_support == 1.0
 
     # Test frozen immutability
     with pytest.raises(Exception):
@@ -61,6 +67,21 @@ def test_book3_flush_config_immutability():
 
     with pytest.raises(AssertionError):
         Book3FlushReclaimConfig(max_initial_risk=0.25)
+
+    with pytest.raises(AssertionError):
+        Book3FlushReclaimConfig(book3_shelf_mode="unsupported_mode")
+
+    with pytest.raises(AssertionError):
+        Book3FlushReclaimConfig(vp_lookback_bars=0)
+
+    with pytest.raises(AssertionError):
+        Book3FlushReclaimConfig(vp_bins=5)
+
+    with pytest.raises(AssertionError):
+        Book3FlushReclaimConfig(corridor_lo=0.98, corridor_hi=0.92)
+
+    with pytest.raises(AssertionError):
+        Book3FlushReclaimConfig(hvn_mult_support=0.0)
 
 
 def test_tier2_calibrated_flush_discount():
@@ -428,3 +449,85 @@ def test_book3_bear_market_veto_preservation():
 
     # In bear regime, Core 1 vetoes immediately to cash and Book 3 refuses to arm
     assert len(trades) == 0
+
+
+def test_two_tier_volume_shelf_absorption():
+    """
+    Study S-AN / S-AO: Two-Tier Volume Profile Shelf Absorption (Canonical V12.3)
+    Verifies that when a high-volume consolidation shelf exists in the [-15%, -4%] corridor:
+      1. The limit bid is placed at the shelf high (~$9.40) rather than the static -8% ($9.20).
+      2. When price dips to $9.38 (above $9.20), the order fills at the shelf bid price.
+      3. When price reclaims P0 ($10.00), the trade exits at target reclaim.
+    """
+    n_bars = 250
+    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    closes = np.full(n_bars, 9.40)
+    closes[200] = 10.00  # P0 breakout pop
+    closes[201:205] = [9.70, 9.50, 9.38, 9.40]  # Dips to 9.38, never reaches 9.20
+    closes[205:215] = np.linspace(9.45, 10.05, 10) # Reclaims target 10.00
+    highs = closes * 1.002
+    lows = closes * 0.998
+    highs[214] = 10.05
+    volume = np.full(n_bars, 50000.0)
+
+    df = pd.DataFrame({
+        "close": closes, "high": highs, "low": lows, "open": closes,
+        "volume": volume, "quote_volume": closes * volume, "tier": "Tier 1",
+        "btc_macro_bull": True, "breakout_21d": False, "ret_14d": 0.25, "rs_vs_btc": 0.20,
+        "ema_168": 8.0, "low_60d": 7.0, "low_14d": 8.0, "low_7d": 8.0, "toptrader_ls": 1.20,
+        "turnover_24h": 3.0, "funding_rate": 0.00080, "vol_shock": 2.5, "oi_usd": 2e7
+    }, index=dates)
+    df.loc[dates[200], "breakout_21d"] = True
+
+    # 1. Canonical V12.3 (shelf_fallback default): captures the shallow shelf bounce
+    cfg_shelf = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback"))
+    trades_shelf = run_v12_engine(df, "SHELF_COIN", cfg=cfg_shelf)
+    assert len(trades_shelf) == 1
+    tr = trades_shelf.iloc[0]
+    assert tr["book"] == "Book 3"
+    assert tr["reason"] == "target_reclaim"
+    assert tr["entry_price"] > 9.35  # Filled at shelf (~9.40)
+    assert abs(tr["exit_price"] - 10.00) < 1e-4
+
+    # 2. Static Only baseline: requires deep dip to $9.20, misses the shallow shelf bounce (0 trades)
+    cfg_static = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="static_only"))
+    trades_static = run_v12_engine(df, "SHELF_COIN", cfg=cfg_static)
+    assert len(trades_static) == 0
+
+
+def test_volume_shelf_static_fallback_when_no_hvn():
+    """
+    Verifies that when historical volume profile has NO high-volume node in the [-15%, -4%] corridor:
+      - The engine falls back seamlessly to the static -8.0% limit bid ($9.20 for P0 = $10.00).
+    """
+    n_bars = 250
+    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    # All historical volume is at $7.50 (outside [8.50, 9.60] corridor)
+    closes = np.full(n_bars, 7.50)
+    closes[200] = 10.00  # P0 breakout pop
+    closes[201:205] = [9.70, 9.40, 9.15, 9.20]  # Dips to 9.15, filling static -8% bid ($9.20)
+    closes[205:215] = np.linspace(9.30, 10.05, 10) # Reclaims target 10.00
+    highs = closes * 1.002
+    lows = closes * 0.998
+    lows[203] = 9.15  # Crosses below $9.20
+    highs[214] = 10.05
+    volume = np.full(n_bars, 50000.0)
+
+    df = pd.DataFrame({
+        "close": closes, "high": highs, "low": lows, "open": closes,
+        "volume": volume, "quote_volume": closes * volume, "tier": "Tier 1",
+        "btc_macro_bull": True, "breakout_21d": False, "ret_14d": 0.25, "rs_vs_btc": 0.20,
+        "ema_168": 6.0, "low_60d": 5.0, "low_14d": 6.0, "low_7d": 6.0, "toptrader_ls": 1.20,
+        "turnover_24h": 3.0, "funding_rate": 0.00080, "vol_shock": 2.5, "oi_usd": 2e7
+    }, index=dates)
+    df.loc[dates[200], "breakout_21d"] = True
+
+    cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback"))
+    trades = run_v12_engine(df, "FALLBACK_COIN", cfg=cfg)
+
+    assert len(trades) == 1
+    tr = trades.iloc[0]
+    assert tr["book"] == "Book 3"
+    assert abs(tr["entry_price"] - 9.20) < 1e-4  # Filled at static fallback -8.0% ($9.20)
+    assert abs(tr["exit_price"] - 10.00) < 1e-4
+    assert tr["reason"] == "target_reclaim"

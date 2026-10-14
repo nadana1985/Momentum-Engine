@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `TAC`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `3` (`3` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-31.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.73x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-15.80%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-27.8%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`1.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+16.7% / -24.3%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `3` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+20.5%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.23x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+6.82%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`9.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+97.5% / -45.0%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,9 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-08-26 09:00` | `2026-08-26 10:00` | 1.0h | `$0.0040` | `$0.0036` | **-3.76%** | **-3.83%** | +8.7% | -14.7% | `initial_stop` |
-| 2 | Book 3 | `2026-08-27 10:00` | `2026-08-27 11:00` | 1.0h | `$0.0039` | `$0.0030` | **-24.25%** | **-27.77%** | +24.8% | -33.8% | `stop_loss` |
+| 1 | Book 5 (Shelf Absorption Squeeze) | `2025-11-14 08:00` | `2025-11-18 08:00` | Live | `$0.0055` | `$0.0059` | **+8.50%** | **+8.16%** | +184.6% | -38.9% | `shelf_target_reclaim` |
+| 2 | Book 4 | `2026-04-22 02:00` | `2026-04-22 11:00` | 9.0h | `$0.0062` | `$0.0073` | **+4.50%** | **+4.14%** | +22.1% | -3.1% | `climax_whale_euphoria_harvest` |
+| 3 | Book 5 (Shelf Absorption Squeeze) | `2026-06-29 07:00` | `2026-07-03 07:00` | Live | `$0.0312` | `$0.0339` | **+8.50%** | **+8.16%** | +85.7% | -93.0% | `shelf_target_reclaim` |
 
 ---
 
@@ -34,26 +35,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-3.8%`** |
-| `stop_loss` | `1` | `0.0%` | **`-27.8%`** |
+| `shelf_target_reclaim` | `2` | `100.0%` | **`+16.3%`** |
+| `climax_whale_euphoria_harvest` | `1` | `100.0%` | **`+4.1%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `TAC`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `40`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `24` (60.0% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `26`
-* **Saved Capital Losses Avoided:** `+625.6%`
-* **Missed Upside Forgone:** `-1,683.0%`
-* **Net Veto Alpha:** `+-1,057.4%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `214`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `55` (25.7% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `156`
+* **Saved Capital Losses Avoided:** `+976.6%`
+* **Missed Upside Forgone:** `-11,616.6%`
+* **Net Veto Alpha:** `+-10,640.0%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `34` | `85.0%` |
-| `Core 4: Defensible Whale Dump` | `3` | `7.5%` |
-| `Core 4: Funding Rate Cap` | `3` | `7.5%` |
+| `Core 1: Macro Bear Veto` | `211` | `98.6%` |
+| `Core 4: Defensible Whale Dump` | `3` | `1.4%` |
 
 ---
 

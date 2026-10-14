@@ -39,8 +39,8 @@
 
 ## 4. Counterfactual Risk Gate Audit for `SNOW`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `11`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `9` (81.8% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `19`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `9` (47.4% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
 * **Saved Capital Losses Avoided:** `+62.7%`
 * **Missed Upside Forgone:** `-0.0%`
@@ -49,8 +49,8 @@
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `9` | `81.8%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `2` | `18.2%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `10` | `52.6%` |
+| `Core 1: Macro Bear Veto` | `9` | `47.4%` |
 
 ---
 

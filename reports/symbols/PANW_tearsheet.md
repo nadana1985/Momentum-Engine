@@ -42,11 +42,11 @@
 ## 4. Counterfactual Risk Gate Audit for `PANW`
 
 * **Total Candidate Breakouts Filtered (Vetoed):** `17`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `9` (52.9% Efficiency)
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `13` (76.5% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+44.7%`
+* **Saved Capital Losses Avoided:** `+65.3%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+44.7%`
+* **Net Veto Alpha:** `+65.3%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |

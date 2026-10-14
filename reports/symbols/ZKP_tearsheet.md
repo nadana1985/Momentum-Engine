@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `ZKP`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `4` (`3` Closed, `1` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `3` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`66.7%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`11.901`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+15.3%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.17x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+5.09%`** | `> +1.0%` | ✅ Strong Edge |
-| **Maximum Log Drawdown** | **`-1.4%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`28.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+10.9% / -2.4%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`0.272`** | `> 1.50` | 🛑 Negative Drag |
+| **Cumulative Net Log Return** | **`-4.0%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-2.02%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-5.5%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`54.5h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+4.6% / -6.1%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,10 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-08-29 16:00` | `2026-08-30 00:00` | 8.0h | `$0.0478` | `$0.0519` | **+8.70%** | **+8.34%** | +19.3% | -3.6% | `target_reclaim` |
-| 2 | Book 3 | `2026-08-30 04:00` | `2026-08-30 08:00` | 4.0h | `$0.0522` | `$0.0568` | **+8.70%** | **+8.34%** | +9.3% | -0.9% | `target_reclaim` |
-| 3 | Book 3 | `2026-09-28 14:00` | `2026-10-01 14:00` | 72.0h | `$0.0483` | `$0.0476` | **-1.39%** | **-1.40%** | +4.1% | -2.5% | `time_expiry` |
-| 4 | Book 3 | `2026-10-06 03:00` | `_Open Live_` | 23.7h | `$0.0498` | `$0.0473` | **-5.12%** | **-5.25%** | +1.4% | -5.2% | `open_at_end` |
+| 1 | Book 3 | `2026-08-31 23:00` | `2026-09-03 23:00` | 72.0h | `$0.0453` | `$0.0460` | **+1.52%** | **+1.51%** | +8.8% | -5.0% | `time_expiry` |
+| 2 | Book 3 | `2026-10-07 02:00` | `2026-10-08 15:00` | 37.0h | `$0.0471` | `$0.0446` | **-5.39%** | **-5.54%** | +0.4% | -7.1% | `stall_bailout` |
 
 ---
 
@@ -36,26 +34,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `target_reclaim` | `2` | `100.0%` | **`+16.7%`** |
-| `time_expiry` | `1` | `0.0%` | **`-1.4%`** |
+| `stall_bailout` | `1` | `0.0%` | **`-5.5%`** |
+| `time_expiry` | `1` | `100.0%` | **`+1.5%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `ZKP`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `21`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `19` (90.5% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `23`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `21` (91.3% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `3`
-* **Saved Capital Losses Avoided:** `+282.0%`
+* **Saved Capital Losses Avoided:** `+334.8%`
 * **Missed Upside Forgone:** `-63.5%`
-* **Net Veto Alpha:** `+218.5%`
+* **Net Veto Alpha:** `+271.3%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `12` | `57.1%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `8` | `38.1%` |
-| `Core 4: RS_BTC Over-Extension Climax Clamp` | `1` | `4.8%` |
+| `Core 1: Macro Bear Veto` | `14` | `60.9%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `8` | `34.8%` |
+| `Core 4: RS_BTC Over-Extension Climax Clamp` | `1` | `4.3%` |
 
 ---
 

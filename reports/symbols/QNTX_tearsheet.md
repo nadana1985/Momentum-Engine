@@ -12,9 +12,9 @@
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.2%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-4.17%`** | `> +1.0%` | Normal |
+| **Cumulative Net Log Return** | **`-4.7%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.95x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-4.72%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`48.0h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+2.6% / -5.6%`** | MFE > 2x MAE | High Asymmetry |
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-17 13:00` | `2026-09-19 13:00` | 48.0h | `$54.2753` | `$52.0595` | **-4.08%** | **-4.17%** | +2.6% | -5.6% | `fast_decay_cut` |
+| 1 | Book 2 | `2026-09-17 13:00` | `2026-09-19 13:00` | 48.0h | `$54.2754` | `$52.0595` | **-4.63%** | **-4.72%** | +2.6% | -5.6% | `fast_decay_cut` |
 
 ---
 
@@ -33,23 +33,23 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `1` | `0.0%` | **`-4.2%`** |
+| `fast_decay_cut` | `1` | `0.0%` | **`-4.7%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `QNTX`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `6`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `5` (83.3% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `8`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `7` (87.5% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+34.8%`
+* **Saved Capital Losses Avoided:** `+60.2%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+34.8%`
+* **Net Veto Alpha:** `+60.2%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `6` | `100.0%` |
+| `Core 1: Macro Bear Veto` | `8` | `100.0%` |
 
 ---
 

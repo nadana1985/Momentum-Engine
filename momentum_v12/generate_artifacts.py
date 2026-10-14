@@ -112,7 +112,7 @@ def generate_tear_tape():
 
     # Attribution by Book
     book_table = ""
-    for b_name in ['Book 1', 'Book 2', 'Book 3']:
+    for b_name in ['Book 1', 'Book 2', 'Book 3', 'Book 4']:
         b_df = closed[closed['book'] == b_name]
         if not b_df.empty:
             b_w  = b_df[b_df['log_ret'] > 0]
@@ -239,13 +239,14 @@ Generated: `{pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}`
 ---
 *Confidential — Kronos V12 Autonomous Quantitative Production Architecture.*
 """
-    if "v12_production" in str(TAPE_DIR):
-        out_file = DOCS_DIR / "v12_tear_tape.md"
-    else:
-        arm_slug = TAPE_DIR.name
-        out_file = DOCS_DIR / f"{arm_slug}_tear_tape.md"
-        (TAPE_DIR / "tear_tape.md").write_text(md, encoding='utf-8')
+    arm_slug = TAPE_DIR.name
+    out_file = DOCS_DIR / f"{arm_slug}_tear_tape.md"
+    (TAPE_DIR / "tear_tape.md").write_text(md, encoding='utf-8')
+    (TAPE_DIR / f"{arm_slug}_tear_tape.md").write_text(md, encoding='utf-8')
     out_file.write_text(md, encoding='utf-8')
+    if "v12_11" in arm_slug:
+        (TAPE_DIR / "v12_11_tear_tape.md").write_text(md, encoding='utf-8')
+        (DOCS_DIR / "v12_11_tear_tape.md").write_text(md, encoding='utf-8')
     print(f"  [Artifact] Saved executive tear tape -> {out_file}")
 
 
@@ -284,13 +285,14 @@ Updated: `{pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}`
 ---
 *Mandate: All resting Stop-Market orders must be confirmed active on exchange orderbook.*
 """
-    if "v12_production" in str(TAPE_DIR):
-        out_file = DOCS_DIR / "v12_open_trades.md"
-    else:
-        arm_slug = TAPE_DIR.name
-        out_file = DOCS_DIR / f"{arm_slug}_open_trades.md"
-        (TAPE_DIR / "open_trades.md").write_text(md, encoding='utf-8')
+    arm_slug = TAPE_DIR.name
+    out_file = DOCS_DIR / f"{arm_slug}_open_trades.md"
+    (TAPE_DIR / "open_trades.md").write_text(md, encoding='utf-8')
+    (TAPE_DIR / f"{arm_slug}_open_trades.md").write_text(md, encoding='utf-8')
     out_file.write_text(md, encoding='utf-8')
+    if "v12_11" in arm_slug:
+        (TAPE_DIR / "v12_11_open_trades.md").write_text(md, encoding='utf-8')
+        (DOCS_DIR / "v12_11_open_trades.md").write_text(md, encoding='utf-8')
     print(f"  [Artifact] Saved live open trades -> {out_file}")
 
 

@@ -136,6 +136,43 @@ NICEGUI_HOST=0.0.0.0
 NICEGUI_PORT=8056
 ```
 
+### Step 3b: Upgrading an Existing Instance to V12.7 (MANDATORY Archive & Clean Bootstrap)
+> [!IMPORTANT]
+> **If upgrading an existing EC2 instance from V12.1/V12.2 to V12.7**, you **MUST safely archive and flush old runtime data** (`all_tapes/`, `telemetry/`, `v12_live_state.json`) before running the new code.
+>
+> **Why?**
+> - V12.7 purged 299 negative-expectancy stall trades above the 200d EMA (Study S-BC). Leaving old `trades.parquet` files will pollute the master ledger with invalidated trades.
+> - Old exit timestamps in `v12_live_state.json` will trigger 72h cooldown blocks on brand-new V12.7 signals.
+> - The new Anti-Chop Firewall ($S \le -1.25$) generates updated telemetry schemas.
+>
+> **NEVER DELETE `data/raw_shards/` or `data/exotic_shards/`** (6 years of OHLCV & derivatives data takes hours to re-download).
+
+Run this 1-click archiving script on your EC2 instance before bootstrapping:
+```bash
+cd /home/ubuntu/kronos_v12
+
+# 1. Temporarily pause the hourly timer
+sudo systemctl stop kronos-v12.timer
+
+# 2. Safely archive old tapes, state, and telemetry (keeps raw_shards intact!)
+BACKUP_DIR="data/archive_pre_v12_7_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+
+mv data/all_tapes "$BACKUP_DIR/" 2>/dev/null || true
+mv data/v12_live_state.json "$BACKUP_DIR/" 2>/dev/null || true
+mv telemetry "$BACKUP_DIR/" 2>/dev/null || true
+mv reports/symbols "$BACKUP_DIR/" 2>/dev/null || true
+rm -f v12_tear_tape.md v12_open_trades.md
+
+echo ">> Old runtime files safely archived to $BACKUP_DIR"
+
+# 3. Bootstrap clean V12.7 canonical state (takes ~20-25 min on EC2)
+KRONOS_FULL_REBUILD=1 ./pipeline_v12.sh
+
+# 4. Re-enable the hourly pipeline timer
+sudo systemctl start kronos-v12.timer
+```
+
 ---
 
 ## 4. Verification & Operational Management

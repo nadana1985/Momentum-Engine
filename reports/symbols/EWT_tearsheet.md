@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-08 00:00` | `2026-09-08 08:00` | 8.0h | `$113.0419` | `$110.3959` | **-2.34%** | **-2.37%** | +0.1% | -2.2% | `initial_stop` |
+| 1 | Book 2 | `2026-09-08 00:00` | `2026-09-08 08:00` | 8.0h | `$113.0419` | `$110.3959` | **-2.34%** | **-2.37%** | +0.1% | -2.2% | `breakeven_ratchet` |
 | 2 | Book 2 | `2026-09-21 07:00` | `2026-09-23 12:00` | 53.0h | `$113.8539` | `$113.4158` | **-0.38%** | **-0.39%** | +2.2% | -0.7% | `fast_decay_cut` |
 | 3 | Book 2 | `2026-10-02 13:00` | `2026-10-04 01:00` | 36.0h | `$116.6810` | `$116.3684` | **-0.27%** | **-0.27%** | +0.4% | -1.0% | `stall_bailout` |
 
@@ -35,26 +35,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
+| `breakeven_ratchet` | `1` | `0.0%` | **`-2.4%`** |
 | `fast_decay_cut` | `1` | `0.0%` | **`-0.4%`** |
-| `initial_stop` | `1` | `0.0%` | **`-2.4%`** |
 | `stall_bailout` | `1` | `0.0%` | **`-0.3%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `EWT`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `28`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `22` (78.6% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `26`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `20` (76.9% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+78.6%`
+* **Saved Capital Losses Avoided:** `+73.5%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+78.6%`
+* **Net Veto Alpha:** `+73.5%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `17` | `60.7%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `11` | `39.3%` |
+| `Core 1: Macro Bear Veto` | `17` | `65.4%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `9` | `34.6%` |
 
 ---
 

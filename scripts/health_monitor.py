@@ -194,6 +194,74 @@ def check_dependency_integrity() -> bool:
         return True  # Non-critical, don't block pipeline
 
 
+def check_zombie_positions() -> bool:
+    """
+    Fix #10 — Zombie Open Position Watchdog.
+    Inspects active open trades in trades.parquet / open_trades.parquet.
+    If an open position's underlying raw shard has not received an update in > 4 hours,
+    flags it as a potential zombie trade (delisting, ticker rename, or halted trading).
+    Returns True if all open trades are healthy, False if zombies detected.
+    """
+    tape_env = os.getenv("KRONOS_TAPE_DIR", "data/all_tapes/v12_production")
+    tape_dir = ROOT / Path(tape_env)
+    open_p = tape_dir / "open_trades.parquet"
+    if not open_p.exists():
+        open_p = tape_dir / "trades.parquet"
+    if not open_p.exists():
+        return True
+
+    try:
+        import pandas as pd
+        df = pd.read_parquet(open_p)
+        if df.empty or 'is_open' not in df.columns:
+            return True
+        open_df = df[df['is_open']].copy()
+        if open_df.empty:
+            logger.info("[Health #10] ✅ Zero zombie positions (portfolio is 100% Cash).")
+            return True
+
+        raw_dir = ROOT / "data" / "raw_shards"
+        now_utc = datetime.now(timezone.utc)
+        zombie_found = False
+
+        for _, r in open_df.iterrows():
+            asset = str(r['asset'])
+            shard_path = raw_dir / f"{asset}_USDT_1h.parquet"
+            if not shard_path.exists():
+                shard_path = raw_dir / f"1000{asset}_USDT_1h.parquet"
+            if not shard_path.exists():
+                logger.error(f"[Health #10] ⚠️  ZOMBIE DETECTED: {asset} is marked OPEN but shard file is missing!")
+                zombie_found = True
+                continue
+
+            try:
+                shard_meta = pd.read_parquet(shard_path, columns=['timestamp'])
+                if shard_meta.empty:
+                    continue
+                max_ts = float(shard_meta['timestamp'].max()) / 1000.0
+                last_dt = datetime.fromtimestamp(max_ts, tz=timezone.utc)
+                age_h = (now_utc - last_dt).total_seconds() / 3600.0
+                if age_h > 4.0:
+                    logger.error(
+                        f"[Health #10] ⚠️  ZOMBIE DETECTED: {asset} is OPEN, but last market candle is "
+                        f"{age_h:.1f}h old (possible delisting or trading halt)!"
+                    )
+                    zombie_found = True
+            except Exception:
+                pass
+
+        if zombie_found:
+            _emit_cloudwatch_alarm("ZombiePositions", 1.0)
+            return False
+        else:
+            logger.info(f"[Health #10] ✅ All {len(open_df)} active open position(s) have fresh market feeds.")
+            _emit_cloudwatch_alarm("ZombiePositions", 0.0)
+            return True
+    except Exception as e:
+        logger.warning(f"[Health #10] Zombie position check skipped ({e})")
+        return True
+
+
 def run_all_checks(validate_s3: bool = False) -> int:
     """Run all health checks and return exit code (0=ok, 1=critical)."""
     logger.info("=" * 60)
@@ -204,6 +272,7 @@ def run_all_checks(validate_s3: bool = False) -> int:
         "stale_data":  check_stale_data(),
         "disk_space":  check_disk_space(),   # may sys.exit(1) if critical
         "dep_integrity": check_dependency_integrity(),
+        "zombie_trades": check_zombie_positions(),
     }
 
     if validate_s3:

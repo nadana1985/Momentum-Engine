@@ -1,6 +1,6 @@
 # Kronos V12: Production Executive Tear Sheet
 **Clean 6-Core Framework Performance Ledger**  
-Generated: `2026-10-07 06:38:26 UTC`
+Generated: `2026-10-13 15:40:34 UTC`
 
 ---
 
@@ -8,13 +8,13 @@ Generated: `2026-10-07 06:38:26 UTC`
 
 | Performance Metric | V12 Clean 6-Core | Benchmark Target | Status |
 | :--- | :--- | :--- | :--- |
-| **Total Closed Trades** | `3,336` | N/A | Validated |
-| **Win Rate** | **`50.42%`** | `> 50.0%` | ✅ **Passed** |
-| **Profit Factor** | **`1.352`** | `> 1.50` | ✅ **Passed** |
-| **Cumulative Net Log Return** | **`+3641.6%`** | `> +200%` | ✅ **Passed** |
-| **Compounded Capital Multiple** | **`6537752839521056.00x`** | `> 5.0x` | ✅ **Outperforming** |
-| **Mean Net Log Return / Trade** | **`+1.09%`** | `> +1.0%` | ✅ **Passed** |
-| **Currently Active Open Trades** | **`38`** | Monitored Live | In Flight |
+| **Total Closed Trades** | `3,812` | N/A | Validated |
+| **Win Rate** | **`61.31%`** | `> 50.0%` | ✅ **Passed** |
+| **Profit Factor** | **`2.382`** | `> 1.50` | ✅ **Passed** |
+| **Cumulative Net Log Return** | **`+14309.6%`** | `> +200%` | ✅ **Passed** |
+| **Compounded Capital Multiple** | **`139965099922221773170884452152045826901762570669345068734742528.00x`** | `> 5.0x` | ✅ **Outperforming** |
+| **Mean Net Log Return / Trade** | **`+3.75%`** | `> +1.0%` | ✅ **Passed** |
+| **Currently Active Open Trades** | **`1`** | Monitored Live | In Flight |
 
 ---
 
@@ -23,17 +23,18 @@ Generated: `2026-10-07 06:38:26 UTC`
 ### By Dynamic Liquidity Tier
 | Liquidity Tier | Trades | Win Rate | Profit Factor | Net Log PnL | Capital Multiple |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Tier 1** | `601` | `48.6%` | `1.627` | `+1141.8%` | `90912.58x` |
-| **Tier 2** | `274` | `38.3%` | `1.930` | `+624.2%` | `513.90x` |
-| **Tier 3** | `2,461` | `52.2%` | `1.239` | `+1875.7%` | `139935779.83x` |
+| **Tier 1** | `575` | `58.3%` | `2.917` | `+3456.8%` | `1029283746376257.38x` |
+| **Tier 2** | `413` | `55.4%` | `4.436` | `+3864.2%` | `60528410939033832.00x` |
+| **Tier 3** | `2,452` | `58.6%` | `1.645` | `+4581.2%` | `78677154471545634816.00x` |
 
 
 ### By Execution Book
 | Book | Trades | Win Rate | Profit Factor | Net Log PnL | Capital Multiple |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Book 1** | `164` | `39.6%` | `2.025` | `+533.7%` | `207.90x` |
-| **Book 2** | `738` | `34.6%` | `1.672` | `+1175.9%` | `127869.69x` |
-| **Book 3** | `2,434` | `56.0%` | `1.240` | `+1932.1%` | `245925447.48x` |
+| **Book 1** | `173` | `34.7%` | `2.016` | `+840.8%` | `4482.80x` |
+| **Book 2** | `462` | `38.1%` | `2.369` | `+1530.0%` | `4414374.47x` |
+| **Book 3** | `2,282` | `59.9%` | `1.368` | `+2533.4%` | `100607841582.76x` |
+| **Book 4** | `523` | `76.1%` | `6.786` | `+6997.9%` | `2462026686478172010284889145344.00x` |
 
 
 ---
@@ -42,18 +43,24 @@ Generated: `2026-10-07 06:38:26 UTC`
 
 | Exit Trigger | Count | Share | Total Net Log PnL |
 | :--- | :--- | :--- | :--- |
-| `target_reclaim` | `1,117` | `33.5%` | `+9313.7%` |
-| `stop_loss` | `852` | `25.5%` | `-7461.1%` |
-| `time_expiry` | `457` | `13.7%` | `+99.8%` |
-| `fast_decay_cut` | `231` | `6.9%` | `-553.9%` |
-| `time_cap` | `224` | `6.7%` | `+2157.4%` |
-| `initial_stop` | `154` | `4.6%` | `-1215.6%` |
-| `stall_bailout` | `141` | `4.2%` | `-361.1%` |
-| `breakeven_ratchet` | `50` | `1.5%` | `+9.6%` |
-| `climax_top_harvest` | `41` | `1.2%` | `+1305.9%` |
-| `trail_stop` | `31` | `0.9%` | `+446.3%` |
-| `stagnation_cut` | `31` | `0.9%` | `-76.9%` |
-| `stagnation_bailout` | `7` | `0.2%` | `-22.4%` |
+| `target_reclaim` | `1,531` | `40.2%` | `+17227.6%` |
+| `stop_loss` | `716` | `18.8%` | `-6338.1%` |
+| `time_expiry` | `425` | `11.1%` | `+287.4%` |
+| `shelf_target_reclaim` | `333` | `8.7%` | `+2716.6%` |
+| `fast_decay_cut` | `186` | `4.9%` | `-655.6%` |
+| `time_cap` | `157` | `4.1%` | `+1969.3%` |
+| `stall_bailout` | `93` | `2.4%` | `-312.8%` |
+| `structural_stop` | `88` | `2.3%` | `-1033.8%` |
+| `initial_stop` | `82` | `2.2%` | `-850.2%` |
+| `stagnation_cut` | `54` | `1.4%` | `-37.5%` |
+| `shelf_stop_loss` | `37` | `1.0%` | `-316.6%` |
+| `climax_whale_euphoria_harvest` | `32` | `0.8%` | `+464.1%` |
+| `climax_top_harvest` | `28` | `0.7%` | `+1049.0%` |
+| `breakeven_ratchet` | `23` | `0.6%` | `-64.2%` |
+| `trail_stop` | `13` | `0.3%` | `+233.5%` |
+| `stagnation_bailout` | `10` | `0.3%` | `-60.5%` |
+| `shelf_trail` | `2` | `0.1%` | `+7.5%` |
+| `donchian_floor` | `2` | `0.1%` | `+24.1%` |
 
 
 ---
@@ -62,21 +69,21 @@ Generated: `2026-10-07 06:38:26 UTC`
 
 | Asset | Tier | Closed Trades | Win Rate | Profit Factor | Net Log PnL | Capital Multiple | Max Log DD | Cumulative MFE |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IMX** | `Tier 3` | `23` | `78.3%` | `6.382` | **`+156.0%`** | **`4.76x`** | `-9.7%` | `+12.8%` |
-| **RSR** | `Tier 3` | `22` | `81.8%` | `4.173` | **`+109.0%`** | **`2.97x`** | `-17.2%` | `+9.6%` |
-| **SNX** | `Tier 3` | `34` | `70.6%` | `2.384` | **`+96.9%`** | **`2.63x`** | `-17.4%` | `+7.6%` |
-| **AVAX** | `Tier 1` | `16` | `62.5%` | `5.044` | **`+96.0%`** | **`2.61x`** | `-11.8%` | `+14.1%` |
-| **AERO** | `Tier 1` | `5` | `100.0%` | `999.000` | **`+93.7%`** | **`2.55x`** | `0.0%` | `+27.2%` |
-| **WLD** | `Tier 1` | `16` | `75.0%` | `3.979` | **`+86.1%`** | **`2.37x`** | `-11.7%` | `+15.5%` |
-| **SKL** | `Tier 3` | `24` | `70.8%` | `2.651` | **`+84.8%`** | **`2.33x`** | `-25.8%` | `+8.7%` |
-| **KSM** | `Tier 3` | `21` | `61.9%` | `4.029` | **`+82.2%`** | **`2.27x`** | `-14.5%` | `+7.6%` |
-| **ETC** | `Tier 1` | `8` | `100.0%` | `999.000` | **`+81.1%`** | **`2.25x`** | `0.0%` | `+14.3%` |
-| **FLOW** | `Tier 3` | `16` | `75.0%` | `4.673` | **`+78.3%`** | **`2.19x`** | `-10.0%` | `+9.5%` |
-| **CELO** | `Tier 3` | `27` | `70.4%` | `2.244` | **`+78.3%`** | **`2.19x`** | `-20.5%` | `+7.8%` |
-| **ZRX** | `Tier 3` | `22` | `63.6%` | `2.896` | **`+77.5%`** | **`2.17x`** | `-19.5%` | `+7.6%` |
-| **APT** | `Tier 1` | `16` | `62.5%` | `3.449` | **`+72.2%`** | **`2.06x`** | `-8.8%` | `+12.4%` |
-| **ARPA** | `Tier 3` | `20` | `65.0%` | `2.324` | **`+70.2%`** | **`2.02x`** | `-27.8%` | `+10.2%` |
-| **IOTX** | `Tier 3` | `17` | `82.3%` | `3.713` | **`+69.9%`** | **`2.01x`** | `-17.2%` | `+10.8%` |
+| **AVAX** | `Tier 1` | `17` | `70.6%` | `11.171` | **`+308.3%`** | **`21.83x`** | `-11.9%` | `+17.1%` |
+| **LSK** | `Tier 2` | `3` | `100.0%` | `999.000` | **`+273.7%`** | **`15.45x`** | `0.0%` | `+20.4%` |
+| **XLM** | `Tier 1` | `15` | `66.7%` | `8.698` | **`+220.2%`** | **`9.04x`** | `-8.6%` | `+15.0%` |
+| **NEAR** | `Tier 1` | `15` | `66.7%` | `5.731` | **`+208.2%`** | **`8.02x`** | `-17.2%` | `+15.5%` |
+| **RUNE** | `Tier 2` | `10` | `80.0%` | `62.377` | **`+185.0%`** | **`6.36x`** | `-3.0%` | `+17.2%` |
+| **UNI** | `Tier 1` | `21` | `52.4%` | `5.143` | **`+174.4%`** | **`5.72x`** | `-13.6%` | `+11.3%` |
+| **RSR** | `Tier 3` | `26` | `88.5%` | `7.407` | **`+165.1%`** | **`5.21x`** | `-17.2%` | `+14.3%` |
+| **BAND** | `Tier 3` | `25` | `80.0%` | `5.666` | **`+163.8%`** | **`5.14x`** | `-13.0%` | `+10.2%` |
+| **MANA** | `Tier 2` | `10` | `60.0%` | `6.640` | **`+161.5%`** | **`5.03x`** | `-13.3%` | `+15.8%` |
+| **ONT** | `Tier 3` | `23` | `73.9%` | `6.994` | **`+160.3%`** | **`4.97x`** | `-13.4%` | `+10.8%` |
+| **1INCH** | `Tier 3` | `26` | `57.7%` | `3.567` | **`+159.2%`** | **`4.92x`** | `-17.2%` | `+10.5%` |
+| **VET** | `Tier 2` | `7` | `85.7%` | `12.554` | **`+155.3%`** | **`4.72x`** | `-13.4%` | `+18.8%` |
+| **ALGO** | `Tier 2` | `12` | `41.7%` | `16.698` | **`+149.7%`** | **`4.47x`** | `-9.0%` | `+11.8%` |
+| **ENA** | `nan` | `6` | `100.0%` | `999.000` | **`+146.1%`** | **`4.31x`** | `0.0%` | `+27.3%` |
+| **CTSI** | `Tier 3` | `28` | `75.0%` | `5.179` | **`+143.3%`** | **`4.19x`** | `-15.3%` | `+9.8%` |
 
 
 ---
@@ -85,25 +92,25 @@ Generated: `2026-10-07 06:38:26 UTC`
 
 | Asset | Tier | Closed Trades | Win Rate | Profit Factor | Net Log PnL | Capital Multiple | Max Log DD | Cumulative MAE |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ID** | `Tier 3` | `18` | `27.8%` | `0.384` | **`-57.2%`** | `0.56x` | `-55.9%` | `-6.8%` |
-| **TNSR** | `Tier 3` | `18` | `33.3%` | `0.429` | **`-55.8%`** | `0.57x` | `-84.5%` | `-7.6%` |
-| **1000000BOB** | `Tier 3` | `5` | `60.0%` | `0.273` | **`-55.2%`** | `0.58x` | `-75.9%` | `-16.3%` |
-| **TAO** | `Tier 1` | `8` | `12.5%` | `0.072` | **`-55.0%`** | `0.58x` | `-46.4%` | `-13.8%` |
-| **BEAMX** | `Tier 3` | `20` | `30.0%` | `0.466` | **`-53.5%`** | `0.59x` | `-69.9%` | `-7.4%` |
-| **JELLYJELLY** | `Tier 3` | `7` | `0.0%` | `0.000` | **`-48.7%`** | `0.61x` | `-40.1%` | `-14.1%` |
-| **1000RATS** | `Tier 3` | `14` | `35.7%` | `0.504` | **`-41.0%`** | `0.66x` | `-49.3%` | `-11.4%` |
-| **AGLD** | `Tier 3` | `15` | `33.3%` | `0.490` | **`-40.4%`** | `0.67x` | `-53.9%` | `-7.9%` |
-| **ACH** | `Tier 3` | `23` | `39.1%` | `0.598` | **`-39.4%`** | `0.67x` | `-59.5%` | `-7.2%` |
-| **SOL** | `Tier 1` | `9` | `11.1%` | `0.328` | **`-39.1%`** | `0.68x` | `-25.8%` | `-9.2%` |
+| **AIN** | `Tier 3` | `3` | `66.7%` | `0.078` | **`-100.2%`** | `0.37x` | `-108.7%` | `-31.9%` |
+| **1000000BOB** | `Tier 3` | `4` | `50.0%` | `0.189` | **`-55.8%`** | `0.57x` | `-68.9%` | `-17.5%` |
+| **CETUS** | `Tier 3` | `6` | `16.7%` | `0.113` | **`-48.8%`** | `0.61x` | `-46.5%` | `-11.6%` |
+| **TNSR** | `Tier 3` | `15` | `33.3%` | `0.364` | **`-45.6%`** | `0.63x` | `-50.4%` | `-10.0%` |
+| **ALT** | `Tier 3` | `11` | `36.4%` | `0.395` | **`-36.3%`** | `0.69x` | `-51.8%` | `-7.7%` |
+| **ALPINE** | `Tier 3` | `4` | `0.0%` | `0.000` | **`-31.4%`** | `0.73x` | `-22.8%` | `-10.2%` |
+| **JELLYJELLY** | `Tier 3` | `9` | `22.2%` | `0.353` | **`-30.4%`** | `0.74x` | `-25.8%` | `-11.9%` |
+| **DOOD** | `Tier 3` | `5` | `20.0%` | `0.119` | **`-30.3%`** | `0.74x` | `-34.4%` | `-11.4%` |
+| **WLFI** | `Tier 1` | `1` | `0.0%` | `0.000` | **`-29.7%`** | `0.74x` | `0.0%` | `-17.0%` |
+| **SANTOS** | `Tier 3` | `8` | `25.0%` | `0.361` | **`-25.8%`** | `0.77x` | `-31.8%` | `-7.8%` |
 
 
 ---
 
 ## 6. Symbol Breadth & Universe Participation
-- **Total Unique Symbols Traded:** `529`
-- **Net Profitable Symbols:** `260` (49.1%)
-- **Net Drawdown Symbols:** `266` (50.3%)
-- **Neutral / Breakeven Symbols:** `3` (0.6%)
+- **Total Unique Symbols Traded:** `548`
+- **Net Profitable Symbols:** `399` (72.8%)
+- **Net Drawdown Symbols:** `149` (27.2%)
+- **Neutral / Breakeven Symbols:** `0` (0.0%)
 - **Individual Asset Trade Logs:** Available in `data/all_tapes/v12_production/symbols/<ASSET>_trades.csv`
 
 ---
@@ -111,25 +118,25 @@ Generated: `2026-10-07 06:38:26 UTC`
 ### 🛡️ Counterfactual Telemetry & Veto Alpha
 | Metric | Value | Interpretation |
 | :--- | :--- | :--- |
-| **Total Vetoed Signals** | `52,992` | Signals safely filtered out at gates |
-| **Dodged Bullets (Loss Saved)** | `32,932` | Vetoed signals that dumped or hit initial stops |
-| **Missed Opportunities** | `10,138` | Vetoed signals that rallied $\ge +20\%$ MFE |
-| **Saved Loss Magnitude** | `+484,030.4%` | Total capital protected from false breakouts |
-| **Missed Upside Excursion** | `-529,633.3%` | Total upside forgone |
-| **Net Veto Alpha** | `+-45,602.9%` | **Net Statistical Advantage of Risk Gates** |
-| **Gate Efficiency Ratio** | `62.1%` | Percentage of vetoes that prevented capital loss |
+| **Total Vetoed Signals** | `179,513` | Signals safely filtered out at gates |
+| **Dodged Bullets (Loss Saved)** | `107,688` | Vetoed signals that dumped or hit initial stops |
+| **Missed Opportunities** | `32,419` | Vetoed signals that rallied $\ge +20\%$ MFE |
+| **Saved Loss Magnitude** | `+1,586,737.9%` | Total capital protected from false breakouts |
+| **Missed Upside Excursion** | `-1,468,701.4%` | Total upside forgone |
+| **Net Veto Alpha** | `+118,036.5%` | **Net Statistical Advantage of Risk Gates** |
+| **Gate Efficiency Ratio** | `60.0%` | Percentage of vetoes that prevented capital loss |
 
 #### Veto Gate Attribution
 | Gate | Count | Share |
 | :--- | :--- | :--- |
-| `Core 1: Macro Bear Veto` | `22,470` | `42.4%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `13,420` | `25.3%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `7,205` | `13.6%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `5,398` | `10.2%` |
-| `Core 4: RS_BTC Over-Extension Climax Clamp` | `2,002` | `3.8%` |
-| `Core 4: Funding Rate Cap` | `1,339` | `2.5%` |
-| `Core 4: Defensible Whale Dump` | `839` | `1.6%` |
-| `Core 4: Whale Firewall` | `250` | `0.5%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `67,806` | `37.8%` |
+| `Core 1: Macro Bear Veto` | `66,677` | `37.1%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `26,833` | `14.9%` |
+| `Core 4: RS_BTC Over-Extension Climax Clamp` | `8,348` | `4.7%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `6,528` | `3.6%` |
+| `Core 4: Funding Rate Cap` | `1,370` | `0.8%` |
+| `Core 4: Defensible Whale Dump` | `1,144` | `0.6%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `398` | `0.2%` |
 
 ---
 *Confidential — Kronos V12 Autonomous Quantitative Production Architecture.*

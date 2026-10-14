@@ -95,21 +95,34 @@ if [ -f "data/sync_state.json" ]; then
     cp -f data/sync_state.json config/ingestion/sync_state.json || true
 fi
 
-# 6. Step 2: Multi-Worker Matrix Backtest & Telemetry
+# 6. Step 2: Incremental Live Runner (processes only new closed bar(s) per asset)
+#    Weekly full rebuild on Sundays at 03:00 UTC via separate cron (kronos-weekly-rebuild.timer)
+#    For ad-hoc full rebuilds: pass KRONOS_FULL_REBUILD=1 environment variable
 echo ""
-echo "[2/6] Executing Clean 6-Core Matrix & Counterfactual Telemetry..."
-$PYTHON build_v12_tape.py
+if [ "${KRONOS_FULL_REBUILD:-0}" = "1" ]; then
+    echo "[2/6] FULL REBUILD MODE: Executing Cold 6-Core Backtest across all 652 shards..."
+    $PYTHON build_v12_tape.py
+else
+    echo "[2/6] Running Incremental Live Runner (tail-slice only — ~1 min vs 30 min cold)..."
+    $PYTHON momentum_v12/live_runner_v12.py
+fi
 
 # 7. Step 3: Strict Compounding Log Tapes & Precomputed Scorecard
 echo ""
 echo "[3/6] Exporting Strict Log-Compounding Tapes & Precomputed Scorecard..."
 $PYTHON momentum_v12/build_csv.py
 
-# 8. Step 4: Executive Markdown Summaries (v12_tear_tape.md & All Symbol Tear Sheets)
+# 8. Step 4: Executive Markdown Summaries (only changed symbols)
 echo ""
-echo "[4/6] Generating Institutional Executive Artifacts & All Symbol Tear Sheets..."
+echo "[4/6] Generating Institutional Executive Artifacts & Changed Symbol Tear Sheets..."
 $PYTHON momentum_v12/generate_artifacts.py
-$PYTHON scripts/generate_symbol_tearsheets.py --all
+# Only regenerate tear sheets for symbols with active open positions or exits in last 24h
+# (use --all for weekly full rebuild runs to keep all 600+ sheets current)
+if [ "${KRONOS_FULL_REBUILD:-0}" = "1" ]; then
+    $PYTHON scripts/generate_symbol_tearsheets.py --all
+else
+    $PYTHON scripts/generate_symbol_tearsheets.py --open-only
+fi
 
 # 9. Step 5: Offsite S3 Backup (Graceful fallback on local)
 echo ""

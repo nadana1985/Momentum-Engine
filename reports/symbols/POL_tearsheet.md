@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `POL`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
 | **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+4.7%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.05x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+2.35%`** | `> +1.0%` | ✅ Strong Edge |
+| **Cumulative Net Log Return** | **`+8.2%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.08x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+8.16%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`72.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+6.3% / -6.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`nanh`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+13.1% / -19.3%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2024-11-13 04:00` | `2024-11-16 04:00` | 72.0h | `$0.3773` | `$0.3785` | **+0.31%** | **+0.31%** | +6.8% | -7.4% | `time_expiry` |
-| 2 | Book 3 | `2025-07-23 20:00` | `2025-07-26 20:00` | 72.0h | `$0.2268` | `$0.2370` | **+4.48%** | **+4.38%** | +5.9% | -4.6% | `time_expiry` |
+| 1 | Book 5 (Shelf Absorption Squeeze) | `2026-01-09 14:00` | `2026-01-13 14:00` | Live | `$0.1399` | `$0.1518` | **+8.50%** | **+8.16%** | +13.1% | -19.3% | `shelf_target_reclaim` |
 
 ---
 
@@ -34,24 +33,24 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `time_expiry` | `2` | `100.0%` | **`+4.7%`** |
+| `shelf_target_reclaim` | `1` | `100.0%` | **`+8.2%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `POL`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `110`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `45` (40.9% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `162`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `97` (59.9% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `12`
-* **Saved Capital Losses Avoided:** `+492.4%`
+* **Saved Capital Losses Avoided:** `+1,187.3%`
 * **Missed Upside Forgone:** `-343.2%`
-* **Net Veto Alpha:** `+149.2%`
+* **Net Veto Alpha:** `+844.2%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: ATH Tier-2 Protection Clamp` | `62` | `56.4%` |
-| `Core 1: Macro Bear Veto` | `48` | `43.6%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `114` | `70.4%` |
+| `Core 1: Macro Bear Veto` | `48` | `29.6%` |
 
 ---
 

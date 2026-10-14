@@ -138,3 +138,129 @@ def apply_sizing_overlay_to_trades(
     df["weighted_pnl"] = weighted_r
     df["weighted_log_ret"] = np.log1p(weighted_r)
     return df
+
+
+def get_ema_position_weight(
+    rank_ema: Union[float, np.ndarray, pd.Series],
+    config: Optional[SizingConfig] = None,
+) -> Union[float, np.ndarray, pd.Series]:
+    """
+    Study S-AY: Continuous 200-EMA Sizing Overlay:
+        w_ema = clip(ema_base + ema_slope * rank_ema, ema_min, ema_max)
+    """
+    if config is None:
+        config = SizingConfig()
+
+    if not getattr(config, 'enable_ema_sizing', True):
+        if isinstance(rank_ema, (pd.Series, np.ndarray)):
+            return np.ones_like(rank_ema, dtype=float)
+        return 1.0
+
+    base = getattr(config, 'ema_base_multiplier', 0.75)
+    slope = getattr(config, 'ema_slope_multiplier', 0.50)
+    w_min = getattr(config, 'ema_min_multiplier', 0.75)
+    w_max = getattr(config, 'ema_max_multiplier', 1.25)
+
+    if isinstance(rank_ema, (float, int, np.floating)):
+        val = 0.50 if np.isnan(rank_ema) else float(rank_ema)
+        return float(np.clip(base + slope * val, w_min, w_max))
+
+    arr = np.asarray(rank_ema, dtype=float)
+    clean_arr = np.where(np.isnan(arr), 0.50, arr)
+    res = np.clip(base + slope * clean_arr, w_min, w_max)
+    if isinstance(rank_ema, pd.Series):
+        return pd.Series(res, index=rank_ema.index)
+    return res
+
+
+def get_btc_macro_multiplier(
+    btc_above_200d: Union[bool, np.ndarray, pd.Series],
+    bear_mult: float = 0.50,
+) -> Union[float, np.ndarray, pd.Series]:
+    """
+    Study S-BB Arm 2: Continuous BTC Macro Sizing:
+        1.0x when BTC > 200d EMA (Bull Confluence)
+        0.50x when BTC <= 200d EMA (Bear Defense)
+    """
+    if isinstance(btc_above_200d, (bool, int, np.bool_)):
+        return 1.0 if bool(btc_above_200d) else bear_mult
+
+    arr = np.asarray(btc_above_200d, dtype=bool)
+    res = np.where(arr, 1.0, bear_mult)
+    if isinstance(btc_above_200d, pd.Series):
+        return pd.Series(res, index=btc_above_200d.index)
+    return res
+
+
+def compute_csmi_metrics(
+    book: str,
+    rank_ts: Union[float, pd.Series, np.ndarray],
+    pct_lam: Union[float, pd.Series, np.ndarray],
+    dist_ema: Union[float, pd.Series, np.ndarray],
+    config: Optional[SizingConfig] = None,
+) -> tuple[Union[float, pd.Series, np.ndarray], Union[float, pd.Series, np.ndarray], Union[float, pd.Series, np.ndarray]]:
+    """
+    Study S-BD: Computes the Compensatory Squeeze & Momentum Index (CSMI):
+    Returns (csmi_score, csmi_prob, w_csmi).
+    Supports both scalar and vectorized (pd.Series / np.ndarray) inputs.
+    """
+    if config is None:
+        config = SizingConfig()
+
+    is_series = isinstance(rank_ts, pd.Series) or isinstance(pct_lam, pd.Series) or isinstance(dist_ema, pd.Series)
+    is_array = isinstance(rank_ts, np.ndarray) or isinstance(pct_lam, np.ndarray) or isinstance(dist_ema, np.ndarray)
+
+    base = getattr(config, 'csmi_base_weight', 0.50)
+    slope = getattr(config, 'csmi_slope_weight', 1.00)
+    w_min = getattr(config, 'csmi_min_weight', 0.50)
+    w_max = getattr(config, 'csmi_max_weight', 1.45)
+    enable_sizing = getattr(config, 'enable_csmi_sizing', True)
+
+    if not (is_series or is_array):
+        r_ts = 0.50 if (rank_ts is None or pd.isna(rank_ts)) else float(rank_ts)
+        r_lam = 0.50 if (pct_lam is None or pd.isna(pct_lam)) else float(pct_lam)
+        d_ema = 0.0 if (dist_ema is None or pd.isna(dist_ema)) else float(dist_ema)
+
+        z_ts = (r_ts - 0.50) / 0.288
+        z_lam = (0.50 - r_lam) / 0.288
+
+        if book == 'Book 1':
+            z_ema = float(np.clip(d_ema / 0.20, -2.0, 2.0))
+            s = 0.45 * z_ts + 0.35 * z_ema + 0.20 * z_lam
+        elif book == 'Book 2':
+            z_ema = float(np.clip(-d_ema / 0.20, -2.0, 2.0))
+            s = 0.50 * z_ema + 0.35 * z_ts + 0.15 * z_lam
+        else:
+            s = 0.0
+
+        prob = float(1.0 / (1.0 + np.exp(-s)))
+        w_csmi = float(np.clip(base + slope * prob, w_min, w_max)) if enable_sizing else 1.0
+        return s, prob, w_csmi
+
+    # Vectorized path
+    r_ts_arr = np.where(pd.isna(rank_ts), 0.50, np.asarray(rank_ts, dtype=float))
+    r_lam_arr = np.where(pd.isna(pct_lam), 0.50, np.asarray(pct_lam, dtype=float))
+    d_ema_arr = np.where(pd.isna(dist_ema), 0.0, np.asarray(dist_ema, dtype=float))
+
+    z_ts = (r_ts_arr - 0.50) / 0.288
+    z_lam = (0.50 - r_lam_arr) / 0.288
+
+    if book == 'Book 1':
+        z_ema = np.clip(d_ema_arr / 0.20, -2.0, 2.0)
+        s = 0.45 * z_ts + 0.35 * z_ema + 0.20 * z_lam
+    elif book == 'Book 2':
+        z_ema = np.clip(-d_ema_arr / 0.20, -2.0, 2.0)
+        s = 0.50 * z_ema + 0.35 * z_ts + 0.15 * z_lam
+    else:
+        s = np.zeros_like(r_ts_arr)
+
+    prob = 1.0 / (1.0 + np.exp(-s))
+    w_csmi = np.clip(base + slope * prob, w_min, w_max) if enable_sizing else np.ones_like(prob)
+
+    if is_series:
+        idx = rank_ts.index if isinstance(rank_ts, pd.Series) else (pct_lam.index if isinstance(pct_lam, pd.Series) else dist_ema.index)
+        return pd.Series(s, index=idx), pd.Series(prob, index=idx), pd.Series(w_csmi, index=idx)
+
+    return s, prob, w_csmi
+
+

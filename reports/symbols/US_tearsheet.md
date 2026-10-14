@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `US`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-27.2%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.76x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-13.58%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-8.6%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`7.5h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+4.8% / -11.6%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+3.5%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.04x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+3.47%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`5.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+22.3% / -10.2%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 1 | `2026-09-23 10:00` | `2026-09-23 14:00` | 4.0h | `$0.0190` | `$0.0166` | **-16.95%** | **-18.58%** | +0.9% | -12.1% | `initial_stop` |
-| 2 | Book 3 | `2026-09-27 15:00` | `2026-09-28 02:00` | 11.0h | `$0.0276` | `$0.0253` | **-8.23%** | **-8.59%** | +8.7% | -11.2% | `stop_loss` |
+| 1 | Book 4 | `2026-06-02 02:00` | `2026-06-02 07:00` | 5.0h | `$0.0098` | `$0.0118` | **+3.55%** | **+3.47%** | +22.3% | -10.2% | `target_reclaim` |
 
 ---
 
@@ -34,25 +33,24 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-18.6%`** |
-| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+3.5%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `US`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `35`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `27` (77.1% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `18`
-* **Saved Capital Losses Avoided:** `+711.1%`
-* **Missed Upside Forgone:** `-855.6%`
-* **Net Veto Alpha:** `+-144.6%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `416`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `275` (66.1% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `181`
+* **Saved Capital Losses Avoided:** `+5,165.6%`
+* **Missed Upside Forgone:** `-6,035.3%`
+* **Net Veto Alpha:** `+-869.7%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `22` | `62.9%` |
-| `Core 4: Funding Rate Cap` | `13` | `37.1%` |
+| `Core 1: Macro Bear Veto` | `403` | `96.9%` |
+| `Core 4: Funding Rate Cap` | `13` | `3.1%` |
 
 ---
 

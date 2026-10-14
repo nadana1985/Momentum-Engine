@@ -12,10 +12,10 @@
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.5%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-2.26%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-3.5%`** | `< -30%` | ✅ Contained |
+| **Cumulative Net Log Return** | **`-5.2%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.95x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-2.61%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-4.1%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`26.5h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+1.6% / -3.0%`** | MFE > 2x MAE | High Asymmetry |
 
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-14 15:00` | `2026-09-16 15:00` | 48.0h | `$332.0380` | `$328.7062` | **-1.00%** | **-1.01%** | +1.8% | -2.7% | `fast_decay_cut` |
-| 2 | Book 2 | `2026-09-28 11:00` | `2026-09-28 16:00` | 5.0h | `$319.1860` | `$308.1435` | **-3.46%** | **-3.52%** | +1.5% | -3.3% | `initial_stop` |
+| 1 | Book 2 | `2026-09-14 15:00` | `2026-09-16 15:00` | 48.0h | `$332.0380` | `$328.7062` | **-1.16%** | **-1.16%** | +1.8% | -2.7% | `fast_decay_cut` |
+| 2 | Book 2 | `2026-09-28 11:00` | `2026-09-28 16:00` | 5.0h | `$319.1860` | `$308.1435` | **-3.99%** | **-4.06%** | +1.5% | -3.3% | `breakeven_ratchet` |
 
 ---
 
@@ -34,8 +34,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `1` | `0.0%` | **`-1.0%`** |
-| `initial_stop` | `1` | `0.0%` | **`-3.5%`** |
+| `breakeven_ratchet` | `1` | `0.0%` | **`-4.1%`** |
+| `fast_decay_cut` | `1` | `0.0%` | **`-1.2%`** |
 
 ---
 

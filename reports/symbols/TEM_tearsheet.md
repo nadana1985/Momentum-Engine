@@ -14,10 +14,10 @@
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
 | **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
 | **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-8.57%`** | `> +1.0%` | Normal |
+| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`24.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+7.1% / -8.7%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`5.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+5.2% / -8.8%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-10-05 15:00` | `2026-10-06 15:00` | 24.0h | `$82.2351` | `$75.4812` | **-8.21%** | **-8.57%** | +7.1% | -8.7% | `initial_stop` |
+| 1 | Book 3 | `2026-10-06 14:00` | `2026-10-06 19:00` | 5.0h | `$78.1926` | `$71.7573` | **-8.23%** | **-8.59%** | +5.2% | -8.8% | `stop_loss` |
 
 ---
 
@@ -33,23 +33,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `initial_stop` | `1` | `0.0%` | **`-8.6%`** |
+| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `TEM`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `7`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `1` (14.3% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `11`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `5` (45.5% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `1`
-* **Saved Capital Losses Avoided:** `+6.3%`
+* **Saved Capital Losses Avoided:** `+83.4%`
 * **Missed Upside Forgone:** `-23.4%`
-* **Net Veto Alpha:** `+-17.2%`
+* **Net Veto Alpha:** `+60.0%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `7` | `100.0%` |
+| `Core 1: Macro Bear Veto` | `7` | `63.6%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `2` | `18.2%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `2` | `18.2%` |
 
 ---
 

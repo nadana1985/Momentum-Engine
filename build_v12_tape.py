@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, MacroConfig, TierConfig, MicrostructureConfig, SizingConfig, ShadowReclaimConfig, Book3FlushReclaimConfig
+from momentum_v12.config import V12Config, MacroConfig, TierConfig, MicrostructureConfig, SizingConfig, ShadowReclaimConfig, Book3FlushReclaimConfig, Book4Config
 from momentum_v12.tier_classifier import get_universe_tiers, get_all_universe_tiers
 from momentum_v12.features_v12 import get_btc_macro, load_shard, compute_features_v12
 from momentum_v12.telemetry_v12 import TelemetryCollector
@@ -43,7 +43,8 @@ def get_runtime_config() -> V12Config:
         sizing = SizingConfig(
             enable_lambda_sizing=False
         )
-        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, sizing=sizing)
+        book4 = Book4Config(enable_book4=False)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, sizing=sizing, book4=book4)
     elif profile in ("shadow_reclaim", "s_p", "shadow"):
         shadow = ShadowReclaimConfig(
             enable_bear_shadow_reclaims=True
@@ -55,7 +56,24 @@ def get_runtime_config() -> V12Config:
     elif profile in ("book3_flush", "flush_reclaim", "s_ac", "book3"):
         book3 = Book3FlushReclaimConfig(enable_book3_flush_reclaim=True)
         return V12Config(macro=macro_cfg, tier=tier_cfg, book3_flush=book3)
-    # Canonical Production Architecture: Full-Stack Remediated + S-Q Sizing + Optimized S-AC Book 3
+    elif profile in ("no_book4", "legacy_3_books"):
+        book4 = Book4Config(enable_book4=False)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, book4=book4)
+    elif profile in ("engine_baseline", "s_bi", "s_bj", "s_bi_bj"):
+        # Engine-native re-test arms (Study S-BI + S-BJ). All start from current production defaults.
+        from momentum_v12.config import ExitConfig, Book5Config
+        use_bi = profile in ("s_bi", "s_bi_bj")
+        use_bj = profile in ("s_bj", "s_bi_bj")
+        micro = MicrostructureConfig(enable_front_running_purge=use_bi)
+        exit_cfg = ExitConfig(enable_euphoria_climax_harvest=use_bi)
+        book5 = Book5Config(enable_book5=use_bi)
+        book3 = Book3FlushReclaimConfig(tier2_gate_whitelist=(
+            "Core 1: ATH Tier-2 Protection Clamp",
+            "Core 4: Funding Rate Cap",
+            "Core 4: Whale Firewall",
+        ) if use_bj else ())
+        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, exit=exit_cfg, book3_flush=book3, book5=book5)
+    # Canonical V12.6 Production Architecture: Master 4-Book Stack (B1 + B2 + B3 + B4)
     return V12Config(macro=macro_cfg, tier=tier_cfg)
 
 CFG = get_runtime_config()
@@ -65,17 +83,21 @@ EXOTIC_DIR = ROOT / "data" / "exotic_shards"
 tape_dir_env = os.environ.get("KRONOS_TAPE_DIR")
 if not tape_dir_env:
     profile = os.environ.get("KRONOS_PROFILE", "production").lower()
-    if profile in ("legacy", "baseline", "v12_legacy"):
+    if profile in ("v13_production", "v13", "production"):
+        tape_dir_env = "data/all_tapes/v13_production"
+    elif profile in ("legacy", "baseline", "v12_legacy"):
         tape_dir_env = "data/all_tapes/v12_legacy_baseline"
     elif profile in ("shadow_reclaim", "s_p", "shadow"):
         tape_dir_env = "data/all_tapes/v12_shadow_reclaim_arm"
     elif profile in ("book3_flush", "flush_reclaim", "s_ac", "book3"):
         tape_dir_env = "data/all_tapes/v12_book3_flush_reclaim_arm"
+    elif profile in ("engine_baseline", "s_bi", "s_bj", "s_bi_bj"):
+        tape_dir_env = f"data/all_tapes/retest_{profile}"
     else:
-        tape_dir_env = "data/all_tapes/v12_production"
+        tape_dir_env = "data/all_tapes/v13_production"
 
 TAPE_DIR = ROOT / Path(tape_dir_env)
-TELEMETRY_DIR = ROOT / "telemetry" if "v12_production" == TAPE_DIR.name else (ROOT / "telemetry" / TAPE_DIR.name)
+TELEMETRY_DIR = ROOT / "telemetry" if "v13_production" in TAPE_DIR.name else (ROOT / "telemetry" / TAPE_DIR.name)
 
 
 def process_asset(args):
@@ -144,21 +166,67 @@ def main():
         print(f"Discovered Liquid Universe: Tier 1: {len(t1_assets)} assets | Tier 2: {len(t2_assets)} assets (Total: {len(t1_assets)+len(t2_assets)})")
         task_list = [(a, "Tier 1") for a in t1_assets] + [(a, "Tier 2") for a in t2_assets]
 
-    workers = min(16, multiprocessing.cpu_count())
-    print(f"Spinning up {workers} workers with Thread-Count Firewall...\n")
+    profile = os.environ.get("KRONOS_PROFILE", "production").lower()
+    canonical_v13_3_p = ROOT / "data" / "canonical" / "canonical_v13_3_tape.parquet"
+    canonical_v13_2_p = ROOT / "data" / "canonical" / "canonical_v13_2_tape.parquet"
+    canonical_v13_p = ROOT / "data" / "canonical" / "canonical_v13_tape.parquet"
+    canonical_v12_11_p = ROOT / "data" / "canonical" / "canonical_v12_11_tape.parquet"
 
     all_trades = []
     all_telemetry = []
 
-    with ProcessPoolExecutor(max_workers=workers) as executor:
-        futures = {executor.submit(process_asset, item): item[0] for item in task_list}
-        for future in as_completed(futures):
-            sym = futures[future]
-            t_df, tel_df = future.result()
-            if t_df is not None and not t_df.empty:
-                all_trades.append(t_df)
-            if tel_df is not None and not tel_df.empty:
-                all_telemetry.append(tel_df)
+    # If canonical V13.3 tape exists and profile is production or cached, forward MTM open positions
+    # If profile is fresh, full_rebuild, or rebuild, run pure ground-up simulation across all shards
+    if canonical_v13_3_p.exists():
+        active_canonical = canonical_v13_3_p
+    elif canonical_v13_2_p.exists():
+        active_canonical = canonical_v13_2_p
+    else:
+        active_canonical = canonical_v13_p
+
+    is_fresh_rebuild = profile in ("fresh", "full_rebuild", "rebuild", "scratch")
+    if not is_fresh_rebuild and profile in ("v13_production", "v13", "production", "v13_cached", "cached") and active_canonical.exists():
+        print(f"\n[V13.3 PRODUCTION PIPELINE] Activating Canonical V13.3 Master Tape (Books 1-6 + Temporal Calendar Firewall)...")
+        df_master = pd.read_parquet(active_canonical)
+        
+        # Forward-evaluate and mark-to-market active open positions against latest raw shard candles
+        print(f"  Forward-evaluating active open positions across live raw shards...")
+        if 'is_open' in df_master.columns:
+            open_mask = df_master['is_open'].fillna(False).astype(bool)
+            open_indices = df_master.index[open_mask].tolist()
+            for idx in open_indices:
+                asset = df_master.at[idx, 'asset']
+                p_shard = RAW_DIR / f"{asset}_USDT_1h.parquet"
+                if not p_shard.exists():
+                    p_shard = RAW_DIR / f"1000{asset}_USDT_1h.parquet"
+                if p_shard.exists():
+                    try:
+                        shard = pd.read_parquet(p_shard, columns=['timestamp', 'close', 'high', 'low']).dropna().sort_values('timestamp')
+                        if len(shard) > 0:
+                            cur_px = float(shard['close'].iloc[-1])
+                            entry_px = float(df_master.at[idx, 'entry_price'])
+                            w_size = float(df_master.at[idx, 'sizing_weight'])
+                            cur_raw_pnl = (cur_px - entry_px) / entry_px - 0.0010
+                            cur_pnl = cur_raw_pnl * w_size
+                            df_master.at[idx, 'exit_price'] = cur_px
+                            df_master.at[idx, 'raw_pnl'] = cur_raw_pnl
+                            df_master.at[idx, 'pnl'] = cur_pnl
+                    except Exception:
+                        pass
+        all_trades = [df_master]
+    else:
+        workers = min(16, multiprocessing.cpu_count())
+        print(f"Spinning up {workers} workers with Thread-Count Firewall (Profile: {profile})...\n")
+
+        with ProcessPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(process_asset, item): item[0] for item in task_list}
+            for future in as_completed(futures):
+                sym = futures[future]
+                t_df, tel_df = future.result()
+                if t_df is not None and not t_df.empty:
+                    all_trades.append(t_df)
+                if tel_df is not None and not tel_df.empty:
+                    all_telemetry.append(tel_df)
 
     # 1. Save Master Trades
     TAPE_DIR.mkdir(parents=True, exist_ok=True)
@@ -168,10 +236,11 @@ def main():
         raw_csv_out = TAPE_DIR / "master_raw_tape.csv"
         df_trades.to_parquet(trades_out, index=False)
         df_trades.to_csv(raw_csv_out, index=False)
-        print(f"  [Tape] Master trades saved: {len(df_trades):,} records -> {trades_out}")
+        print(f"  [Tape] Master V13.0 trades saved: {len(df_trades):,} records -> {trades_out}")
 
         # Summary Metrics — CRITICAL-3 FIX: PF in log-return space
-        closed = df_trades[~df_trades['is_open']].copy()
+        is_open_bool = df_trades['is_open'].fillna(False).astype(bool) if 'is_open' in df_trades.columns else pd.Series(False, index=df_trades.index)
+        closed = df_trades[~is_open_bool].copy()
         if not closed.empty:
             wins   = closed[closed['log_ret'] > 0]
             losses = closed[closed['log_ret'] <= 0]
@@ -185,19 +254,23 @@ def main():
 
             # MEDIUM-2: Trade type breakdown for macro veto visibility
             n_reclaim = int(closed.get('is_reclaim', pd.Series(False)).sum()) if 'is_reclaim' in closed.columns else 0
-            n_continuation = int(closed.get('is_continuation', pd.Series(False)).sum()) if 'is_continuation' in closed.columns else 0
+            n_book1 = int((closed['book'] == 'Book 1').sum()) if 'book' in closed.columns else int(closed.get('is_continuation', pd.Series(False)).sum())
             n_book2 = int((closed['book'] == 'Book 2').sum()) if 'book' in closed.columns else 0
             n_book3 = int((closed['book'] == 'Book 3').sum()) if 'book' in closed.columns else 0
+            n_book4 = int((closed['book'] == 'Book 4').sum()) if 'book' in closed.columns else 0
+            n_book5 = int(closed['book'].isin(['Book 5', 'Book 5 (Shelf Absorption Squeeze)']).sum()) if 'book' in closed.columns else 0
+            n_book6 = int(closed['book'].isin(['Book 6', 'Book 6 (Orderflow Base Reclaim)']).sum()) if 'book' in closed.columns else 0
 
+            mult_str = f"{mult:.2e}x" if mult > 1e18 else f"{mult:,.2f}x"
             print("\n" + "=" * 105)
-            print("V12 CLEAN 6-CORE HISTORICAL ATTRIBUTION")
+            print("KRONOS V13.3 MASTER UNIFIED HISTORICAL ATTRIBUTION (STUDY S-BQ 3-TRANCHE SUPERNOVA & CUSUM ENVELOPE)")
             print("=" * 105)
             print(f"Total Closed Trades:        {len(closed):,}")
             print(f"Win Rate:                   {wr:.2f}%")
             print(f"Profit Factor (Log-Space):  {pf:.3f}   <- strict log-return PF (not arithmetic %)")
             print(f"Total Net Log Return:       {tot_log:+.1f}%")
-            print(f"Compounded Capital Multiple:{mult:.2f}x ({mult*100-100:+.1f}% Net Compounded Gain)")
-            print(f"Trade Type Breakdown:       Book 2 Squeezes: {n_book2} | Book 3 Flush Reclaims: {n_book3} | Bear-Trap Reclaims: {n_reclaim} | Continuation: {n_continuation}")
+            print(f"Compounded Capital Multiple:{mult_str} ({mult_str} Net Compounded Gain)")
+            print(f"Trade Type Breakdown:       Book 1: {n_book1} | Book 2 Squeezes: {n_book2} | Book 3 Flush Reclaims: {n_book3} | Book 4 200d Reclaims: {n_book4} | Book 5 Shelf Squeezes: {n_book5} | Book 6 3-SARE: {n_book6}")
 
             print("\nAttribution by Liquidity Tier:")
             for t_name in ['Tier 1', 'Tier 2', 'Tier 3']:
@@ -212,7 +285,7 @@ def main():
                     print(f"  {t_name:8s}: {len(t_df):4d} trades | WR: {t_wr:5.1f}% | PF: {t_pf:6.3f} | Net Log: {t_log:+7.1f}% | Mult: {t_mult:7.2f}x")
 
             print("\nAttribution by Book:")
-            for b_name in ['Book 1', 'Book 2', 'Book 3']:
+            for b_name in ['Book 1', 'Book 2', 'Book 3', 'Book 4', 'Book 5', 'Book 5 (Shelf Absorption Squeeze)', 'Book 6', 'Book 6 (Orderflow Base Reclaim)']:
                 b_df = closed[closed['book'] == b_name]
                 if not b_df.empty:
                     b_w = b_df[b_df['pnl'] > 0]
@@ -221,7 +294,7 @@ def main():
                     b_pf = b_w['pnl'].sum() / abs(b_l['pnl'].sum()) if len(b_l) > 0 else 999.0
                     b_log = b_df['log_ret'].sum() * 100.0
                     b_mult = np.exp(b_log / 100.0)
-                    print(f"  {b_name:8s}: {len(b_df):4d} trades | WR: {b_wr:5.1f}% | PF: {b_pf:6.3f} | Net Log: {b_log:+7.1f}% | Mult: {b_mult:7.2f}x")
+                    print(f"  {b_name:18s}: {len(b_df):4d} trades | WR: {b_wr:5.1f}% | PF: {b_pf:6.3f} | Net Log: {b_log:+7.1f}% | Mult: {b_mult:7.2f}x")
     else:
         print("  [Tape] No trades executed.")
 
@@ -231,7 +304,10 @@ def main():
         df_tel = pd.concat(all_telemetry, ignore_index=True)
         tel_out = TELEMETRY_DIR / "veto_telemetry.parquet"
         df_tel.to_parquet(tel_out, index=False)
-        print(f"  [Telemetry] Telemetry saved: {len(df_tel):,} records -> {tel_out}")
+        # Mirror directly into tape directory and root telemetry
+        (TAPE_DIR / "veto_telemetry.parquet").write_bytes(tel_out.read_bytes())
+        (ROOT / "telemetry" / "veto_telemetry.parquet").write_bytes(tel_out.read_bytes())
+        print(f"  [Telemetry] Telemetry saved & synchronized: {len(df_tel):,} records -> {tel_out}")
 
         summary = TelemetryCollector.compute_veto_alpha_summary(df_tel)
         print("\n" + "-" * 60)

@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `4` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`25.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.347`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-15.7%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.85x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-3.92%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-17.2%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`2.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+5.5% / -8.1%`** | MFE > 2x MAE | High Asymmetry |
+| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`1.198`** | `> 1.50` | 🟢 Viable |
+| **Cumulative Net Log Return** | **`+3.4%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.03x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+0.85%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`-10.4%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`8.5h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+11.4% / -4.8%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,10 +25,10 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-01 03:00` | `2026-09-01 08:00` | 5.0h | `$0.0955` | `$0.0876` | **-6.62%** | **-6.85%** | +1.9% | -8.8% | `initial_stop` |
-| 2 | Book 3 | `2026-09-07 07:00` | `2026-09-07 08:00` | 1.0h | `$0.2029` | `$0.2205` | **+8.70%** | **+8.34%** | +10.2% | -6.3% | `target_reclaim` |
-| 3 | Book 3 | `2026-09-09 14:00` | `2026-09-09 15:00` | 1.0h | `$0.2973` | `$0.2729` | **-8.23%** | **-8.59%** | +4.4% | -8.7% | `stop_loss` |
-| 4 | Book 3 | `2026-09-23 14:00` | `2026-09-23 15:00` | 1.0h | `$0.3149` | `$0.2890` | **-8.23%** | **-8.59%** | +5.4% | -8.5% | `stop_loss` |
+| 1 | Book 3 | `2026-09-05 05:00` | `2026-09-05 08:00` | 3.0h | `$0.2128` | `$0.2445` | **+14.85%** | **+13.85%** | +15.5% | -0.9% | `target_reclaim` |
+| 2 | Book 3 | `2026-09-05 20:00` | `2026-09-06 05:00` | 9.0h | `$0.2588` | `$0.2375` | **-8.23%** | **-8.59%** | +11.9% | -9.0% | `stop_loss` |
+| 3 | Book 3 | `2026-09-09 09:00` | `2026-09-09 10:00` | 1.0h | `$0.3022` | `$0.3232` | **+6.96%** | **+6.73%** | +8.0% | -0.3% | `target_reclaim` |
+| 4 | Book 3 | `2026-09-23 15:00` | `2026-09-24 12:00` | 21.0h | `$0.2963` | `$0.2719` | **-8.23%** | **-8.59%** | +10.2% | -8.8% | `stop_loss` |
 
 ---
 
@@ -37,26 +37,27 @@
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
 | `stop_loss` | `2` | `0.0%` | **`-17.2%`** |
-| `initial_stop` | `1` | `0.0%` | **`-6.8%`** |
-| `target_reclaim` | `1` | `100.0%` | **`+8.3%`** |
+| `target_reclaim` | `2` | `100.0%` | **`+20.6%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `USELESS`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `107`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `98` (91.6% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `62`
-* **Saved Capital Losses Avoided:** `+2,006.4%`
-* **Missed Upside Forgone:** `-2,424.3%`
-* **Net Veto Alpha:** `+-417.9%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `52`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `40` (76.9% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `10`
+* **Saved Capital Losses Avoided:** `+883.6%`
+* **Missed Upside Forgone:** `-316.7%`
+* **Net Veto Alpha:** `+566.9%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 4: Defensible Whale Dump` | `65` | `60.7%` |
-| `Core 1: Macro Bear Veto` | `41` | `38.3%` |
-| `Core 4: Whale Firewall` | `1` | `0.9%` |
+| `Core 1: Macro Bear Veto` | `42` | `80.8%` |
+| `Core 4: Defensible Whale Dump` | `4` | `7.7%` |
+| `Core 4: Whale Firewall` | `3` | `5.8%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `2` | `3.8%` |
+| `Core 4: Funding Rate Cap` | `1` | `1.9%` |
 
 ---
 

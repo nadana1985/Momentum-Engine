@@ -39,8 +39,8 @@
 
 ## 4. Counterfactual Risk Gate Audit for `SONY`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `18`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `11` (61.1% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `19`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `11` (57.9% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
 * **Saved Capital Losses Avoided:** `+37.6%`
 * **Missed Upside Forgone:** `-0.0%`
@@ -49,9 +49,9 @@
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `14` | `77.8%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `3` | `16.7%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `1` | `5.6%` |
+| `Core 1: Macro Bear Veto` | `14` | `73.7%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `4` | `21.1%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `1` | `5.3%` |
 
 ---
 

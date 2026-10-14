@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `MUU`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-7.3%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.93x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-3.64%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-0.5%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`55.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+4.1% / -4.1%`** | MFE > 2x MAE | High Asymmetry |
+| **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`67.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+3.0% / -9.4%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,8 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-09-08 19:00` | `2026-09-11 19:00` | 72.0h | `$33.5616` | `$31.3614` | **-6.56%** | **-6.78%** | +7.4% | -7.7% | `time_expiry` |
-| 2 | Book 3 | `2026-10-03 01:00` | `2026-10-04 15:00` | 38.0h | `$36.6620` | `$36.4786` | **-0.50%** | **-0.50%** | +0.8% | -0.6% | `stall_bailout` |
+| 1 | Book 3 | `2026-09-10 13:00` | `2026-09-13 08:00` | 67.0h | `$32.2400` | `$29.5866` | **-8.23%** | **-8.59%** | +3.0% | -9.4% | `stop_loss` |
 
 ---
 
@@ -34,8 +33,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stall_bailout` | `1` | `0.0%` | **`-0.5%`** |
-| `time_expiry` | `1` | `0.0%` | **`-6.8%`** |
+| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
 
 ---
 

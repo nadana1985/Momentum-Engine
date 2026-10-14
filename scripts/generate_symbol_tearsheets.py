@@ -181,6 +181,7 @@ def main():
     parser.add_argument("--symbol", type=str, help="Specific symbol (e.g. THETA, AVAX, STX)")
     parser.add_argument("--top", type=int, default=0, help="Generate for top N alpha leaders")
     parser.add_argument("--all", action="store_true", help="Generate for all traded symbols")
+    parser.add_argument("--open-only", action="store_true", help="Generate only for open positions and trades closed in last 24h")
     args = parser.parse_args()
 
     trades_path = TAPE_DIR / "trades.parquet"
@@ -200,6 +201,31 @@ def main():
         print(f"Generated tear sheet for {sym} -> {REPORTS_DIR / f'{sym}_tearsheet.md'}")
         print("\n" + "="*80)
         print(content)
+    elif args.open_only:
+        # 1. Assets with active open trades
+        open_syms = set()
+        if 'is_open' in df_trades.columns:
+            open_syms.update(df_trades[df_trades['is_open']]['asset'].dropna().unique().tolist())
+
+        # 2. Assets with trades closed in the last 24 hours
+        if 'exit' in df_trades.columns:
+            now_utc = pd.Timestamp.now(tz=None)
+            closed_recent = df_trades[~df_trades.get('is_open', False)].copy()
+            closed_recent['exit_dt'] = pd.to_datetime(closed_recent['exit'], errors='coerce')
+            recent_mask = closed_recent['exit_dt'] >= (now_utc - pd.Timedelta(hours=24))
+            open_syms.update(closed_recent[recent_mask]['asset'].dropna().unique().tolist())
+
+        target_syms = sorted(list(open_syms))
+        if not target_syms:
+            # Fallback if no open trades: top 5 alpha leaders
+            target_syms = df_scorecard.sort_values('total_log_pnl', ascending=False).head(5)['asset'].tolist() if not df_scorecard.empty else []
+            print(f"No active open positions. Generating for Top {len(target_syms)} Alpha Leaders: {target_syms}")
+        else:
+            print(f"Generating tear sheets for {len(target_syms)} Active Open / Recent Position(s): {target_syms}")
+
+        for s in target_syms:
+            generate_single_symbol_tearsheet(s, df_trades, df_scorecard, df_telemetry, save_file=True)
+        print(f"Active symbol tear sheets saved to {REPORTS_DIR}/")
     elif args.top > 0:
         if df_scorecard.empty:
             print("Scorecard missing. Cannot rank top leaders.")
@@ -216,12 +242,15 @@ def main():
             generate_single_symbol_tearsheet(s, df_trades, df_scorecard, df_telemetry, save_file=True)
         print(f"All {len(all_syms)} tear sheets saved to {REPORTS_DIR}/")
     else:
-        # Default: generate for Top 15 Alpha Leaders
-        top_syms = df_scorecard.sort_values('total_log_pnl', ascending=False).head(15)['asset'].tolist()
-        print(f"Generating tear sheets for Top 15 Alpha Leaders: {top_syms}")
-        for s in top_syms:
+        # Default: generate for active open positions
+        open_syms = set()
+        if 'is_open' in df_trades.columns:
+            open_syms.update(df_trades[df_trades['is_open']]['asset'].dropna().unique().tolist())
+        target_syms = sorted(list(open_syms)) or (df_scorecard.sort_values('total_log_pnl', ascending=False).head(5)['asset'].tolist() if not df_scorecard.empty else [])
+        print(f"Defaulting to active portfolio tear sheets ({len(target_syms)} symbols): {target_syms}")
+        for s in target_syms:
             generate_single_symbol_tearsheet(s, df_trades, df_scorecard, df_telemetry, save_file=True)
-        print(f"Top 15 symbol tear sheets saved to {REPORTS_DIR}/")
+        print(f"Tear sheets saved to {REPORTS_DIR}/")
 
 
 if __name__ == "__main__":

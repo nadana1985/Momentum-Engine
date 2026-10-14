@@ -12,12 +12,12 @@
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
 | **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-0.4%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`1.00x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.36%`** | `> +1.0%` | Normal |
+| **Cumulative Net Log Return** | **`-0.7%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`0.99x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-0.65%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`36.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+0.4% / -1.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`200.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+4.4% / -1.0%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-17 12:00` | `2026-09-19 00:00` | 36.0h | `$4377.5265` | `$4361.8381` | **-0.36%** | **-0.36%** | +0.4% | -1.0% | `stall_bailout` |
+| 1 | Book 4 | `2026-08-20 08:00` | `2026-08-28 16:00` | 200.0h | `$4479.9118` | `$4460.4110` | **-0.65%** | **-0.65%** | +4.4% | -1.0% | `stagnation_cut` |
 
 ---
 
@@ -33,23 +33,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stall_bailout` | `1` | `0.0%` | **`-0.4%`** |
+| `stagnation_cut` | `1` | `0.0%` | **`-0.7%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `XAUT`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `28`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `12` (42.9% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `245`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `84` (34.3% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+19.6%`
+* **Saved Capital Losses Avoided:** `+127.1%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+19.6%`
+* **Net Veto Alpha:** `+127.1%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `28` | `100.0%` |
+| `Core 1: Macro Bear Veto` | `243` | `99.2%` |
+| `Core 4: Book 2 Above-200d Squeeze Stall` | `1` | `0.4%` |
+| `Core 4: Whale Firewall` | `1` | `0.4%` |
 
 ---
 

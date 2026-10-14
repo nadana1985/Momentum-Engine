@@ -40,8 +40,8 @@
 
 ## 4. Counterfactual Risk Gate Audit for `XLE`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `32`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `14` (43.8% Efficiency)
+* **Total Candidate Breakouts Filtered (Vetoed):** `33`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `14` (42.4% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
 * **Saved Capital Losses Avoided:** `+28.2%`
 * **Missed Upside Forgone:** `-0.0%`
@@ -50,9 +50,9 @@
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `26` | `81.2%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `4` | `12.5%` |
-| `Core 0: Zero-Tolerance Data Firewall` | `2` | `6.2%` |
+| `Core 1: Macro Bear Veto` | `26` | `78.8%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `5` | `15.2%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `2` | `6.1%` |
 
 ---
 

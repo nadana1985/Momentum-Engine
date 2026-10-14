@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-0.7%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.99x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-0.72%`** | `> +1.0%` | Normal |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+1.2%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.01x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+1.20%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`72.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+6.2% / -6.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Mean Peak MFE / Max MAE** | **`+8.2% / -4.2%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-09-30 18:00` | `2026-10-03 18:00` | 72.0h | `$0.1903` | `$0.1889` | **-0.72%** | **-0.72%** | +6.2% | -6.0% | `time_expiry` |
+| 1 | Book 3 | `2026-10-01 07:00` | `2026-10-04 07:00` | 72.0h | `$0.1867` | `$0.1889` | **+1.21%** | **+1.20%** | +8.2% | -4.2% | `time_expiry` |
 
 ---
 
@@ -33,7 +33,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `time_expiry` | `1` | `0.0%` | **`-0.7%`** |
+| `time_expiry` | `1` | `100.0%` | **`+1.2%`** |
 
 ---
 

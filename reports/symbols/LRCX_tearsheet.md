@@ -11,10 +11,10 @@
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
-| **Profit Factor (Log-Space)** | **`17.063`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+7.4%`** | `> 0.0%` | ✅ Profitable |
+| **Profit Factor (Log-Space)** | **`16.453`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+7.8%`** | `> 0.0%` | ✅ Profitable |
 | **Compounded Capital Growth** | **`1.08x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+3.72%`** | `> +1.0%` | ✅ Strong Edge |
+| **Mean Net Log Return / Trade** | **`+3.89%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`117.0h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+7.6% / -1.1%`** | MFE > 2x MAE | High Asymmetry |
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-09-21 15:00` | `2026-09-24 09:00` | 66.0h | `$299.4768` | `$298.0929` | **-0.46%** | **-0.46%** | +4.2% | -1.1% | `fast_decay_cut` |
-| 2 | Book 2 | `2026-09-29 08:00` | `2026-10-06 08:00` | 168.0h | `$318.9353` | `$345.1649` | **+8.22%** | **+7.90%** | +11.1% | -1.0% | `time_cap` |
+| 1 | Book 2 | `2026-09-21 15:00` | `2026-09-24 09:00` | 66.0h | `$299.4768` | `$298.0929` | **-0.50%** | **-0.50%** | +4.2% | -1.1% | `fast_decay_cut` |
+| 2 | Book 2 | `2026-09-29 08:00` | `2026-10-06 08:00` | 168.0h | `$318.9354` | `$345.1649` | **+8.62%** | **+8.28%** | +11.1% | -1.0% | `time_cap` |
 
 ---
 
@@ -35,7 +35,7 @@
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
 | `fast_decay_cut` | `1` | `0.0%` | **`-0.5%`** |
-| `time_cap` | `1` | `100.0%` | **`+7.9%`** |
+| `time_cap` | `1` | `100.0%` | **`+8.3%`** |
 
 ---
 

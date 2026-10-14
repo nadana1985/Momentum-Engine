@@ -42,9 +42,9 @@
 * **Total Candidate Breakouts Filtered (Vetoed):** `30`
 * **Dodged Bullets (Lethal False Breakouts Avoided):** `18` (60.0% Efficiency)
 * **Missed Opportunities (Runners $\ge +20\%$ MFE):** `0`
-* **Saved Capital Losses Avoided:** `+48.1%`
+* **Saved Capital Losses Avoided:** `+50.6%`
 * **Missed Upside Forgone:** `-0.0%`
-* **Net Veto Alpha:** `+48.1%`
+* **Net Veto Alpha:** `+50.6%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |

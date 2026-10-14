@@ -12,9 +12,9 @@
 | **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
 | **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
 | **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
-| **Cumulative Net Log Return** | **`+40.3%`** | `> 0.0%` | ✅ Profitable |
-| **Compounded Capital Growth** | **`1.50x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`+20.14%`** | `> +1.0%` | ✅ Strong Edge |
+| **Cumulative Net Log Return** | **`+48.9%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.63x`** | `> 1.0x` | 🚀 Alpha Driver |
+| **Mean Net Log Return / Trade** | **`+24.43%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
 | **Average Trade Duration** | **`121.0h`** | `24h - 336h` | Normal Lifecycle |
 | **Mean Peak MFE / Max MAE** | **`+32.7% / -3.5%`** | MFE > 2x MAE | High Asymmetry |
@@ -25,8 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2025-05-08 04:00` | `2025-05-15 04:00` | 168.0h | `$12.0029` | `$13.1929` | **+9.91%** | **+9.45%** | +27.1% | -5.6% | `time_cap` |
-| 2 | Book 2 | `2025-10-26 09:00` | `2025-10-29 11:00` | 74.0h | `$6.0942` | `$8.2952` | **+36.12%** | **+30.83%** | +38.3% | -1.4% | `climax_top_harvest` |
+| 1 | Book 2 | `2025-05-08 04:00` | `2025-05-15 04:00` | 168.0h | `$12.0029` | `$13.1929` | **+11.58%** | **+11.04%** | +27.1% | -5.6% | `time_cap` |
+| 2 | Book 2 | `2025-10-26 09:00` | `2025-10-29 11:00` | 74.0h | `$6.0942` | `$8.2952` | **+44.29%** | **+37.81%** | +38.3% | -1.4% | `climax_top_harvest` |
 
 ---
 
@@ -34,8 +34,8 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `climax_top_harvest` | `1` | `100.0%` | **`+30.8%`** |
-| `time_cap` | `1` | `100.0%` | **`+9.5%`** |
+| `climax_top_harvest` | `1` | `100.0%` | **`+37.8%`** |
+| `time_cap` | `1` | `100.0%` | **`+11.0%`** |
 
 ---
 

@@ -10,14 +10,14 @@
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
 | **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+13.5%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.14x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+13.50%`** | `> +1.0%` | ✅ Strong Edge |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`27.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+8.6% / -8.1%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`36.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+22.8% / -5.6%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2025-08-14 12:00` | `2025-08-15 15:00` | 27.0h | `$0.0367` | `$0.0337` | **-8.23%** | **-8.59%** | +8.6% | -8.1% | `stop_loss` |
+| 1 | Book 4 | `2026-04-22 04:00` | `2026-04-23 16:00` | 36.0h | `$0.1230` | `$0.1476` | **+14.62%** | **+13.50%** | +22.8% | -5.6% | `target_reclaim` |
 
 ---
 
@@ -33,26 +33,26 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+13.5%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `H`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `106`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `75` (70.8% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `54`
-* **Saved Capital Losses Avoided:** `+1,585.4%`
-* **Missed Upside Forgone:** `-3,370.3%`
-* **Net Veto Alpha:** `+-1,784.9%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `405`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `174` (43.0% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `137`
+* **Saved Capital Losses Avoided:** `+3,503.3%`
+* **Missed Upside Forgone:** `-5,739.7%`
+* **Net Veto Alpha:** `+-2,236.4%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `102` | `96.2%` |
-| `Core 3: Min Turnover Velocity` | `2` | `1.9%` |
-| `Core 1: ATH Tier-2 Protection Clamp` | `1` | `0.9%` |
-| `Core 4: Defensible Whale Dump` | `1` | `0.9%` |
+| `Core 1: Macro Bear Veto` | `382` | `94.3%` |
+| `Core 4: Defensible Whale Dump` | `20` | `4.9%` |
+| `Core 3: Min Turnover Velocity` | `2` | `0.5%` |
+| `Core 1: ATH Tier-2 Protection Clamp` | `1` | `0.2%` |
 
 ---
 

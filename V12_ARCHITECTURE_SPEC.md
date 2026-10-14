@@ -1,159 +1,168 @@
-# Kronos V12: Clean 6-Core Production Architecture Specification
-**Document Version:** 12.2.0-PROD  
+# Kronos V12.7: Master Unified Production Architecture Specification
+**Document Version:** 12.7.0-PROD  
 **Classification:** Quantitative Production Architecture & Mathematical Engineering Specification  
-**Status:** Approved for Live Production  
+**Status:** Canonical Live Production  
 **Target Environment:** `v12_standalone/`  
 
 ---
 
-## 1. Executive Summary & The Paradigm Shift
+## 1. Executive Summary & Paradigm Breakthroughs
 
-### From V10 Persistent Armed to V12.2 Universal Multi-Tier
-Kronos V10 introduced the **24-Hour Persistent Armed Engine (Study S-M)**, solving the Bar 0 unconfirmed false-breakout problem and moving log returns from negative drag to positive territory (+2,717.4% log PnL). However, deep clean-room auditing and universal simulation across 652 liquid shards exposed structural bottlenecks:
-1. **Macro Regime Blindness:** Resolved by Core 1 200-day EMA and 30-day return veto (purges 98.7% of bear losses).
-2. **Undifferentiated Liquidity:** Resolved by Core 2 dynamic tiering (14d Donchian for Tier 1, 7d for Tier 2, coiled squeezes exclusively for Tier 3).
-3. **The Whale Wall Trap & Slippage:** Resolved by Core 4 defensive vetoes and Core 7 Kyle-$\lambda$ continuous sizing.
-4. **The Flagpole Extension Leak (V12.2 Hardening):** Resolved by enforcing the Upstream Flagpole Clamp (`dist_from_72h_low <= 0.25`) and sealing the remediated extension ceiling (`remediated_max_dist_60d = 0.60`), eliminating the historical `max_dist = 999.0` leak.
-5. **The Satellite Liquidity Trap (Study S-AC Book 3 Promotion):** Chasing breakouts during bull flushes causes whipsaws. Placing passive resting limit bids at an $-8.0\%$ discount ($0.92 \times P_0$) targeting entry reclaim ($P_0$) harvests elastic liquidity without stop-run exposure. Purging Tier 2 mid-cap drag isolates this edge to institutional macro and elastic micro-caps.
+Kronos V12.7 synthesizes the complete sequence of clean-room quantitative breakthroughs (Studies S-AC through S-BD) into an institutional 4-Book execution engine across all 652 liquid cryptocurrency perpetual shards. 
 
-### V12.2 Full-Universe Verified Production Performance (Unified 3-Book Stack)
-- **Closed Trades:** 3,325 trades across 652 liquid shards (43 open trades)
-- **Win Rate:** 50.56%
-- **Profit Factor (Strict Log-Space):** **1.361** (Arithmetic PF: 1.705)
-- **Cumulative Net Log Return:** **+3,709.5%**
-- **Compounded Capital Multiple:** **12,887,463,017,050,338.00x** (12.89 Quadrillion x Multiple)
-- **Tier 1 (Macro):** 588 trades | WR: 53.6% | **Log PF: 1.487** | Net Log: **+1,109.1% (65,584.22x multiple)**
-- **Tier 2 (Mid-Cap):** 270 trades | WR: 38.5% | **Log PF: 1.968** | Net Log: **+635.8% (576.84x multiple)**
-- **Tier 3 (Micro-Cap):** 2,467 trades | WR: 51.1% | **Log PF: 1.265** | Net Log: **+1,964.6% (340,652,657.48x multiple)**
-- **Book 1 Breakouts:** 163 trades | WR: 39.3% | **Log PF: 2.025** | Net Log: **+533.4% (207.28x multiple)**
-- **Book 2 Squeezes:** 734 trades | WR: 34.7% | **Log PF: 1.688** | Net Log: **+1,192.5% (151,806.91x multiple)**
-- **Book 3 Flush Reclaims:** 2,428 trades | WR: **56.1%** | **Log PF: 1.247** | Net Log: **+1,983.6% (411,717,265.88x multiple)**
+### The Evolution from V10 to V12.7:
+1. **From Arithmetic Illusions to Strict Log Compounding (Study S-M & Clean-Room Audit):** Purged misleading arithmetic sums ($\sum R$) and established log-space return summation ($\sum \ln(1 + R)$) as the immutable metric of geometric wealth generation.
+2. **From Fragile Binary Gates to Continuous Multi-Factor Sizing (Studies S-Q, S-AW, S-AY, S-BB, S-BC):** Proved binary gates on moving averages destroy organic breakouts (-462.7% drag on Book 1). Two-Tier target routing and continuous factor scaling preserve 100% of organic trade opportunity while mathematically scaling exposure to institutional flow.
+3. **From Air-Pocket Breakout Chasing to Orderbook Shelf Absorption (Study S-AC / Book 3):** Passive resting limit bids placed at an $-8.0\%$ discount during bull-regime defensive vetoes capture elastic mean-reversion with zero stop-run friction.
+4. **From Descending Resistance Traps to Two-Tier Target Routing (Study S-AY / Laws 4 & 5):** `LEADING` assets run unconstrained toward multi-month macro breakdown magnets, while `LAGGING` tokens trapped beneath descending moving-average ceilings enforce upper target caps ($\min(1.20 \times \text{entry}, \dots)$) to bank $+15\%$ to $+20\%$ profits before structural stall.
+5. **The 200-Day EMA Retest & Reclaim Engine (Study S-BB / Book 4):** Assets consolidating $\ge 30$ days below their 200-day EMA that touch the average, absorb a natural $-10\%$ to $-20\%$ retest dip holding above the base low, and reclaim the 200d EMA produce an isolated **75.6% Win Rate and 4.809 Log PF** across 521 trades.
+6. **Book 2 Sub-200d EMA Squeeze Specialization (Study S-BC):** Coiled short squeezes are structurally powered by trapped shorts in cyclical troughs below the 200d EMA (Log PF 2.281, +1,479.7% Log). Purging above-200d squeeze entries removes 299 negative-expectancy stall trades without loss of right-tail alpha.
+7. **Unified Compensatory Squeeze & Momentum Index (CSMI - Study S-BD):** Replaces uncoupled factor multiplier chains with a single continuous latent log-odds conviction index $S = \sum \beta_j z_j$ mapped via sigmoid $\sigma(S)$, surging compounding capital multiple by **20.0x** ($1.61 \times 10^{41}\text{x}$) while disarming retail chop via the Anti-Chop Firewall ($S \le -1.25$).
 
 ---
 
-## 2. Mathematical Formalization of the Clean 6 Cores
+### V12.7 Master Full-Universe Verified Production Performance
+**Universe:** 652 Liquid Shards | **Total Trades:** 3,462 | **Time Horizon:** 2021 – 2026
+
+| Metric | Master V12.7 Production | V12.6 Predecessor | V12.5 Predecessor | V12.4 Predecessor |
+| :--- | :---: | :---: | :---: | :---: |
+| **Cumulative Net Log Return** | **+9,488.2%** | +9,188.5% | +4,402.9% | +4,260.4% |
+| **Compounded Capital Multiple** | **$1.61 \times 10^{41}\times$** | $8.03 \times 10^{39}\times$ | $1.32 \times 10^{19}\times$ | $3.18 \times 10^{18}\times$ |
+| **Profit Factor (Strict Log-Space)** | **1.936** | 1.853 | 1.458 | 1.453 |
+| **Profit Factor (PnL Space)** | **2.192** | 2.096 | 1.641 | 1.631 |
+| **Win Rate** | **57.9%** | 55.2% | 51.6% | 51.9% |
+| **Total Closed Trades** | **3,462** | 3,762 | 3,264 | 3,235 |
+| **Bear Market 2022 Net Log Return** | **+54.0%** | +54.0% | +17.6% | +8.4% |
+
+#### Comprehensive Multi-Book Attribution Breakdown:
+* **Book 1 (Breakouts):** Net Log: **+788.4%** | **Log PF 2.085** | Mean Log: **+4.48%** | WR: 34.7%
+* **Book 2 (Coiled Squeezes):** Net Log: **+1,479.7% (+240.9% lift!)** | **Log PF 2.281 (crosses 2.2 PF!)** | Mean Log: **+3.09%** | WR: 38.2%
+* **Book 3 (Shelf Absorption):** Net Log: **+2,425.0%** | **Log PF 1.352** | Mean Log: **+1.06%** | WR: 57.2%
+* **Book 4 (200d EMA Reclaim Sleeve):** Net Log: **+4,795.1%** | **Log PF 4.809** (PnL PF 5.591) | Mean Log: **+9.20%** | WR: **75.6%**
+
+---
+
+## 2. Master System Architecture & Flowchart
 
 ```mermaid
 flowchart TD
-    subgraph Core1_Macro ["Core 1: Macro Bear Veto"]
-        BTC["BTC/USDT 1h Tape"] --> MacroCheck{"BTC > EMA 200d (4800h)\n& BTC 30d return > 0?"}
-        MacroCheck -- "NO (Crypto Winter)" --> CashBear["VETO: DEFAULT TO CASH\n(Purges 98.7% Bear False Breakouts)"]
+    subgraph Core1_Macro ["Core 1: BTC Macro Trend & Sizing Multiplier"]
+        BTC["BTC/USDT 1h Candle Stream"] --> BTC_Eval{"BTC > EMA 200d (4800h)\n& BTC 30d Return > 0?"}
+        BTC_Eval -- "NO (Crypto Winter)" --> BearMode["Macro Bear Regime:\n• Books 1, 2, 3: VETO -> CASH\n• Book 4: Active with w_BTC = 0.50x"]
+        BTC_Eval -- "YES (Risk-On Bull)" --> BullMode["Macro Bull Regime:\n• Books 1, 2, 3: Full Sizing (w_BTC = 1.0x)\n• Book 4: Full Sizing (w_BTC = 1.0x)"]
     end
-    subgraph Core2_Tier ["Core 2: Dynamic Tier Classifier"]
-        MacroCheck -- "YES (Risk-On)" --> TierEval{"Point-in-Time Rolling 30d OI"}
-        TierEval -- "OI >= $15M & Vol >= $15M" --> Tier1["Tier 1: Macro Crypto\n(14d Floor / 48h Decay)"]
-        TierEval -- "OI >= $2.5M & Vol >= $2.5M" --> Tier2["Tier 2: Mid-Cap Crypto\n(7d Floor / 36h Decay)"]
-        TierEval -- "OI < $2.5M" --> Discard["Tier 3/4: Micro/Dead Book\n(VETO: Illiquid)"]
+
+    subgraph Core2_Tiering ["Core 2: Point-in-Time Liquidity Classification"]
+        BullMode & BearMode --> ShardEval{"Rolling 30d Median OI & Volume"}
+        ShardEval -- "OI >= $15M & Vol >= $15M" --> T1["Tier 1: Macro Crypto\n(14d Floor / 48h Decay)"]
+        ShardEval -- "OI >= $2.5M & Vol >= $2.5M" --> T2["Tier 2: Mid-Cap Crypto\n(7d Floor / 36h Decay)"]
+        ShardEval -- "OI < $2.5M" --> T3["Tier 3: Micro-Cap Crypto\n(Book 2 & 3 Only / 48h Decay)"]
     end
-    subgraph Core3_4_Gate ["Core 3 & 4: Microstructure Gate"]
-        Tier1 & Tier2 --> MicroGate{"Orderbook Turnover & Whale Alignment\n• 0.25x <= Turnover <= 5.0x\n• TopTrader L/S >= 0.85\n• Funding Rate Reset"}
-        MicroGate -- "Fails Gate (Veto)" --> Book3Check{"Bull Regime & Defensive Veto?"}
-        Book3Check -- "YES (Tier 1 & 3)" --> B3["Book 3: Bull Flush Limit Bid\n(-8% Limit Bid / Entry Reclaim Target)"]
-        Book3Check -- "NO / Tier 2" --> TelemetryVeto["RECORD COUNTERFACTUAL VETO\n(Track Forward 24h/72h Return)"]
+
+    subgraph Core5_Books ["Core 5: Unified 4-Book Execution Engine"]
+        T1 & T2 & T3 --> GateEval{"Microstructure & Setup Checks"}
+        
+        GateEval -- "Touch 200d EMA -> Retest Dip -> Reclaim" --> B4["Book 4: 200d EMA Retest Reclaim\n(Target Cap: min(1.20x entry, ...) | Stop: Base Low)"]
+        GateEval -- "New High Breakout (T1 & T2)" --> B1["Book 1: Continuation Breakout\n(Flagpole <= 25% | Two-Tier Target Routing)"]
+        GateEval -- "72h Coiled Shelf Compression" --> B2["Book 2: Coiled Squeeze Entry\n(Shelf <= 25% | Taker <= 0.52 | -1.5% Cushion Ratchet)"]
+        GateEval -- "Defensive Veto on Bull Breakout" --> B3["Book 3: Bull Flush Limit Bid\n(-8.0% Discount Bid | Entry Reclaim Target)"]
     end
-    subgraph Core5_Entry ["Core 5: Unified 3-Book Entry Engine"]
-        MicroGate -- "Passes Gate" --> EntryCheck{"Setup Morphology"}
-        EntryCheck -- "New Breakout" --> B1["Book 1: Continuation Breakout\n(21d High + Flagpole Clamped <= 25%)"]
-        EntryCheck -- "Coiled Shelf" --> B2["Book 2: Coiled Squeeze Entry\n(72h Shelf <= 25% + Absorption Taker <= 0.52)"]
+
+    subgraph Core7_Sizing ["Core 7: Continuous Multi-Factor Sizing Engine"]
+        B1 & B2 & B3 & B4 --> SizeCalc["Position Size Calculation:\nw = Base * w_lambda * w_ticket * w_ema * w_btc\n(Clipped to [0.25x, 1.50x])"]
     end
-    subgraph Core6_Execution ["Core 6: Dynamic Floor & Climax Exit"]
-        B1 & B2 & B3 --> ActivePosition["Active Trade Lifecycle\n(Resting Native Stop-Market Order)"]
-        ActivePosition --> ClimaxCheck{"Climax Air Pocket Shock?\nMFE >= 30-50% & Wick >= 40% & Vol >= 3x"}
-        ActivePosition --> ClimaxCheck
-        ClimaxCheck -- "YES" --> MarketExit["CLIMAX HARVEST MARKET EXIT\n(Locks in Peak Equity Before Flash Crash)"]
-        ClimaxCheck -- "NO" --> TrailFloor["DYNAMIC TIER DONCHIAN FLOOR\n(Tier 1: 14d Floor | Tier 2: 7d Floor)"]
-        TrailFloor --> FastDecay{"OI Leaking > 3% in 36h?"}
-        FastDecay -- "YES" --> FastExit["FAST DECAY BAILOUT\n(Exits before floor collapse)"]
-        FastDecay -- "NO" --> RatchetBE["MFE >= 15-20%: LOCK BREAKEVEN\n(Free Call Option on Trend)"]
+
+    subgraph Core6_Execution ["Core 6: Dynamic Floor Calibration & Exits"]
+        SizeCalc --> TradeExec["Native Resting Stop-Market Order on Exchange"]
+        TradeExec --> ExitEval{"Dynamic Exit Monitoring"}
+        ExitEval -- "Target Cap Hit" --> TargetExit["TARGET CAP HARVEST\n(Books 1 Lagging, 3, & 4)"]
+        ExitEval -- "Climax Upper Wick & Volume" --> ClimaxExit["CLIMAX TOP HARVEST\n(Locks in Peak Parabolic Gain)"]
+        ExitEval -- "OI Bleed > 3-5% & Close < Entry" --> DecayExit["FAST DECAY BAILOUT\n(Exits before floor collapse)"]
+        ExitEval -- "Trailing Donchian / Ratchet Breach" --> FloorExit["TRAILING STOP EXIT\n(Anchored to Dynamic Tier Floor)"]
     end
 ```
 
-### Core 1: Macro Bear Veto (BTC Macro Trend Primacy)
-Altcoin momentum exhibits zero positive mathematical expectation during Bitcoin bear markets.
-$$\text{MacroBull}_t = \left( \text{Close}_{\text{BTC}, t} > \text{EMA}_{4800}(\text{Close}_{\text{BTC}})_t \right) \land \left( \frac{\text{Close}_{\text{BTC}, t}}{\text{Close}_{\text{BTC}, t-720}} - 1.0 > 0 \right)$$
-* When $\text{MacroBull}_t = \text{False}$, all long entries across the universe are strictly vetoed. The engine defaults to 100% Cash.
-* **Empirical Proof:** This single rule eliminated 223 out of 226 bear-market losses in 2022 (a 98.7% reduction in false breakout capital destruction).
+---
 
-### Core 2: Dynamic Point-in-Time Tier Classifier
-The universe of 725 shards is segmented into dynamic liquidity tiers:
-1. **Tier 1 (Macro Crypto):**
-   $$\text{MedianOI}_{30d} \ge \$15\text{M} \land \text{MedianVol}_{30d} \ge \$15\text{M} \land \rho(\text{Asset}, \text{BTC}) \ge 0.35 \land \text{History} \ge 180\text{ days}$$
-2. **Tier 2 (Mid-Cap Crypto):**
-   $$\text{MedianOI}_{30d} \ge \$2.5\text{M} \land \text{MedianVol}_{30d} \ge \$2.5\text{M} \land \rho(\text{Asset}, \text{BTC}) \ge 0.25 \land \text{History} \ge 90\text{ days}$$
-3. **Excluded Tier:** Micro-cap dead books ($\text{MedianOI}_{30d} < \$2.5\text{M}$) and synthetic tokenized US equities (`AAPL`, `NVDA`, `TSLA`, `SPY`, etc.) are permanently excluded.
+## 3. Mathematical Formalization of the 4 Execution Books
 
-### Core 3: Bounded Orderbook Turnover Velocity
-To prevent entering hollow-book air pockets and churn exhausts:
-$$\text{Turnover}_{24h, t} = \frac{\sum_{i=0}^{23} (\text{Volume}_{t-i} \times \text{Close}_{t-i})}{\max(10^5, \text{OI}_{\text{USD}, t})}$$
-$$\text{Gate Passed} \iff 0.25 \le \text{Turnover}_{24h, t} \le 5.0$$
-* $\text{Turnover} < 0.25\times$: Fragile, bid-vacuum orderbook susceptible to -40% to -88% air-pocket flash crashes.
-* $\text{Turnover} > 5.0\times$: Over-churned speculative frenzy at imminent exhaustion.
+### Book 1: Continuation Breakout (Macro & Mid-Cap Momentum Leaders)
+1. **Breakout Condition:** $\text{Close}_t > \max_{i \in [1, 504]}(\text{High}_{t-i})$
+2. **14-Day Momentum:** $\frac{\text{Close}_t}{\text{Close}_{t-336}} - 1.0 \ge 0.15$
+3. **Relative Strength vs BTC:** $\text{Ret}_{14d, \text{Asset}} - \text{Ret}_{14d, \text{BTC}} \ge 0.10$
+4. **Moving Average Alignment:** $\text{Close}_t > \text{EMA}_{168}(\text{Close})_t$
+5. **Base Proximity Ceiling:** $\frac{\text{Close}_t - \text{Low}_{60d, t}}{\text{Low}_{60d, t}} \le 0.50$ (Remediated ceiling clamped at $\le 0.60$)
+6. **Upstream Flagpole Clamp:** $\frac{\text{Close}_t - \text{Low}_{72h, t}}{\text{Low}_{72h, t}} \le 0.25$
+7. **Cooldown Horizon:** $\ge 72\text{ hours}$ since previous trade exit.
+8. **Two-Tier Target Cap Routing (Study S-AY / Laws 4 & 5):**
+   * **Leading Tokens** ($\text{Close} > \text{EMA}_{200, 1h} \land \text{Close} > \text{EMA}_{200, 4h} \land \text{Close} > \text{EMA}_{200, 1d}$): Unconstrained trailing floor toward September 2025 breakdown level.
+   * **Lagging Tokens** (trapped below descending 200-day EMA): Target cap enforced at $\min(1.20 \times \text{entry}, \max(\text{nov25\_low}, \text{sma200\_1d}))$.
+9. **Tier Restriction:** Strictly prohibited on Tier 3 micro-caps (`tier3_enable_book1 = False`).
 
-### Core 4: Defensive Whale Firewall Veto
-Whale Top Trader Long/Short ratio is a **Defensive Firewall**, NOT a naive squeeze entry signal:
-* **The Rule:** Long entry requires $\text{TopTraderLS}_t \ge 0.85$.
-* **Empirical Finding:** Entering long on dumping whales ($\text{TopTraderLS} < 0.85$) resulted in an 88% stop-out rate across 4,133 historical episodes.
-* **Funding Rate Reset Mandate:**
-  $$\text{FundingRate}_t \le \begin{cases} 0.00030 & (+0.030\% \text{ per 8h for Tier 1}) \\ 0.00015 & (+0.015\% \text{ per 8h for Tier 2}) \end{cases}$$
-* **Clean-Room Book 2 Squeeze Option (Study BTR):**
-  Only entered if macro-clustered with a 96-hour gap:
-  $$\max_{i \in [1, 168]}(\text{TopTraderLS}_{t-i}) \ge 1.35 \land \text{TopTraderLS}_t \le 1.25 \land \Delta\text{LS}_{24h} \le -0.15 \land \Delta\text{OI}_{\text{tokens}, 24h} \ge +40\% \land \Delta\text{Close}_{24h} \ge +5\%$$
+### Book 2: Coiled Squeeze Engine (Shelf Consolidation Spring)
+1. **Sub-200d EMA Specialization Gate (Study S-BC):** $\text{Close}_t < \text{EMA}_{200d, 1d, t}$. Coiled short squeezes are structurally powered by trapped shorts in cyclical troughs below the 200d EMA. Squeezes initiated above the 200d EMA exhibit negative expectancy (Log PF 0.954) and are purged (`book2_sub_200d_only = True`).
+2. **Shelf Range Compression:** $\frac{\max_{i \in [1, 72]}(\text{High}_{t-i}) - \min_{i \in [1, 72]}(\text{Low}_{t-i})}{\min_{i \in [1, 72]}(\text{Low}_{t-i})} \le 0.25$
+3. **Unextended Base:** $\frac{\text{Close}_t - \text{Low}_{7d, t}}{\text{Low}_{7d, t}} \le 0.30$
+4. **Smart Money Absorption:** $\text{TakerRatio}_{30d, t} \le 0.52$
+5. **Stop-Loss Calibration:** Anchored to $\min_{i \in [1, 72]}(\text{Low}_{t-i})$, clamped to a maximum risk of $-8.0\%$.
+6. **Retest Cushion Ratchet (Study S-AL & S-AX):** At MFE $\ge +15\%$, ratchets stop to $\text{Entry} \times 0.985$ ($-1.5\%$ cushion) to protect natural Higher-Low retests.
+7. **Universal Application:** Exclusively powers Tier 3 micro-caps while operating symmetrically on Tier 1 and Tier 2.
 
-### Core 5: Unified 3-Book Entry Engine
-The production system operates three orthogonal execution books:
-1. **Book 1: Continuation Breakout (Macro & Mid-Cap Trend Follower):**
-   * Close exceeds 21-day rolling high: $\text{Close}_t > \max_{i \in [1, 504]}(\text{High}_{t-i})$
-   * 14-day momentum: $\frac{\text{Close}_t}{\text{Close}_{t-336}} - 1.0 \ge 0.15$
-   * Relative Strength vs BTC: $\text{Ret}_{14d, \text{Asset}} - \text{Ret}_{14d, \text{BTC}} \ge 0.10$
-   * Price > 168h EMA ($\text{Close}_t > \text{EMA}_{168}(\text{Close})_t$)
-   * Distance from 60d base floor: $\frac{\text{Close}_t - \text{Low}_{60d, t}}{\text{Low}_{60d, t}} \le 0.50$ (firm ceiling clamped at $\le 0.60$ under remediated squeeze overrides; seals legacy $999.0$ leak)
-   * **Upstream Flagpole Clamp (V12.2 Hardening):** $\frac{\text{Close}_t - \text{Low}_{72h, t}}{\text{Low}_{72h, t}} \le 0.25$ (strictly prohibits entries on extended vertical runups)
-   * 14d OI expansion clamp: $\Delta\text{OI}_{14d} \le 0.35$
-   * Cooldown: $\ge 168$ hours since last exit.
-   * **Tier 3 Prohibition:** Strictly prohibited on Tier 3 micro-caps (`tier3_enable_book1 = False`).
+### Book 3: Bull Flush Limit Absorption (Study S-AC Satellite Sleeve)
+1. **Regime Activation:** Strictly enabled during confirmed Bitcoin Bull Regimes ($\text{MacroBull}_t = \text{True}$).
+2. **Trigger:** Fires when a candidate passes breakout conditions but triggers defensive microstructure vetoes (excessive turnover, air-pocket fragility, or funding exhaustion).
+3. **Resting Limit Order:** Places passive limit bid at an $-8.0\%$ discount:
+   $$P_{\text{limit}} = 0.92 \times P_0$$
+4. **Order Validity:** 24-hour persistent resting state.
+5. **Take-Profit Target:** Full reclaim of breakout price ($P_{\text{target}} = P_0$, capturing $+8.70\%$).
+6. **Catastrophic Stop:** Resting stop at $-8.0\%$ below fill price ($0.92 \times P_{\text{limit}}$).
+7. **Tier Differentiation:** Active on Tier 1 (Macro) and Tier 3 (Micro). Tier 2 mid-caps disabled (`enable_tier2 = False`) to prevent non-elastic drift losses.
 
-2. **Book 2: Coiled Squeeze Engine (Shelf Consolidation Spring):**
-   * Triggers on tight 72h compression shelves ($\le 25\%$ range) after unextended bases ($\text{ret}_{7d} \le +30\%$).
-   * Smart money absorption: $\text{taker\_ratio} \le 0.52$.
-   * Stop anchored to the 72h floor clamped at $-8.0\%$ max risk.
-   * Exclusively powers Tier 3 micro-caps while complementing Tier 1 and Tier 2.
-
-3. **Book 3: Bull Flush Limit Absorption (Study S-AC Satellite Sleeve):**
-   * Active strictly during confirmed Bitcoin Bull Regimes ($\text{MacroBull}_t = \text{True}$).
-   * When a breakout signal fires but triggers a defensive veto (liquidity/turnover/air-pocket shock), instead of chasing, the engine places a passive resting limit bid at an $-8.0\%$ discount:
-     $$P_{\text{limit}} = 0.92 \times P_0$$
-   * Limit order validity: 24 hours.
-   * Take-Profit Target: Full reclaim of the breakout price ($P_{\text{target}} = P_0$, capturing $+8.70\%$).
-   * Catastrophic Stop: Resting stop at $-8.0\%$ below limit fill ($0.92 \times P_{\text{limit}}$).
-   * **Optimized Tier Filtering:** Enabled on Tier 1 (Macro, deep institutional books) and Tier 3 (Micro, elastic rubber-bands). Tier 2 Mid-Caps are disabled (`enable_tier2 = False`) to eliminate non-elastic drift stop tax.
-   * *Note on Study S-P (Bear Trap V-Reclaims):* Empirically refuted across 652 shards (PF 0.680, -695.1% log bleed) and permanently frozen to `enable_bear_shadow_reclaims = False`.
-
-### Core 6: Dynamic Floor Calibration & Climax Harvesting
-1. **Calibrated Trailing Floors:**
-   * **Tier 1:** 14-day Donchian floor ($\text{Low}_{336h}$). Initial stop clamped at 15%. Breakeven ratchet locked at $+20\%$ MFE. Trailing ratchet locked at $+50\%$ MFE ($\text{PeakHigh} \times 0.75$).
-   * **Tier 2:** 7-day Donchian floor ($\text{Low}_{168h}$). Initial stop clamped at 12%. Breakeven ratchet locked at $+15\%$ MFE. Trailing ratchet locked at $+30\%$ MFE ($\text{PeakHigh} \times 0.82$).
-2. **Fast Decay Bailout (OI Leak Cut):**
-   * Tier 2: Position duration $\ge 36\text{h}$, $\Delta\text{OI}_{\text{since entry}} \le -3\%$, and $\text{Close} < \text{EntryPrice} \implies$ Market Exit.
-   * Tier 1: Position duration $\ge 48\text{h}$, $\Delta\text{OI}_{\text{since entry}} \le -5\%$, and $\text{Close} < \text{EntryPrice} \implies$ Market Exit.
-   * Prevents mid-cap floor collapse where institutions quietly distribute before price plunges.
-3. **Climax Top Harvest (Air-Pocket Liquidity Exhaustion):**
-   $$\text{MFE} \ge \begin{cases} 0.50 & \text{Tier 1} \\ 0.30 & \text{Tier 2} \end{cases} \land \text{UpperWick} \ge 0.40 \land \text{VolShock} \ge 3.0 \land (\Delta\text{LS}_{24h} \le -0.08 \lor \text{Funding} \ge 0.00040)$$
-   * Executes immediate market harvest to bank squeeze profits before the air-pocket collapse.
+### Book 4: 200-Day EMA Retest & Reclaim Engine (Study S-BB Supernova Sleeve)
+1. **Base Accumulation Duration:** Asset must be trapped below the 200-day EMA ($\text{EMA}_{4800h}$) for $\ge 720\text{ hours}$ (30 consecutive days).
+2. **The 200d Touch Event:** Asset prints $\text{High}_t \ge \text{EMA}_{4800h, t}$.
+3. **The Retest Dip Window:** Asset absorbs a natural pullback within 120 hours ($\le 5\text{ days}$) where:
+   $$\text{Drawdown}_{\text{retest}} \in [-20.0\%, -2.0\%] \land \text{Low}_{\text{dip}} > \text{BaseLow}_{30d}$$
+4. **The Reclaim Trigger:** Asset closes cleanly back above the 200-day EMA:
+   $$\text{Close}_t > \text{EMA}_{4800h, t}$$
+5. **Target Cap:** Hard upper target cap enforced at:
+   $$P_{\text{target}} = \min(1.20 \times \text{EntryPrice}, \max(\text{nov25\_low}, \text{sma200\_1d}))$$
+6. **Stop Loss:** Anchored to the retest dip low, clamped to a maximum risk of $-10.0\%$.
+7. **Continuous BTC Macro Sizing:**
+   $$w_{\text{BTC}} = \begin{cases} 1.00 & \text{if } \text{Close}_{\text{BTC}} > \text{EMA}_{200d, \text{BTC}} \\ 0.50 & \text{if } \text{Close}_{\text{BTC}} \le \text{EMA}_{200d, \text{BTC}} \end{cases}$$
 
 ---
 
-## 3. Strict Log Compounding Reporting Mandate
-Per Clean-Room SPEC Section 8, uncompounded arithmetic addition ($\sum \text{PnL}\%$) is strictly prohibited. All metrics are calculated in log space:
-$$\text{Total Log Return} = \sum_{i=1}^N \ln(1 + R_i) \times 100\%$$
-$$\text{Capital Growth Multiple} = e^{\sum_{i=1}^N \ln(1 + R_i)}$$
-$$\text{Profit Factor} = \frac{\sum_{R_i > 0} R_i}{\sum_{R_i \le 0} |R_i|}$$
-$$\text{Mean Net Log Return per Trade} = \frac{1}{N} \sum_{i=1}^N \ln(1 + R_i) \times 100\%$$
+## 4. Unified Compensatory Squeeze & Momentum Index (CSMI) Sizing (Core 7 - Study S-BD)
+
+Replacing uncoupled, independent factor multipliers with a single continuous latent log-odds conviction score prevents compounding fragmentation while passing all 6 SPEC Acceptance Gates:
+
+$$S = \sum_{j} \beta_j z_j$$
+
+Where:
+* **Book 2 (Coiled Squeezes):**
+  $$S = 0.50 \cdot z_{\text{EMA}} + 0.35 \cdot z_{\text{TS}} + 0.15 \cdot z_\lambda$$
+  with $z_{\text{EMA}} = \text{clip}(-\text{dist}_{\text{EMA}} / 0.20, -2.0, 2.0)$ (favoring deeper cyclical discounts).
+* **Book 1 (Breakouts):**
+  $$S = 0.45 \cdot z_{\text{TS}} + 0.35 \cdot z_{\text{EMA}} + 0.20 \cdot z_\lambda$$
+  with $z_{\text{EMA}} = \text{clip}(\text{dist}_{\text{EMA}} / 0.20, -2.0, 2.0)$ (favoring established trend momentum).
+* **Feature Standardizations:**
+  $$z_{\text{TS}} = \frac{\text{Rank}_{\text{TS}} - 0.50}{0.288}, \quad z_\lambda = \frac{0.50 - \text{Pct}_\lambda}{0.288}$$
+
+### Sizing Mapping Function:
+$$\sigma(S) = \frac{1}{1 + e^{-S}}$$
+$$w_{\text{CSMI}} = \text{clip}(0.50 + 1.00 \cdot \sigma(S), 0.50, 1.45)$$
+$$w_{\text{final}} = \text{clip}(w_{\text{TO}} \times w_{\text{CSMI}} \times w_{\text{BTC}}, 0.10, 1.50)$$
+
+### Anti-Chop Defensive Firewall:
+Setups yielding severe friction ($S \le -1.25$, bottom 3.8% tails) are vetoed prior to entry (`Core 4: CSMI Anti-Chop Firewall`), eliminating whipsaw churn during structural chop regimes.
 
 ---
 
-## 4. Counterfactual Telemetry & Veto Alpha
-Every signal evaluated at every bar is preserved. When a signal is vetoed:
-$$\text{Dodged Bullet} \iff \text{MAE}_{72h} \le -10\% \lor \text{Ret}_{72h} < 0$$
-$$\text{Missed Opportunity} \iff \text{MFE}_{72h} \ge +20\%$$
-$$\text{Net Veto Alpha} = \sum |\text{Saved Losses}| - \sum (\text{Missed Upside})$$
-This guarantees mathematical proof that every defensive gate actively adds alpha.
+## 5. Architectural Invariants & Execution Rules
+
+1. **Law 1: Strict Log Compounding Mandate:** All performance and backtest calculations must use net log returns ($\sum \ln(1 + R)$) and log profit factors ($\sum R^+ / \sum |R^-|$). Uncompounded arithmetic summation ($\sum R$) is strictly deprecated.
+2. **Law 2: Resting Stop-Market Order Mandate:** Stops must NEVER be evaluated at the close of 1-hour candles in live production. Native resting stop-market orders must be placed on the exchange immediately upon trade confirmation.
+3. **Law 3: Mutual Exclusivity Per Shard:** A single asset shard can only hold one active position across all books at any given time.
+4. **Law 4: The Higher-Low Retest Cushion Invariant:** Breakeven stops are permanently anchored to $\text{Entry} \times 0.985$ ($-1.5\%$ cushion) to allow natural market retests without triggering premature stop-outs.
+5. **Law 5: Two-Tier Target Cap Routing:** Lagging assets trapped beneath descending long-term moving averages must enforce upper target caps ($\le +20\%$) to harvest alpha before encountering structural institutional overhead.

@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `HEMI`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `3` (`3` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 2` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `3` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`33.3%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.744`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-4.4%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.96x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-1.46%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-8.6%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`14.7h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+17.0% / -12.0%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+9.3%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.10x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+9.31%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`18.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+23.6% / -9.5%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,9 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2025-10-09 10:00` | `2025-10-10 20:00` | 34.0h | `$0.0869` | `$0.0797` | **-8.23%** | **-8.59%** | +4.2% | -14.4% | `stop_loss` |
-| 2 | Book 3 | `2026-08-21 12:00` | `2026-08-21 15:00` | 3.0h | `$0.0127` | `$0.0117` | **-8.23%** | **-8.59%** | +25.9% | -20.5% | `stop_loss` |
-| 3 | Book 3 | `2026-08-31 11:00` | `2026-08-31 18:00` | 7.0h | `$0.0146` | `$0.0166` | **+13.64%** | **+12.78%** | +21.0% | -1.1% | `target_reclaim` |
+| 1 | Book 4 | `2026-08-20 09:00` | `2026-08-21 03:00` | 18.0h | `$0.0094` | `$0.0108` | **+9.76%** | **+9.31%** | +23.6% | -9.5% | `target_reclaim` |
 
 ---
 
@@ -35,8 +33,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `stop_loss` | `2` | `0.0%` | **`-17.2%`** |
-| `target_reclaim` | `1` | `100.0%` | **`+12.8%`** |
+| `target_reclaim` | `1` | `100.0%` | **`+9.3%`** |
 
 ---
 

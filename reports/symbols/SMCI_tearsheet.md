@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `SMCI`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `3` (`3` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `3` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-6.7%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.93x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-2.25%`** | `> +1.0%` | Normal |
-| **Maximum Log Drawdown** | **`-6.1%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`70.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+3.3% / -4.5%`** | MFE > 2x MAE | High Asymmetry |
+| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`100.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`999.000`** | `> 1.50` | ✅ Outperforming |
+| **Cumulative Net Log Return** | **`+8.2%`** | `> 0.0%` | ✅ Profitable |
+| **Compounded Capital Growth** | **`1.08x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`+8.16%`** | `> +1.0%` | ✅ Strong Edge |
+| **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
+| **Average Trade Duration** | **`nanh`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+8.6% / -15.8%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,9 +25,7 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 2 | `2026-08-25 14:00` | `2026-08-27 14:00` | 48.0h | `$38.3256` | `$38.0945` | **-0.60%** | **-0.60%** | +3.1% | -4.1% | `fast_decay_cut` |
-| 2 | Book 2 | `2026-09-04 13:00` | `2026-09-09 19:00` | 126.0h | `$39.1276` | `$38.8127` | **-0.80%** | **-0.81%** | +6.2% | -3.0% | `fast_decay_cut` |
-| 3 | Book 2 | `2026-09-17 14:00` | `2026-09-19 02:00` | 36.0h | `$40.9922` | `$38.8626` | **-5.20%** | **-5.34%** | +0.7% | -6.3% | `stall_bailout` |
+| 1 | Book 5 (Shelf Absorption Squeeze) | `2026-07-21 20:00` | `2026-07-25 20:00` | Live | `$27.4436` | `$29.7763` | **+8.50%** | **+8.16%** | +8.6% | -15.8% | `shelf_target_reclaim` |
 
 ---
 
@@ -35,25 +33,25 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
-| `fast_decay_cut` | `2` | `0.0%` | **`-1.4%`** |
-| `stall_bailout` | `1` | `0.0%` | **`-5.3%`** |
+| `shelf_target_reclaim` | `1` | `100.0%` | **`+8.2%`** |
 
 ---
 
 ## 4. Counterfactual Risk Gate Audit for `SMCI`
 
-* **Total Candidate Breakouts Filtered (Vetoed):** `18`
-* **Dodged Bullets (Lethal False Breakouts Avoided):** `7` (38.9% Efficiency)
-* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `3`
-* **Saved Capital Losses Avoided:** `+40.6%`
-* **Missed Upside Forgone:** `-75.5%`
-* **Net Veto Alpha:** `+-34.9%`
+* **Total Candidate Breakouts Filtered (Vetoed):** `216`
+* **Dodged Bullets (Lethal False Breakouts Avoided):** `118` (54.6% Efficiency)
+* **Missed Opportunities (Runners $\ge +20\%$ MFE):** `19`
+* **Saved Capital Losses Avoided:** `+889.0%`
+* **Missed Upside Forgone:** `-456.0%`
+* **Net Veto Alpha:** `+433.0%`
 
 ### Veto Gate Breakdown for this Asset:
 | Risk Gate | Veto Count | Share % |
 | :--- | :-: | :-: |
-| `Core 1: Macro Bear Veto` | `15` | `83.3%` |
-| `Core 2c: Tier 3 Book 1 Prohibition` | `3` | `16.7%` |
+| `Core 1: Macro Bear Veto` | `210` | `97.2%` |
+| `Core 2c: Tier 3 Book 1 Prohibition` | `4` | `1.9%` |
+| `Core 0: Zero-Tolerance Data Firewall` | `2` | `0.9%` |
 
 ---
 

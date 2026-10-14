@@ -43,6 +43,21 @@ sudo systemctl enable --now chrony
 echo ">> Chrony installed and started. Clock drift will auto-correct every few seconds."
 echo ">> Verify with: chronyc tracking"
 
+# Fix #5b — 4 GB Swap Buffer for t4g.medium (Prevents Kernel OOM-Killer crash on 4 GB RAM)
+echo "[2b/9] Configuring 4 GB Swap Space (Fix #5b — OOM Memory Guard)..."
+if [ ! -f "/swapfile" ]; then
+    sudo fallocate -l 4G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    sudo sysctl vm.swappiness=10
+    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.d/99-kronos-swap.conf
+    echo ">> 4 GB swapfile created and enabled. Swappiness set to 10."
+else
+    echo ">> Swapfile already present."
+fi
+
 # 3. Setup Python Virtual Environment
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$APP_DIR"
@@ -95,6 +110,8 @@ echo ""
 echo "[7/9] Installing Systemd Services (Hourly Pipeline + NiceGUI Dashboard)..."
 sudo cp deploy/kronos-v12.service /etc/systemd/system/
 sudo cp deploy/kronos-v12.timer /etc/systemd/system/
+sudo cp deploy/kronos-v12-rebuild.service /etc/systemd/system/
+sudo cp deploy/kronos-v12-rebuild.timer /etc/systemd/system/
 sudo cp deploy/kronos-dashboard.service /etc/systemd/system/
 
 # Replace user and path dynamically in service files
@@ -102,11 +119,15 @@ CURRENT_USER=$(whoami)
 sudo sed -i "s|/home/ubuntu/kronos_v12|$APP_DIR|g" /etc/systemd/system/kronos-v12.service
 sudo sed -i "s|User=ubuntu|User=$CURRENT_USER|g" /etc/systemd/system/kronos-v12.service
 
+sudo sed -i "s|/home/ubuntu/kronos_v12|$APP_DIR|g" /etc/systemd/system/kronos-v12-rebuild.service
+sudo sed -i "s|User=ubuntu|User=$CURRENT_USER|g" /etc/systemd/system/kronos-v12-rebuild.service
+
 sudo sed -i "s|/home/ubuntu/kronos_v12|$APP_DIR|g" /etc/systemd/system/kronos-dashboard.service
 sudo sed -i "s|User=ubuntu|User=$CURRENT_USER|g" /etc/systemd/system/kronos-dashboard.service
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now kronos-v12.timer
+sudo systemctl enable --now kronos-v12-rebuild.timer
 sudo systemctl enable --now kronos-dashboard.service
 
 # Configure Nginx Reverse Proxy (Port 80 -> NiceGUI Port 8056)

@@ -1,6 +1,6 @@
 # Kronos V12: Institutional Symbol Tear Sheet — `O`
 **Classification:** Clean 6-Core Universal Multi-Tier Architecture  
-**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `1` (`1` Closed, `0` Open)  
+**Liquidity Tier:** `Tier 3` | **Total Recorded Trades:** `2` (`2` Closed, `0` Open)  
 **Database Source:** `data/all_tapes/v12_production/trades.parquet`
 
 ---
@@ -9,15 +9,15 @@
 
 | Metric | Performance | Benchmark Target | Verdict |
 | :--- | :---: | :---: | :---: |
-| **Total Closed Trades** | `1` | $\ge 1$ | ✅ Validated |
-| **Win Rate** | **`0.0%`** | `> 40.0%` | ⚠️ Watch |
-| **Profit Factor (Log-Space)** | **`0.000`** | `> 1.50` | 🛑 Negative Drag |
-| **Cumulative Net Log Return** | **`-8.6%`** | `> 0.0%` | 🛑 Drawdown |
-| **Compounded Capital Growth** | **`0.92x`** | `> 1.0x` | Neutral |
-| **Mean Net Log Return / Trade** | **`-8.59%`** | `> +1.0%` | Normal |
+| **Total Closed Trades** | `2` | $\ge 1$ | ✅ Validated |
+| **Win Rate** | **`50.0%`** | `> 40.0%` | ✅ Passed |
+| **Profit Factor (Log-Space)** | **`0.950`** | `> 1.50` | 🛑 Negative Drag |
+| **Cumulative Net Log Return** | **`-0.4%`** | `> 0.0%` | 🛑 Drawdown |
+| **Compounded Capital Growth** | **`1.00x`** | `> 1.0x` | Neutral |
+| **Mean Net Log Return / Trade** | **`-0.22%`** | `> +1.0%` | Normal |
 | **Maximum Log Drawdown** | **`0.0%`** | `< -30%` | ✅ Contained |
-| **Average Trade Duration** | **`3.0h`** | `24h - 336h` | Normal Lifecycle |
-| **Mean Peak MFE / Max MAE** | **`+11.9% / -19.3%`** | MFE > 2x MAE | High Asymmetry |
+| **Average Trade Duration** | **`1.0h`** | `24h - 336h` | Normal Lifecycle |
+| **Mean Peak MFE / Max MAE** | **`+11.9% / -10.2%`** | MFE > 2x MAE | High Asymmetry |
 
 ---
 
@@ -25,7 +25,8 @@
 
 | # | Book | Entry (UTC) | Exit (UTC) | Duration | Entry Px | Exit Px | Realized PnL | Net Log Ret | Peak MFE | Max MAE | Exit Trigger |
 | :-: | :-: | :---: | :---: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| 1 | Book 3 | `2026-08-22 02:00` | `2026-08-22 05:00` | 3.0h | `$0.5077` | `$0.4659` | **-8.23%** | **-8.59%** | +11.9% | -19.3% | `stop_loss` |
+| 1 | Book 3 | `2026-08-22 02:00` | `2026-08-22 03:00` | 1.0h | `$0.5272` | `$0.4838` | **-8.23%** | **-8.59%** | +7.8% | -9.1% | `stop_loss` |
+| 2 | Book 5 (Shelf Absorption Squeeze) | `2026-08-29 04:00` | `2026-09-02 04:00` | Live | `$0.4744` | `$0.5148` | **+8.50%** | **+8.16%** | +16.0% | -11.3% | `shelf_target_reclaim` |
 
 ---
 
@@ -33,6 +34,7 @@
 
 | Exit Trigger | Trade Count | Win Rate % | Total Net Log PnL |
 | :--- | :-: | :-: | :-: |
+| `shelf_target_reclaim` | `1` | `100.0%` | **`+8.2%`** |
 | `stop_loss` | `1` | `0.0%` | **`-8.6%`** |
 
 ---
