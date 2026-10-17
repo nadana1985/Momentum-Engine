@@ -97,7 +97,7 @@ def test_funding_sqz_exception_activation():
     # 1. Disabled mode -> must be vetoed
     cfg_disabled = V12Config(micro=MicrostructureConfig(enable_funding_sqz_exception=False))
     tel_disabled = TelemetryCollector()
-    trades_disabled = run_v12_engine(df, "TEST", cfg=cfg_disabled, telemetry=tel_disabled)
+    trades_disabled, _ = run_v12_engine(df, "TEST", cfg=cfg_disabled, telemetry=tel_disabled)
     assert len(trades_disabled) == 0
     records_disabled = tel_disabled.records
     assert any(r.veto_gate == "Core 4: Funding Rate Cap" for r in records_disabled)
@@ -105,7 +105,7 @@ def test_funding_sqz_exception_activation():
     # 2. Production Default (True) -> exception triggers, trade is taken
     cfg_prod = V12Config()
     tel_prod = TelemetryCollector()
-    trades_prod = run_v12_engine(df, "TEST", cfg=cfg_prod, telemetry=tel_prod)
+    trades_prod, _ = run_v12_engine(df, "TEST", cfg=cfg_prod, telemetry=tel_prod)
     assert len(trades_prod) >= 1
     assert trades_prod.iloc[0]["asset"] == "TEST"
 
@@ -118,7 +118,7 @@ def test_turnover_scaling_activation():
     # 1. Disabled mode -> must be vetoed
     cfg_disabled = V12Config(micro=MicrostructureConfig(enable_turnover_scaling=False))
     tel_disabled = TelemetryCollector()
-    trades_disabled = run_v12_engine(df, "TEST", cfg=cfg_disabled, telemetry=tel_disabled)
+    trades_disabled, _ = run_v12_engine(df, "TEST", cfg=cfg_disabled, telemetry=tel_disabled)
     assert len(trades_disabled) == 0
     records_disabled = tel_disabled.records
     assert any(r.veto_gate == "Core 3: Max Turnover Velocity" for r in records_disabled)
@@ -126,6 +126,6 @@ def test_turnover_scaling_activation():
     # 2. Production Default (True) -> turnover scaling allows trade
     cfg_prod = V12Config()
     tel_prod = TelemetryCollector()
-    trades_prod = run_v12_engine(df, "TEST", cfg=cfg_prod, telemetry=tel_prod)
+    trades_prod, _ = run_v12_engine(df, "TEST", cfg=cfg_prod, telemetry=tel_prod)
     assert len(trades_prod) >= 1
     assert trades_prod.iloc[0]["asset"] == "TEST"

@@ -63,7 +63,7 @@ def test_book4_two_tranche_trajectory_exit():
     
     cfg = V12Config()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades = run_v12_engine(feat, "SYNTHETIC_B4_TOKEN", cfg=cfg)
+    trades, _ = run_v12_engine(feat, "SYNTHETIC_B4_TOKEN", cfg=cfg)
     
     assert isinstance(trades, pd.DataFrame)
     assert not trades.empty
@@ -117,7 +117,7 @@ def test_book4_retest_dip_immunity():
     
     cfg = V12Config()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades = run_v12_engine(feat, "RETEST_TOKEN", cfg=cfg)
+    trades, _ = run_v12_engine(feat, "RETEST_TOKEN", cfg=cfg)
     
     assert isinstance(trades, pd.DataFrame)
     b4 = trades[trades['book'] == 'Book 4']

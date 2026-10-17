@@ -161,7 +161,7 @@ def test_book4_and_target_cap_engine_execution():
     
     cfg = V12Config()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 2", cfg=cfg)
-    trades = run_v12_engine(feat, "TEST_ASSET", cfg=cfg)
+    trades, _ = run_v12_engine(feat, "TEST_ASSET", cfg=cfg)
     
     # Engine should run without error and generate valid trades
     assert isinstance(trades, pd.DataFrame)

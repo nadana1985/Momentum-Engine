@@ -132,7 +132,7 @@ def test_zero_tolerance_data_firewall():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         telemetry = TelemetryCollector(storage_dir=Path(tmpdir))
-        trades = run_v12_engine(df, 'SYNTHETIC_TEST', cfg=cfg, telemetry=telemetry)
+        trades, _ = run_v12_engine(df, 'SYNTHETIC_TEST', cfg=cfg, telemetry=telemetry)
         
         # Zero-Tolerance firewall must have prevented ANY trade entry!
         assert len(trades) == 0, f"Expected 0 trades on NaN data, got {len(trades)}"
