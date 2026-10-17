@@ -14,6 +14,40 @@ from momentum_v12.config import V12Config
 _BTC_CACHE: Optional[pd.DataFrame] = None
 
 
+def extract_p_nb_high(daily_df: pd.DataFrame, canary_date: pd.Timestamp, canary_close: float) -> tuple:
+    """Study S-BZ/S-CA: P_NB_High from daily green candles strictly prior to the canary date.
+
+    Returns (p_nb_high, macro_date, window_len). All three are None/0 when the
+    lookback is too short or no qualifying green window exists.
+    """
+    if daily_df is None or daily_df.empty:
+        return None, None, 0
+
+    cutoff = pd.Timestamp(canary_date) - pd.Timedelta(days=1)
+    past_days = daily_df.loc[:cutoff]
+    if len(past_days) < 10:
+        return None, None, 0
+
+    green_days = past_days[past_days['close'] > past_days['open']]
+    macro_candidates = green_days[green_days['high'] > canary_close]
+    if macro_candidates.empty:
+        return None, None, 0
+
+    macro_date = macro_candidates.index[-1]
+    win_start = macro_date + pd.Timedelta(days=1)
+    win_end = cutoff
+    if win_start > win_end:
+        return None, None, 0
+
+    window_green = green_days.loc[win_start:win_end]
+    if window_green.empty:
+        return None, None, 0
+
+    p_nb_high = float(window_green['high'].max())
+    window_len = (win_end - win_start).days + 1
+    return p_nb_high, macro_date, window_len
+
+
 def get_btc_macro(
     raw_dir: Optional[Path] = None,
     ema_hours: int = 4800,
@@ -332,6 +366,18 @@ def compute_features_v12(
     out['base_30d'] = is_base.rolling(720, min_periods=720).min() == 1.0
     out['high_30d'] = h.shift(1).rolling(720, min_periods=720).max()
     out['is_b6_breakout'] = (h >= out['high_30d']) & out['base_30d'].shift(1).fillna(False)
+
+    # Study S-CA / S-BZ: causal daily candles for P_NB_High extraction
+    try:
+        daily_c = c.resample('1D').last().dropna()
+        daily_o = o.resample('1D').first().dropna()
+        daily_h = h.resample('1D').max().dropna()
+        daily_l = l.resample('1D').min().dropna()
+        out.attrs['daily_df'] = pd.DataFrame({
+            'open': daily_o, 'high': daily_h, 'low': daily_l, 'close': daily_c,
+        })
+    except Exception:
+        out.attrs['daily_df'] = None
 
     out['tier'] = tier_label
     return out

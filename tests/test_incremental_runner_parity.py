@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config
+from momentum_v12.config import V12Config, Book4Config
 from momentum_v12.engine_state import (
     closed_bar_mask,
     engine_state_from_jsonable,
@@ -31,6 +31,16 @@ from momentum_v12.engine_state import (
 from momentum_v12.engine_v12 import run_v12_engine
 from momentum_v12.features_v12 import compute_features_v12
 from momentum_v12.live_runner_v12 import _closed_feature_frame
+
+
+def _sbb_cfg() -> V12Config:
+    """S-BB hourly reclaim path used to open a Book 4 across a cut."""
+    return V12Config(
+        book4=Book4Config(
+            enable_p_nb_day_close_confirmation=False,
+            enable_p_nb_microstructure_sizing=False,
+        )
+    )
 
 
 def _synthetic_book4_frame(n: int = 2000) -> pd.DataFrame:
@@ -72,7 +82,7 @@ def _trade_keyframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def test_incremental_open_across_cut_matches_cold():
     """A Book 4 that is still open at the cut must resume stop/MFE from state."""
-    cfg = V12Config()
+    cfg = _sbb_cfg()
     feat = compute_features_v12(
         _synthetic_book4_frame(), btc_df=None, tier_label="Tier 1", cfg=cfg
     )
@@ -152,7 +162,7 @@ def test_incremental_open_across_cut_matches_cold():
 
 
 def test_json_roundtrip_preserves_open_sleeve():
-    cfg = V12Config()
+    cfg = _sbb_cfg()
     feat = compute_features_v12(
         _synthetic_book4_frame(), btc_df=None, tier_label="Tier 1", cfg=cfg
     )
