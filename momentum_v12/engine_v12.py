@@ -12,6 +12,7 @@ from momentum_v12.config import V12Config
 from momentum_v12.telemetry_v12 import TelemetryCollector, TelemetryRecord
 from momentum_v12.sizing_v12 import compute_csmi_metrics
 from momentum_v12.features_v12 import extract_p_nb_high
+from momentum_v12.oms_fills import limit_fill_price
 from momentum_v12.engine_state import (
     _to_naive_ts,
     hydrate_engine_state,
@@ -285,46 +286,53 @@ def run_v12_engine(
                 bid_age_h = (ts - active_flush_bid['armed_ts']).total_seconds() / 3600.0
                 if bid_age_h > active_flush_bid['ttl_bars']:
                     active_flush_bid = None # Expired
-                elif l <= active_flush_bid['bid_px']: # Filled at limit!
-                    # Study S-BX: Calendar Firewall on Limit Fills
-                    cal_cfg = getattr(cfg, 'calendar', None)
-                    is_mon = (ts.dayofweek == 0)
-                    is_mstart = ts.is_month_start
-                    is_mend = ts.is_month_end
-                    skip_fill = False
-                    if cal_cfg and cal_cfg.enable_calendar_firewall:
-                        if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
-                            skip_fill = True
-                    
-                    if not skip_fill:
-                        entry_px = active_flush_bid['bid_px']
-                        active = {
-                            'entry_time': ts,
-                            'entry_price': entry_px,
-                            'stop': active_flush_bid['stop_px'],
-                            'target': active_flush_bid['target_px'],
-                            'max_high': h,
-                            'min_low': l,
-                            'book': 'Book 3',
-                            'is_reclaim': False,
-                            'is_continuation': False,
-                            'is_book3': True,
-                            'entry_oi': current_oi,
-                            'pct_lam': 0.50,
-                            'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
-                            'veto_gate': active_flush_bid['veto_gate'],
-                        }
-                        active_flush_bid = None
-                        if telemetry:
-                            telemetry.log_signal(TelemetryRecord(
-                                timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
-                                veto_gate="Book 3: Flush Limit Filled", candidate_setup="Book 3 Flush Reclaim",
-                                price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
-                                ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
-                                funding_rate=fr if pd.notna(fr) else 0.0,
-                                btc_macro_bull=btc_bull
-                            ))
-                        continue
+                else:
+                    fill_mode = getattr(getattr(cfg, 'execution', None), 'mode', 'paper_limit')
+                    entry_px = limit_fill_price(
+                        float(active_flush_bid['bid_px']), o, l, fill_mode
+                    )
+                    if entry_px is not None:
+                        # Study S-BX: Calendar Firewall on Limit Fills
+                        cal_cfg = getattr(cfg, 'calendar', None)
+                        is_mon = (ts.dayofweek == 0)
+                        is_mstart = ts.is_month_start
+                        is_mend = ts.is_month_end
+                        skip_fill = False
+                        if cal_cfg and cal_cfg.enable_calendar_firewall:
+                            if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
+                                skip_fill = True
+
+                        if not skip_fill:
+                            stop_px = float(active_flush_bid['stop_px'])
+                            if fill_mode == 'live_limit':
+                                stop_px = entry_px * (1.0 - float(cfg.book3_flush.max_initial_risk))
+                            active = {
+                                'entry_time': ts,
+                                'entry_price': entry_px,
+                                'stop': stop_px,
+                                'target': active_flush_bid['target_px'],
+                                'max_high': h,
+                                'min_low': l,
+                                'book': 'Book 3',
+                                'is_reclaim': False,
+                                'is_continuation': False,
+                                'is_book3': True,
+                                'entry_oi': current_oi,
+                                'pct_lam': 0.50,
+                                'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
+                                'veto_gate': active_flush_bid['veto_gate'],
+                            }
+                            active_flush_bid = None
+                            if telemetry:
+                                telemetry.log_signal(TelemetryRecord(
+                                    timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
+                                    veto_gate="Book 3: Flush Limit Filled", candidate_setup="Book 3 Flush Reclaim",
+                                    price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
+                                    ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
+                                    funding_rate=fr if pd.notna(fr) else 0.0,
+                                    btc_macro_bull=btc_bull
+                                ))
+                            continue
 
         # Study S-BI Pillar 1: Book 5 Trapped-Whale Shelf Absorption (resting limit bid lifecycle)
         if getattr(cfg.book5, 'enable_book5', False):
@@ -342,32 +350,39 @@ def run_v12_engine(
                         if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
                             skip_b5 = True
                     if not skip_b5:
-                        entry_px = min(o, active_b5_bid['bid_px'])  # gap-down fills at open
-                        active = {
-                            'entry_time': ts,
-                            'entry_price': entry_px,
-                            'stop': entry_px * (1.0 - cfg.book5.max_initial_risk),
-                            'target': active_b5_bid['target_px'],
-                            'max_high': h,
-                            'min_low': l,
-                            'book': 'Book 5',
-                            'is_reclaim': False,
-                            'is_continuation': False,
-                            'entry_oi': current_oi,
-                            'pct_lam': 0.50,
-                            'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
-                        }
-                        active_b5_bid = None
-                        if telemetry:
-                            telemetry.log_signal(TelemetryRecord(
-                                timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
-                                veto_gate="Book 5: Shelf Squeeze Limit Filled", candidate_setup="Book 5 Trapped-Whale Shelf",
-                                price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
-                                ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
-                                funding_rate=fr if pd.notna(fr) else 0.0,
-                                btc_macro_bull=btc_bull
-                            ))
-                        continue
+                        fill_mode = getattr(getattr(cfg, 'execution', None), 'mode', 'paper_limit')
+                        if fill_mode == 'live_limit':
+                            entry_px = limit_fill_price(
+                                float(active_b5_bid['bid_px']), o, l, fill_mode
+                            )
+                        else:
+                            entry_px = min(o, active_b5_bid['bid_px'])
+                        if entry_px is not None:
+                            active = {
+                                'entry_time': ts,
+                                'entry_price': entry_px,
+                                'stop': entry_px * (1.0 - cfg.book5.max_initial_risk),
+                                'target': active_b5_bid['target_px'],
+                                'max_high': h,
+                                'min_low': l,
+                                'book': 'Book 5',
+                                'is_reclaim': False,
+                                'is_continuation': False,
+                                'entry_oi': current_oi,
+                                'pct_lam': 0.50,
+                                'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
+                            }
+                            active_b5_bid = None
+                            if telemetry:
+                                telemetry.log_signal(TelemetryRecord(
+                                    timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
+                                    veto_gate="Book 5: Shelf Squeeze Limit Filled", candidate_setup="Book 5 Trapped-Whale Shelf",
+                                    price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
+                                    ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
+                                    funding_rate=fr if pd.notna(fr) else 0.0,
+                                    btc_macro_bull=btc_bull
+                                ))
+                            continue
             # Arm a new bid using only information available at this bar's close
             if active is None and active_b5_bid is None and pd.notna(ls_ratio):
                 since_arm = (ts - last_b5_arm_ts).total_seconds() / 3600.0 if last_b5_arm_ts is not None else 1e9

@@ -92,6 +92,10 @@ Copy `.env.example` to `.env` to customize settings:
 # Execution Profile (production, no_book4, legacy_3_books, baseline_no_book3)
 KRONOS_PROFILE=production
 KRONOS_TAPE_DIR=data/all_tapes/v14_production
+# paper (default): fill Book 3/5 limits at the bid when the bar low trades through.
+# live | live_limit: gap-through fills at the open; rebase Book 3 stop from the fill.
+# This is a fill model, not an exchange order placer. Book 4 stays market-on-close.
+KRONOS_EXECUTION=paper
 
 # Cloud Backups & Dead-Man's Switch
 AWS_DEFAULT_REGION=eu-central-1
