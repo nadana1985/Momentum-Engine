@@ -8,7 +8,11 @@ if (-not $env:KRONOS_PROFILE) {
     $env:KRONOS_PROFILE="production"
 }
 if (-not $env:KRONOS_TAPE_DIR) {
-    $env:KRONOS_TAPE_DIR="data/all_tapes/v12_production"
+    if ($env:KRONOS_PROFILE -eq "book3_flush") {
+        $env:KRONOS_TAPE_DIR="data/all_tapes/v12_book3_flush_reclaim_arm"
+    } else {
+        $env:KRONOS_TAPE_DIR="data/all_tapes/v14_production"
+    }
 }
 
 # Load .env if present (Windows equivalent of bash source .env)

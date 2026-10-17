@@ -25,6 +25,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger("kronos.sns_notify")
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import resolve_tape_dir
 
 
 def format_table(rows: list[dict]) -> str:
@@ -72,7 +75,7 @@ def notify_signals_sns(
     dash_url = dashboard_url or os.environ.get("DASHBOARD_URL", "")
 
     # Load open trades
-    open_trades_path = ROOT / "data" / "all_tapes" / "v12_production" / "open_trades.csv"
+    open_trades_path = resolve_tape_dir(ROOT) / "open_trades.csv"
     if not open_trades_path.exists():
         logger.info(f"[SNS Alert] Open trades file not found at {open_trades_path}. Skipping.")
         return 0

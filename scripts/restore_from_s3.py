@@ -19,11 +19,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger("kronos.restore_s3")
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
 
 
 def restore_from_s3(
     bucket_name: str | None = None,
-    prefix: str = "v12_production",
+    prefix: str | None = None,
     include_shards: bool = False,
     region: str | None = None,
 ) -> int:
@@ -41,6 +44,8 @@ def restore_from_s3(
 
     region_name = region or os.environ.get("AWS_DEFAULT_REGION", "eu-central-1")
     s3 = boto3.client("s3", region_name=region_name)
+    ledger_dir = resolve_tape_dir(ROOT)
+    prefix = prefix or ledger_dir.name or DEFAULT_TAPE_SLUG
 
     logger.info(f"==========================================================")
     logger.info(f"   KRONOS V12 1-CLICK DISASTER RECOVERY (AWS S3)          ")
@@ -48,7 +53,6 @@ def restore_from_s3(
     logger.info(f"==========================================================")
 
     # 1. Define target mapping for latest ledger and state files
-    ledger_dir = ROOT / "data" / "all_tapes" / "v12_production"
     ledger_dir.mkdir(parents=True, exist_ok=True)
     (ROOT / "config" / "ingestion").mkdir(parents=True, exist_ok=True)
     (ROOT / "data").mkdir(parents=True, exist_ok=True)
@@ -155,7 +159,7 @@ def restore_from_s3(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Restore Kronos V12 state & ledgers from AWS S3")
     parser.add_argument("--bucket", type=str, default=None, help="Source S3 bucket name")
-    parser.add_argument("--prefix", type=str, default="v12_production", help="S3 key prefix (default: v12_production)")
+    parser.add_argument("--prefix", type=str, default=None, help="S3 key prefix (default: current tape slug)")
     parser.add_argument("--include-shards", action="store_true", help="Also restore all raw and exotic shard parquets")
     parser.add_argument("--region", type=str, default=None, help="AWS Region (default: eu-central-1 or AWS_DEFAULT_REGION)")
     args = parser.parse_args()

@@ -26,7 +26,7 @@ logger = logging.getLogger("kronos.disk_cleanup")
 ROOT = Path(__file__).resolve().parent.parent
 
 RETENTION_DAYS = int(os.getenv("CLEANUP_RETENTION_DAYS", "90"))  # Keep 90 days of arm experiments
-PROTECTED_ARMS = {"v12_production"}                                # Never touch production arm
+PROTECTED_ARMS = {"v14_production", "v13_production", "v12_production"}
 
 
 def cleanup_old_arm_experiments() -> int:

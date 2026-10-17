@@ -56,7 +56,9 @@ class TierConfig:
         'ARM', 'AVGO', 'MU', 'QCOM', 'SPY', 'QQQ', 'XAU', 'XAG', 'CL', 'BZ',
         'ASTS', 'PLTR', 'COIN', 'MSTR', 'SNDK', 'MRVL', 'EWY', 'KORU', 'AAOI',
         'AMAT', 'ANTHROPIC', 'OPENAI', 'SPCX', 'SKHYNIX', 'SAMSUNG', 'SOXL',
-        'DRAM', 'BMNR', 'TQQQ', 'USDC'
+        'DRAM', 'BMNR', 'TQQQ', 'USDC',
+        'MYX', 'LAB',
+        'CRCL', 'HD', 'RDDT', 'SQQQ', 'TMF', 'UVXY',
     )
 
     def __post_init__(self):

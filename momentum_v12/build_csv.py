@@ -16,16 +16,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
-tape_dir_env = os.environ.get("KRONOS_TAPE_DIR", "data/all_tapes/v12_production")
-raw_tape_dir = Path(tape_dir_env)
-if raw_tape_dir.is_absolute():
-    TAPE_DIR = raw_tape_dir
-elif (ROOT / raw_tape_dir).exists():
-    TAPE_DIR = ROOT / raw_tape_dir
-elif raw_tape_dir.exists():
-    TAPE_DIR = raw_tape_dir
-else:
-    TAPE_DIR = ROOT / raw_tape_dir
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import resolve_tape_dir
+TAPE_DIR = resolve_tape_dir(ROOT)
 RAW_CSV = TAPE_DIR / "master_raw_tape.csv"
 TRADES_PARQUET = TAPE_DIR / "trades.parquet"
 CLOSED_CSV = TAPE_DIR / "closed_trades.csv"
