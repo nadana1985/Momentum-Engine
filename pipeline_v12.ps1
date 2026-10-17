@@ -7,6 +7,9 @@ $env:NUMEXPR_NUM_THREADS="1"
 if (-not $env:KRONOS_PROFILE) {
     $env:KRONOS_PROFILE="production"
 }
+if (-not $env:KRONOS_EXECUTION) {
+    $env:KRONOS_EXECUTION="paper"
+}
 if (-not $env:KRONOS_TAPE_DIR) {
     if ($env:KRONOS_PROFILE -eq "book3_flush") {
         $env:KRONOS_TAPE_DIR="data/all_tapes/v12_book3_flush_reclaim_arm"

@@ -516,6 +516,21 @@ class CalendarConfig:
 
 
 @dataclass(frozen=True)
+class ExecutionConfig:
+    """Paper vs live resting-limit fill model. Not an exchange order placer.
+
+    paper_limit: fill a buy limit at the bid when the bar low trades through.
+    live_limit:  gap-through fills at the open (bid is not available after a gap).
+    Book 4 stays market-on-close (S-CA day-close). Book 3/5 stay paper_limit
+    unless KRONOS_EXECUTION=live.
+    """
+    mode: str = "paper_limit"
+
+    def __post_init__(self):
+        assert self.mode in ("paper_limit", "live_limit"), "mode must be paper_limit or live_limit"
+
+
+@dataclass(frozen=True)
 class V12Config:
     """Master Unified Configuration Dataclass (V13.3 Production)"""
     macro: MacroConfig = field(default_factory=MacroConfig)
@@ -531,6 +546,7 @@ class V12Config:
     book1: Book1Config = field(default_factory=Book1Config)
     book6: Book6Config = field(default_factory=Book6Config)
     calendar: CalendarConfig = field(default_factory=CalendarConfig)
+    execution: ExecutionConfig = field(default_factory=ExecutionConfig)
 
 
 

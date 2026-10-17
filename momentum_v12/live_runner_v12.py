@@ -64,6 +64,7 @@ from momentum_v12.engine_state import (
 from momentum_v12.telemetry_v12 import TelemetryCollector
 from momentum_v12.tier_classifier import get_all_universe_tiers
 from build_v12_tape import get_runtime_config, TAPE_DIR, TELEMETRY_DIR
+from momentum_v12.oms_fills import working_orders_from_states, write_working_orders
 
 logging.basicConfig(
     level=logging.INFO,
@@ -262,6 +263,7 @@ def main():
 
     # ── Load config & BTC macro ───────────────────────────────────────────────
     cfg = get_runtime_config()
+    logger.info(f"  Exec    : {cfg.execution.mode}")
     btc_df = get_btc_macro(raw_dir=RAW_DIR)
     if btc_df is None:
         logger.error("BTC macro shard not found. Run live_bridger.py first.")
@@ -327,6 +329,9 @@ def main():
     # ── Persist updated state ─────────────────────────────────────────────────
     save_state(updated_state)
     logger.info(f"[State] Saved {len(updated_state)} asset states → {STATE_FILE}")
+    working_path = ROOT / "data" / "working_orders.json"
+    write_working_orders(working_path, working_orders_from_states(updated_state))
+    logger.info(f"[OMS] Resting limits snapshot → {working_path}")
 
     # ── Merge & save master tape ──────────────────────────────────────────────
     TAPE_DIR.mkdir(parents=True, exist_ok=True)

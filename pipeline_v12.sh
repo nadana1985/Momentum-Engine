@@ -47,6 +47,7 @@ if [ -f ".env" ]; then
 fi
 
 export KRONOS_PROFILE="${KRONOS_PROFILE:-production}"
+export KRONOS_EXECUTION="${KRONOS_EXECUTION:-paper}"
 if [ -z "$KRONOS_TAPE_DIR" ]; then
     if [ "$KRONOS_PROFILE" = "book3_flush" ]; then
         export KRONOS_TAPE_DIR="data/all_tapes/v12_book3_flush_reclaim_arm"

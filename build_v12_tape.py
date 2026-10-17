@@ -35,9 +35,11 @@ from momentum_v12.ops_paths import (
     resolve_tape_dir,
     resolve_telemetry_dir,
 )
+from momentum_v12.oms_fills import execution_from_env
 
 def get_runtime_config() -> V12Config:
     tier_cfg = TierConfig()
+    exec_cfg = execution_from_env()
     macro_cfg = MacroConfig(enable_rs_btc_extension_veto=False) if os.environ.get("KRONOS_DISABLE_RS_VETO", "0") == "1" else MacroConfig()
     profile = os.environ.get("KRONOS_PROFILE", "production").lower()
     if profile in ("legacy", "baseline", "v12_legacy"):
@@ -49,21 +51,21 @@ def get_runtime_config() -> V12Config:
             enable_lambda_sizing=False
         )
         book4 = Book4Config(enable_book4=False)
-        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, sizing=sizing, book4=book4)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, sizing=sizing, book4=book4, execution=exec_cfg)
     elif profile in ("shadow_reclaim", "s_p", "shadow"):
         shadow = ShadowReclaimConfig(
             enable_bear_shadow_reclaims=True
         )
-        return V12Config(macro=macro_cfg, tier=tier_cfg, shadow_reclaim=shadow)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, shadow_reclaim=shadow, execution=exec_cfg)
     elif profile in ("baseline_no_book3", "book1_book2_only", "no_book3"):
         book3 = Book3FlushReclaimConfig(enable_book3_flush_reclaim=False)
-        return V12Config(macro=macro_cfg, tier=tier_cfg, book3_flush=book3)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, book3_flush=book3, execution=exec_cfg)
     elif profile in ("book3_flush", "flush_reclaim", "s_ac", "book3"):
         book3 = Book3FlushReclaimConfig(enable_book3_flush_reclaim=True)
-        return V12Config(macro=macro_cfg, tier=tier_cfg, book3_flush=book3)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, book3_flush=book3, execution=exec_cfg)
     elif profile in ("no_book4", "legacy_3_books"):
         book4 = Book4Config(enable_book4=False)
-        return V12Config(macro=macro_cfg, tier=tier_cfg, book4=book4)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, book4=book4, execution=exec_cfg)
     elif profile in ("engine_baseline", "s_bi", "s_bj", "s_bi_bj"):
         # Engine-native re-test arms (Study S-BI + S-BJ). All start from current production defaults.
         from momentum_v12.config import ExitConfig, Book5Config
@@ -77,9 +79,9 @@ def get_runtime_config() -> V12Config:
             "Core 4: Funding Rate Cap",
             "Core 4: Whale Firewall",
         ) if use_bj else ())
-        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, exit=exit_cfg, book3_flush=book3, book5=book5)
+        return V12Config(macro=macro_cfg, tier=tier_cfg, micro=micro, exit=exit_cfg, book3_flush=book3, book5=book5, execution=exec_cfg)
     # Canonical V12.6 Production Architecture: Master 4-Book Stack (B1 + B2 + B3 + B4)
-    return V12Config(macro=macro_cfg, tier=tier_cfg)
+    return V12Config(macro=macro_cfg, tier=tier_cfg, execution=exec_cfg)
 
 CFG = get_runtime_config()
 RAW_DIR = ROOT / "data" / "raw_shards"
