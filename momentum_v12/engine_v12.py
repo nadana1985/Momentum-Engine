@@ -11,6 +11,7 @@ import pandas as pd
 from momentum_v12.config import V12Config
 from momentum_v12.telemetry_v12 import TelemetryCollector, TelemetryRecord
 from momentum_v12.sizing_v12 import compute_csmi_metrics
+from momentum_v12.features_v12 import extract_p_nb_high
 from momentum_v12.engine_state import (
     _to_naive_ts,
     hydrate_engine_state,
@@ -76,6 +77,17 @@ def run_v12_engine(
         qv_arr = (df['close'] * df['volume']).fillna(0.0).to_numpy(float)
     else:
         qv_arr = df['close'].fillna(0.0).to_numpy(float)
+
+    daily_df = getattr(df, 'attrs', {}).get('daily_df', None)
+    if daily_df is None:
+        try:
+            d_c = df['close'].resample('1D').last().dropna()
+            d_o = df['open'].resample('1D').first().dropna()
+            d_h = df['high'].resample('1D').max().dropna()
+            d_l = df['low'].resample('1D').min().dropna()
+            daily_df = pd.DataFrame({'open': d_o, 'high': d_h, 'low': d_l, 'close': d_c})
+        except Exception:
+            daily_df = None
 
     _vp_cache = {}
     vp_lookback = getattr(cfg.book3_flush, 'vp_lookback_bars', 2160)
@@ -879,16 +891,34 @@ def run_v12_engine(
                     (ret_14d >= cfg.entry.continuation_min_14d_ret)
                 )
 
-            # Study S-BB & S-BE: Book 4 200-Day EMA Touch & Retest Tracking
+            # Study S-BB & S-BE & S-CA: Book 4 200-Day EMA Touch & Retest Tracking
             ema200 = float(row.get('ema200_1d', c))
-            if bool(row.get('is_200d_touch', False)):
+            b4_cfg = getattr(cfg, 'book4', None)
+            b4_enabled = getattr(b4_cfg, 'enable_book4', True) if b4_cfg is not None else True
+            tier2_b4_ok = getattr(cfg.tier, 'tier2_enable_book4', False) if tier == 'Tier 2' else True
+            tier3_b4_ok = getattr(cfg.tier, 'tier3_enable_book4', False) if tier == 'Tier 3' else True
+            is_tier_b4_ok = (
+                (tier == 'Tier 1')
+                or (tier == 'Tier 2' and tier2_b4_ok)
+                or (tier == 'Tier 3' and tier3_b4_ok)
+            )
+            if bool(row.get('is_200d_touch', False)) and b4_enabled and is_tier_b4_ok:
                 pre_start = max(0, _bar_i - getattr(cfg.book4, 'min_bars_below', 720))
                 base_low_30d = float(l_arr[pre_start : _bar_i].min()) if _bar_i > 0 else l
                 if active_b4_setup is None:
+                    p_nb_high = None
+                    if daily_df is not None:
+                        canary_date = pd.Timestamp(ts).floor('D')
+                        p_nb_val, _, _ = extract_p_nb_high(daily_df, canary_date, c)
+                        if p_nb_val is not None and p_nb_val > 0:
+                            p_nb_high = p_nb_val
+                    if p_nb_high is None or p_nb_high <= 0:
+                        p_nb_high = float(np.max(h_arr[pre_start : _bar_i])) if _bar_i > 0 else h
                     active_b4_setup = {
                         'touch_bar': _bar_i,
                         'touch_ts': ts,
                         'p0': c,
+                        'p_nb_high': p_nb_high,
                         'peak_high': h,
                         'base_low_30d': base_low_30d,
                         'bot_low': l,
@@ -925,9 +955,17 @@ def run_v12_engine(
                 elif (
                     _bar_i > active_b4_setup['touch_bar'] and
                     c >= ema200 and
-                    getattr(cfg.book4, 'enable_book4', True)
+                    b4_enabled and
+                    is_tier_b4_ok
                 ):
-                    is_b4_candidate = True
+                    p_nb_ok = True
+                    if getattr(cfg.book4, 'enable_p_nb_day_close_confirmation', False):
+                        p_nb_ref = active_b4_setup.get('p_nb_high')
+                        if p_nb_ref is not None and p_nb_ref > 0:
+                            is_day_close_bar = (ts.hour == 23)
+                            p_nb_ok = is_day_close_bar and (c >= p_nb_ref)
+                    if p_nb_ok:
+                        is_b4_candidate = True
 
             # Study S-BR & S-BS: Book 1 AVWAP Retest Reclaim Candidate Check
             is_b1_avwap_candidate = False
@@ -1119,6 +1157,16 @@ def run_v12_engine(
                     body_atr_mult = 1.0
                     w_vol = 1.0
 
+                # Study S-CA: Continuous Microstructure & Funding Governor
+                if getattr(cfg.book4, 'enable_p_nb_microstructure_sizing', False):
+                    p_nb_val = active_b4_setup.get('p_nb_high') if active_b4_setup is not None else None
+                    if p_nb_val is not None and p_nb_val > 0:
+                        dist_pnb = (c - p_nb_val) / p_nb_val
+                        w_pnb = float(np.clip(1.0 + 0.35 * dist_pnb, 0.65, 1.35))
+                        fr_z_val = float(row.get('funding_z', 0.0))
+                        w_fr = float(np.clip(1.0 - 0.20 * fr_z_val, 0.70, 1.25))
+                        w_vol = float(np.clip(w_vol * w_pnb * w_fr, 0.20, 1.50))
+
                 active = {
                     'entry_time': ts,
                     'entry_price': fill_px,
@@ -1134,6 +1182,7 @@ def run_v12_engine(
                     'turnover_at_entry': to_val,
                     'rank_ts': float(row.get('rank_ts_168h', 0.50)),
                     'rank_ema': float(row.get('rank_ema_168h', 0.50)),
+                    'p_nb_high': active_b4_setup.get('p_nb_high') if active_b4_setup is not None else None,
                     'w_btc': w_btc,
                     'w_vol': w_vol,
                     'body_atr_mult': body_atr_mult,

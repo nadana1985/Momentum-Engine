@@ -21,6 +21,16 @@ from momentum_v12.features_v12 import compute_features_v12
 from momentum_v12.engine_v12 import run_v12_engine
 
 
+def _sbb_cfg() -> V12Config:
+    """S-BB hourly reclaim path: S-CA day-close + microstructure off."""
+    return V12Config(
+        book4=Book4Config(
+            enable_p_nb_day_close_confirmation=False,
+            enable_p_nb_microstructure_sizing=False,
+        )
+    )
+
+
 def test_v12_9_config_invariants():
     """Verify V12.9 configuration fields and their empirical default values."""
     cfg = V12Config()
@@ -35,6 +45,8 @@ def test_v12_9_config_invariants():
     assert cfg.book4.anti_chase_min_multiplier == 0.50
     assert hasattr(cfg.book4, "anti_chase_max_multiplier")
     assert cfg.book4.anti_chase_max_multiplier == 1.20
+    assert cfg.book4.enable_p_nb_day_close_confirmation is True
+    assert cfg.book4.enable_p_nb_microstructure_sizing is True
 
 
 def test_anti_chase_mathematical_bounds():
@@ -97,7 +109,7 @@ def test_book4_anti_chase_engine_sizing():
         "taker_buy_quote_volume": c * 26000.0,
     }, index=dates)
     
-    cfg = V12Config()
+    cfg = _sbb_cfg()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
     trades, _ = run_v12_engine(feat, "CONTROLLED_B4_TOKEN", cfg=cfg)
     

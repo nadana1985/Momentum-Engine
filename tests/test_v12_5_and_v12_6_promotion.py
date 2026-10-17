@@ -37,6 +37,10 @@ def test_config_dataclasses_integrity():
     assert cfg.book4.target_cap_pct == 0.20
     assert cfg.book4.continuous_btc_sizing is True
     assert cfg.book4.bear_sizing_mult == 0.50
+    assert cfg.book4.enable_p_nb_day_close_confirmation is True
+    assert cfg.book4.enable_p_nb_microstructure_sizing is True
+    assert cfg.tier.tier2_enable_book4 is False
+    assert cfg.tier.tier3_enable_book4 is False
     
     # Sizing Config (Study S-AY)
     assert cfg.sizing.enable_ema_sizing is True
@@ -159,8 +163,13 @@ def test_book4_and_target_cap_engine_execution():
         "taker_buy_quote_volume": c * 26000.0,
     }, index=dates)
     
-    cfg = V12Config()
-    feat = compute_features_v12(df, btc_df=None, tier_label="Tier 2", cfg=cfg)
+    cfg = V12Config(
+        book4=Book4Config(
+            enable_p_nb_day_close_confirmation=False,
+            enable_p_nb_microstructure_sizing=False,
+        )
+    )
+    feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
     trades, _ = run_v12_engine(feat, "TEST_ASSET", cfg=cfg)
     
     # Engine should run without error and generate valid trades

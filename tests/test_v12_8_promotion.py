@@ -20,6 +20,16 @@ from momentum_v12.features_v12 import compute_features_v12
 from momentum_v12.engine_v12 import run_v12_engine
 
 
+def _sbb_cfg() -> V12Config:
+    """S-BB hourly reclaim path: S-CA day-close + microstructure off."""
+    return V12Config(
+        book4=Book4Config(
+            enable_p_nb_day_close_confirmation=False,
+            enable_p_nb_microstructure_sizing=False,
+        )
+    )
+
+
 def test_book4_two_tranche_trajectory_exit():
     """Verify that when a Book 4 setup hits the +20% target cap,
     Tranche A locks in profit while Tranche B ratchets stop to breakeven and trails.
@@ -61,7 +71,7 @@ def test_book4_two_tranche_trajectory_exit():
         "taker_buy_quote_volume": c * 26000.0,
     }, index=dates)
     
-    cfg = V12Config()
+    cfg = _sbb_cfg()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
     trades, _ = run_v12_engine(feat, "SYNTHETIC_B4_TOKEN", cfg=cfg)
     
@@ -115,7 +125,7 @@ def test_book4_retest_dip_immunity():
         "taker_buy_quote_volume": c * 26000.0,
     }, index=dates)
     
-    cfg = V12Config()
+    cfg = _sbb_cfg()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
     trades, _ = run_v12_engine(feat, "RETEST_TOKEN", cfg=cfg)
     

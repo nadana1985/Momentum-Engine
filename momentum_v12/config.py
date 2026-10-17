@@ -48,6 +48,8 @@ class TierConfig:
     tier3_min_oi_usd: float = 250_000.0      # $250k min OI floor to filter zero-liquidity zombies
     tier3_enable_book1: bool = False         # STRICTLY DISABLED: No trend breakouts on micro-caps
     tier3_enable_book2: bool = True          # ENABLED: Squeeze breakouts only
+    tier2_enable_book4: bool = False         # STRICTLY DISABLED: Book 4 restricted to Tier 1 alone
+    tier3_enable_book4: bool = False         # STRICTLY DISABLED: Book 4 restricted to Tier 1 alone
 
     excluded_symbols: Tuple[str, ...] = (
         'AAPL', 'AMZN', 'GOOGL', 'MSFT', 'NVDA', 'TSLA', 'META', 'AMD', 'INTC',
@@ -386,6 +388,10 @@ class Book4Config:
     confluence_conviction_mult: float = 1.35  # Sizing multiplier when both USD and ALT/BTC 200d EMAs are reclaimed
     enable_whale_squeeze_immunity: bool = True # Override premature climax exits when Whales trapped net short (L/S <= 0.95)
     whale_squeeze_max_ls: float = 0.95        # Threshold for identifying trapped whale shorts
+
+    # Study S-CA: Day Close P_NB_High Structural Acceptance (Tier 1 certified)
+    enable_p_nb_day_close_confirmation: bool = True
+    enable_p_nb_microstructure_sizing: bool = True
 
     def __post_init__(self):
         assert self.min_bars_below > 0, "min_bars_below must be positive"
