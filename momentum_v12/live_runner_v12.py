@@ -17,15 +17,9 @@ PERFORMANCE: 1-2 minutes per hourly run on t4g.medium (was 20-35 minutes).
 
 STATE FILE: data/v12_live_state.json
   Keys per asset:
-    - last_ts            : ISO-8601 timestamp of last processed closed bar
-    - active             : active position dict (None if flat)
-    - last_exit_ts       : ISO-8601 or None
-    - last_exit_reason   : str or None
-    - last_exit_pnl      : float
-    - last_entry_price   : float
-    - flush_low_since_exit: float
-    - active_shadow_anchor: dict or None
-    - active_flush_bid   : dict or None
+    - last_ts : ISO-8601 of last processed CLOSED bar (never a forming hour)
+    - engine  : full sleeve snapshot from run_v12_engine (active, cooldowns,
+                flush bids, Book 1/4/5/6 anchors, Book 2 delayed trigger)
 
 Usage (from v12_standalone/):
     python momentum_v12/live_runner_v12.py [--workers N] [--data-dir PATH]
@@ -60,6 +54,13 @@ if str(ROOT) not in sys.path:
 from momentum_v12.config import V12Config
 from momentum_v12.features_v12 import get_btc_macro, load_shard, compute_features_v12
 from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v12.engine_state import (
+    _to_naive_ts,
+    closed_bar_mask,
+    empty_engine_state,
+    engine_state_to_jsonable,
+    utc_now_naive,
+)
 from momentum_v12.telemetry_v12 import TelemetryCollector
 from momentum_v12.tier_classifier import get_all_universe_tiers
 from build_v12_tape import get_runtime_config, TAPE_DIR, TELEMETRY_DIR
@@ -82,29 +83,6 @@ STATE_FILE = ROOT / "data" / "v12_live_state.json"
 # a safety buffer of 240 bars = 9000 bars ≈ 375 days of 1h candles.
 MAX_TAIL_BARS = 9_000
 
-# ── JSON state serialisation helpers ─────────────────────────────────────────
-
-def _ts_to_str(v: Any) -> Any:
-    """Recursively convert Timestamps / datetimes to ISO-8601 strings."""
-    if isinstance(v, (pd.Timestamp, datetime)):
-        return v.isoformat()
-    if isinstance(v, dict):
-        return {k: _ts_to_str(x) for k, x in v.items()}
-    return v
-
-
-def _str_to_ts(v: Any) -> Any:
-    """Recursively parse ISO-8601 strings back to pd.Timestamp where needed."""
-    if isinstance(v, str):
-        try:
-            return pd.Timestamp(v)
-        except Exception:
-            return v
-    if isinstance(v, dict):
-        return {k: _str_to_ts(x) for k, x in v.items()}
-    return v
-
-
 def load_state() -> Dict[str, dict]:
     """Load persisted engine state. Returns {} if not present."""
     if STATE_FILE.exists():
@@ -123,12 +101,8 @@ def save_state(state: Dict[str, dict]) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     tmp = str(STATE_FILE) + ".tmp"
     try:
-        serialisable = {
-            asset: _ts_to_str(s)
-            for asset, s in state.items()
-        }
         with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(serialisable, f, indent=2, default=str)
+            json.dump(state, f, indent=2, default=str)
         os.replace(tmp, str(STATE_FILE))
     except Exception as e:
         logger.error(f"[State] Failed to save state: {e}")
@@ -137,38 +111,15 @@ def save_state(state: Dict[str, dict]) -> None:
 def _default_asset_state() -> dict:
     return {
         "last_ts": None,
-        "active": None,
-        "last_exit_ts": None,
-        "last_exit_reason": None,
-        "last_exit_pnl": 0.0,
-        "last_entry_price": 0.0,
-        "flush_low_since_exit": float("inf"),
-        "active_shadow_anchor": None,
-        "active_flush_bid": None,
+        "engine": engine_state_to_jsonable(empty_engine_state()),
     }
 
-# ── Feature tail-slicer ───────────────────────────────────────────────────────
 
-def _tail_slice_features(feat: pd.DataFrame, last_ts_str: Optional[str]) -> pd.DataFrame:
-    """
-    Returns only the bars that are:
-      (a) completely closed (candle open + 1h ≤ now UTC), AND
-      (b) strictly after last_ts_str (the previously processed timestamp).
-
-    If last_ts_str is None (first run for this asset), returns the FULL feature
-    frame so the engine can build full historical state from scratch — but only
-    once, on the very first hourly execution.
-    """
-    now_utc = pd.Timestamp.utcnow().tz_localize(None)
-    # A 1h candle opening at ts closes at ts + 1h
-    closed_mask = feat.index + pd.Timedelta(hours=1) <= now_utc
-    closed = feat[closed_mask]
-
-    if last_ts_str is None:
-        return closed  # first-ever run: full history required
-
-    last_ts = pd.Timestamp(last_ts_str)
-    return closed[closed.index > last_ts]
+def _closed_feature_frame(feat: pd.DataFrame, now: Optional[pd.Timestamp] = None) -> pd.DataFrame:
+    """Drop still-forming hours. last_ts is never stamped to a forming bar."""
+    if feat.empty:
+        return feat
+    return feat.loc[closed_bar_mask(feat.index, now)]
 
 # ── Per-asset incremental processor ──────────────────────────────────────────
 
@@ -215,7 +166,7 @@ def process_asset_incremental(args: tuple) -> dict:
         last_ts_str = prior_state.get("last_ts") if prior_state else None
 
         if last_ts_str is not None and not is_rebuild:
-            last_ts = pd.Timestamp(last_ts_str)
+            last_ts = _to_naive_ts(last_ts_str)
             # We need MAX_TAIL_BARS bars of history BEFORE last_ts for features,
             # plus the new bars after last_ts.
             split_idx = shard.index.searchsorted(last_ts, side="right")
@@ -227,75 +178,45 @@ def process_asset_incremental(args: tuple) -> dict:
 
         # ── 3. Compute features on the window ────────────────────────────
         feat = compute_features_v12(shard_window, btc_df, tier_label=tier, cfg=cfg)
+        feat_closed = _closed_feature_frame(feat, utc_now_naive())
+        if feat_closed.empty:
+            return result
 
-        # ── 4. Find the new bars to process ──────────────────────────────
-        if is_rebuild or last_ts_str is None:
-            # Full cold pass — engine_v12 handles the whole window
-            new_bars = feat
+        # ── 4. New closed bars only; keep the window so lookbacks still work ──
+        last_ts = _to_naive_ts(last_ts_str) if last_ts_str else None
+
+        if is_rebuild or last_ts is None:
+            start_after = None
+            engine_in = None
+            new_bars = feat_closed
         else:
-            new_bars = _tail_slice_features(feat, last_ts_str)
+            start_after = last_ts
+            engine_in = prior_state
+            new_bars = feat_closed[feat_closed.index > last_ts]
 
         if new_bars.empty:
-            # No new closed candles yet this hour — nothing to do
             return result
 
         # ── 5. Run the engine ─────────────────────────────────────────────
-        # For incremental runs we pass the sliced feature frame.
-        # For rebuilds we pass the full frame.
         telemetry = TelemetryCollector(storage_dir=TELEMETRY_DIR)
-        trades_df = run_v12_engine(feat if is_rebuild else new_bars,
-                                   asset, cfg=cfg, telemetry=telemetry)
+        trades_df, state_out = run_v12_engine(
+            feat_closed,
+            asset,
+            cfg=cfg,
+            telemetry=telemetry,
+            state=engine_in,
+            start_after=start_after,
+        )
 
-        # ── 6. Update persisted state ─────────────────────────────────────
-        new_last_ts = str(feat.index[-1]) if not feat.empty else last_ts_str
+        # ── 6. Stamp last_ts to the last stepped CLOSED bar ───────────────
         result["new_state"] = {
-            "last_ts": new_last_ts,
-            # active position and cooldown trackers are not directly
-            # accessible from run_v12_engine's return value (it is stateless).
-            # We reconstruct them from the open trade if present.
-            "active": None,
-            "last_exit_ts": None,
-            "last_exit_reason": None,
-            "last_exit_pnl": 0.0,
-            "last_entry_price": 0.0,
-            "flush_low_since_exit": float("inf"),
-            "active_shadow_anchor": None,
-            "active_flush_bid": None,
+            "last_ts": pd.Timestamp(new_bars.index[-1]).isoformat(),
+            "engine": engine_state_to_jsonable(state_out),
         }
 
-        # Populate active position from open trade if present
         if trades_df is not None and not trades_df.empty:
-            open_trades = trades_df[trades_df["is_open"]]
-            if not open_trades.empty:
-                ot = open_trades.iloc[-1]
-                result["new_state"]["active"] = {
-                    "entry_time": str(ot.get("entry", "")),
-                    "entry_price": float(ot.get("entry_price", 0.0)),
-                    "stop": float(ot.get("stop_price", 0.0)),
-                    "max_high": float(ot.get("entry_price", 0.0)),
-                    "min_low": float(ot.get("entry_price", 0.0)),
-                    "book": str(ot.get("book", "Book 1")),
-                    "is_reclaim": bool(ot.get("is_reclaim", False)),
-                    "is_continuation": bool(ot.get("is_continuation", False)),
-                    "is_book3": bool(ot.get("is_book3", False)),
-                    "entry_oi": float(ot.get("entry_oi_usd", 0.0)),
-                    "pct_lam": float(ot.get("pct_lam", 0.50)),
-                    "turnover_at_entry": float(ot.get("turnover_at_entry", 1.0)),
-                    "rank_ts": float(ot.get("rank_ts", 0.50)),
-                }
-
-            # Persist last exit info from the most recent closed trade
-            closed_trades = trades_df[~trades_df["is_open"]]
-            if not closed_trades.empty:
-                last_closed = closed_trades.sort_values("exit").iloc[-1]
-                result["new_state"]["last_exit_ts"] = str(last_closed.get("exit", ""))
-                result["new_state"]["last_exit_reason"] = str(last_closed.get("reason", ""))
-                result["new_state"]["last_exit_pnl"] = float(last_closed.get("pnl", 0.0))
-                result["new_state"]["last_entry_price"] = float(last_closed.get("entry_price", 0.0))
-
             result["trades"] = trades_df.to_dict(orient="records")
 
-        # Enrich & save telemetry
         tel_df = telemetry.to_dataframe()
         if not tel_df.empty:
             tel_df = TelemetryCollector.enrich_forward_returns(tel_df, shard_window)

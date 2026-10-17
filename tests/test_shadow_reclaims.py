@@ -119,7 +119,7 @@ def test_shadow_reclaim_lifecycle_point_in_time():
     # 1. When shadow reclaim is DISABLED: 0 trades fired (100% macro vetoed to cash)
     cfg_disabled = V12Config(shadow_reclaim=ShadowReclaimConfig(enable_bear_shadow_reclaims=False))
     tel_disabled = TelemetryCollector()
-    t_disabled = run_v12_engine(df, "TEST_COIN", cfg=cfg_disabled, telemetry=tel_disabled)
+    t_disabled, _ = run_v12_engine(df, "TEST_COIN", cfg=cfg_disabled, telemetry=tel_disabled)
     assert len(t_disabled) == 0, "Default disabled config must produce 0 trades during bear regime"
 
     # 2. When shadow reclaim is ENABLED:
@@ -130,7 +130,7 @@ def test_shadow_reclaim_lifecycle_point_in_time():
         max_initial_risk=0.08
     ))
     tel_enabled = TelemetryCollector()
-    t_enabled = run_v12_engine(df, "TEST_COIN", cfg=cfg_enabled, telemetry=tel_enabled)
+    t_enabled, _ = run_v12_engine(df, "TEST_COIN", cfg=cfg_enabled, telemetry=tel_enabled)
 
     assert len(t_enabled) > 0, "Enabled shadow reclaim must capture confirmed reclaim"
     reclaim_trade = t_enabled.iloc[0]

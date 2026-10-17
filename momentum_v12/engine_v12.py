@@ -4,44 +4,58 @@ Executes Macro Gating, Dynamic Tier Floors, Whale Firewalling, Bear Trap Reclaim
 and Climax Top Harvesting.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
 from momentum_v12.config import V12Config
 from momentum_v12.telemetry_v12 import TelemetryCollector, TelemetryRecord
 from momentum_v12.sizing_v12 import compute_csmi_metrics
+from momentum_v12.engine_state import (
+    _to_naive_ts,
+    hydrate_engine_state,
+    snapshot_engine_state,
+)
 
 
 def run_v12_engine(
     df: pd.DataFrame,
     asset: str,
     cfg: V12Config = V12Config(),
-    telemetry: Optional[TelemetryCollector] = None
-) -> pd.DataFrame:
+    telemetry: Optional[TelemetryCollector] = None,
+    state: Optional[Dict] = None,
+    start_after: Optional[pd.Timestamp] = None,
+) -> Tuple[pd.DataFrame, Dict]:
     """
     Executes the Clean 6-Core Execution Kernel on an enriched shard.
-    Returns DataFrame of executed trades (closed and open).
+
+    Returns (trades_df, state_out). `state` restores every sleeve (active
+    position, cooldowns, flush bids, Book 4/6 anchors). `start_after` skips
+    bars at or before that timestamp so an incremental hour can reuse a
+    feature window for lookbacks while only stepping new closed bars.
     """
     if df.empty:
-        return pd.DataFrame()
+        return pd.DataFrame(), hydrate_engine_state(state, None)
 
     trades: List[Dict] = []
-    active: Optional[Dict] = None
+    st = hydrate_engine_state(state, df.index)
+    active: Optional[Dict] = st['active']
 
-    last_exit_ts: Optional[pd.Timestamp] = None
-    last_exit_reason: Optional[str] = None
-    last_exit_pnl: float = 0.0
-    last_entry_price: float = 0.0
-    flush_low_since_exit: float = float('inf')
-    active_shadow_anchor: Optional[Dict] = None
-    active_flush_bid: Optional[Dict] = None
-    active_b4_setup: Optional[Dict] = None
-    active_b1_anchor: Optional[Dict] = None
-    active_b5_bid: Optional[Dict] = None
-    last_b5_arm_ts: Optional[pd.Timestamp] = None
-    active_b6_setup: Optional[Dict] = None
-    active_b2_delayed: Optional[Dict] = None
+    last_exit_ts: Optional[pd.Timestamp] = st['last_exit_ts']
+    last_exit_reason: Optional[str] = st['last_exit_reason']
+    last_exit_pnl: float = float(st['last_exit_pnl'])
+    last_entry_price: float = float(st['last_entry_price'])
+    flush_low_since_exit: float = float(st['flush_low_since_exit'])
+    active_shadow_anchor: Optional[Dict] = st['active_shadow_anchor']
+    active_flush_bid: Optional[Dict] = st['active_flush_bid']
+    active_b4_setup: Optional[Dict] = st['active_b4_setup']
+    active_b1_anchor: Optional[Dict] = st['active_b1_anchor']
+    active_b5_bid: Optional[Dict] = st['active_b5_bid']
+    last_b5_arm_ts: Optional[pd.Timestamp] = st['last_b5_arm_ts']
+    active_b6_setup: Optional[Dict] = st['active_b6_setup']
+    active_b2_delayed: Optional[Dict] = st['active_b2_delayed']
+    n_processed = 0
+    start_ts = _to_naive_ts(start_after) if start_after is not None else None
 
     tier = str(df['tier'].iloc[0]) if 'tier' in df.columns else 'Tier 1'
     is_tier1 = (tier == 'Tier 1')
@@ -92,6 +106,12 @@ def run_v12_engine(
         return res
 
     for _bar_i, (ts, row) in enumerate(df.iterrows()):
+        ts = _to_naive_ts(ts)
+        if ts is None:
+            continue
+        if start_ts is not None and ts <= start_ts:
+            continue
+        n_processed += 1
         c = float(row['close'])
         h = float(row['high'])
         l = float(row['low'])
@@ -124,6 +144,7 @@ def run_v12_engine(
                 base_l = float(l_arr[pre_start : _bar_i].min()) if _bar_i > 0 else l
                 active_b1_anchor = {
                     'tau_bar': _bar_i,
+                    'tau_ts': ts,
                     'base_low': base_l,
                     'cum_pv': c * qv_arr[_bar_i],
                     'cum_v': qv_arr[_bar_i],
@@ -1667,6 +1688,31 @@ def run_v12_engine(
                         btc_macro_bull=btc_bull
                     ))
 
+    def _state_out() -> Dict:
+        return snapshot_engine_state(
+            {
+                'active': active,
+                'last_exit_ts': last_exit_ts,
+                'last_exit_reason': last_exit_reason,
+                'last_exit_pnl': last_exit_pnl,
+                'last_entry_price': last_entry_price,
+                'flush_low_since_exit': flush_low_since_exit,
+                'active_shadow_anchor': active_shadow_anchor,
+                'active_flush_bid': active_flush_bid,
+                'active_b4_setup': active_b4_setup,
+                'active_b1_anchor': active_b1_anchor,
+                'active_b5_bid': active_b5_bid,
+                'last_b5_arm_ts': last_b5_arm_ts,
+                'active_b6_setup': active_b6_setup,
+                'active_b2_delayed': active_b2_delayed,
+            },
+            df.index,
+        )
+
+    # Incremental hour with no new closed bars: keep sleeves, emit no tape rows.
+    if n_processed == 0:
+        return pd.DataFrame(), _state_out()
+
     # Mark active position as open at end of tape
     if active is not None:
         last_c = float(df.iloc[-1]['close'])
@@ -1766,4 +1812,4 @@ def run_v12_engine(
             'body_atr_mult': active.get('body_atr_mult', np.nan),
         })
 
-    return pd.DataFrame(trades)
+    return pd.DataFrame(trades), _state_out()

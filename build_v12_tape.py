@@ -113,7 +113,7 @@ def process_asset(args):
 
         feat = compute_features_v12(shard, btc_df, tier_label=tier, cfg=CFG)
         telemetry = TelemetryCollector(storage_dir=TELEMETRY_DIR)
-        trades_df = run_v12_engine(feat, asset, cfg=CFG, telemetry=telemetry)
+        trades_df, _ = run_v12_engine(feat, asset, cfg=CFG, telemetry=telemetry)
 
         # Retrospectively enrich telemetry with forward metrics
         tel_df = telemetry.to_dataframe()
