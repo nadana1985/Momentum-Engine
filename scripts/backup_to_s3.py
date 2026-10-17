@@ -18,8 +18,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger("kronos.s3_backup")
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
 
-def backup_to_s3(bucket_name: str | None = None, prefix: str = "v12_production", include_shards: bool = False):
+def backup_to_s3(bucket_name: str | None = None, prefix: str | None = None, include_shards: bool = False):
     bucket = bucket_name or os.environ.get("S3_BUCKET")
     if not bucket:
         logger.info("[S3 Backup] Notice: No S3_BUCKET configured. Skipping offsite backup (Localhost mode).")
@@ -34,13 +37,15 @@ def backup_to_s3(bucket_name: str | None = None, prefix: str = "v12_production",
 
     s3 = boto3.client("s3")
     now_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
+    tape_dir = resolve_tape_dir(ROOT)
+    prefix = prefix or tape_dir.name or DEFAULT_TAPE_SLUG
 
     # Critical ledger & state files to preserve
     files_to_sync = [
-        ROOT / "data" / "all_tapes" / "v12_production" / "trades.parquet",
-        ROOT / "data" / "all_tapes" / "v12_production" / "scorecard.parquet",
-        ROOT / "data" / "all_tapes" / "v12_production" / "closed_trades.csv",
-        ROOT / "data" / "all_tapes" / "v12_production" / "open_trades.csv",
+        tape_dir / "trades.parquet",
+        tape_dir / "scorecard.parquet",
+        tape_dir / "closed_trades.csv",
+        tape_dir / "open_trades.csv",
         ROOT / "config" / "ingestion" / "sync_state.json",
         ROOT / "data" / "sync_state.json",
         ROOT / "v12_tear_tape.md",
@@ -105,7 +110,7 @@ def backup_to_s3(bucket_name: str | None = None, prefix: str = "v12_production",
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Backup Kronos V12 state to S3")
     parser.add_argument("--bucket", type=str, default=None, help="Target S3 bucket name")
-    parser.add_argument("--prefix", type=str, default="v12_production", help="S3 key prefix")
+    parser.add_argument("--prefix", type=str, default=None, help="S3 key prefix (default: current tape slug)")
     parser.add_argument("--include-shards", action="store_true", help="Also mirror all raw & exotic shards to S3")
     args = parser.parse_args()
     sys.exit(backup_to_s3(args.bucket, args.prefix, args.include_shards))

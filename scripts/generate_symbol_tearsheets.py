@@ -16,11 +16,18 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-TAPE_DIR = ROOT / Path(os.environ.get("KRONOS_TAPE_DIR", "data/all_tapes/v12_production"))
-TELEMETRY_PATH = ROOT / "telemetry" / "veto_telemetry.parquet" if "v12_production" == TAPE_DIR.name else (ROOT / "telemetry" / TAPE_DIR.name / "veto_telemetry.parquet")
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import resolve_tape_dir, resolve_telemetry_dir
+TAPE_DIR = resolve_tape_dir(ROOT)
+TELEMETRY_PATH = resolve_telemetry_dir(ROOT, TAPE_DIR) / "veto_telemetry.parquet"
 if not TELEMETRY_PATH.exists():
     TELEMETRY_PATH = ROOT / "telemetry" / "veto_telemetry.parquet"
 REPORTS_DIR = ROOT / "reports" / "symbols"
+try:
+    TAPE_DIR_REL = TAPE_DIR.relative_to(ROOT).as_posix()
+except ValueError:
+    TAPE_DIR_REL = TAPE_DIR.as_posix()
 
 
 def generate_single_symbol_tearsheet(
@@ -82,7 +89,7 @@ def generate_single_symbol_tearsheet(
     md.append(f"# Kronos V12: Institutional Symbol Tear Sheet — `{symbol}`")
     md.append(f"**Classification:** Clean 6-Core Universal Multi-Tier Architecture  ")
     md.append(f"**Liquidity Tier:** `{tier}` | **Total Recorded Trades:** `{len(sym_trades)}` (`{n_closed}` Closed, `{n_open}` Open)  ")
-    md.append(f"**Database Source:** `data/all_tapes/v12_production/trades.parquet`\n")
+    md.append(f"**Database Source:** `{TAPE_DIR_REL}/trades.parquet`\n")
     md.append("---\n")
 
     # 1. Executive Performance Matrix

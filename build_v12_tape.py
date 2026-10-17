@@ -30,6 +30,11 @@ from momentum_v12.tier_classifier import get_universe_tiers, get_all_universe_ti
 from momentum_v12.features_v12 import get_btc_macro, load_shard, compute_features_v12
 from momentum_v12.telemetry_v12 import TelemetryCollector
 from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v12.ops_paths import (
+    refuse_canonical_mtm_on_live_hour,
+    resolve_tape_dir,
+    resolve_telemetry_dir,
+)
 
 def get_runtime_config() -> V12Config:
     tier_cfg = TierConfig()
@@ -80,24 +85,8 @@ CFG = get_runtime_config()
 RAW_DIR = ROOT / "data" / "raw_shards"
 EXOTIC_DIR = ROOT / "data" / "exotic_shards"
 
-tape_dir_env = os.environ.get("KRONOS_TAPE_DIR")
-if not tape_dir_env:
-    profile = os.environ.get("KRONOS_PROFILE", "production").lower()
-    if profile in ("v13_production", "v13", "production"):
-        tape_dir_env = "data/all_tapes/v13_production"
-    elif profile in ("legacy", "baseline", "v12_legacy"):
-        tape_dir_env = "data/all_tapes/v12_legacy_baseline"
-    elif profile in ("shadow_reclaim", "s_p", "shadow"):
-        tape_dir_env = "data/all_tapes/v12_shadow_reclaim_arm"
-    elif profile in ("book3_flush", "flush_reclaim", "s_ac", "book3"):
-        tape_dir_env = "data/all_tapes/v12_book3_flush_reclaim_arm"
-    elif profile in ("engine_baseline", "s_bi", "s_bj", "s_bi_bj"):
-        tape_dir_env = f"data/all_tapes/retest_{profile}"
-    else:
-        tape_dir_env = "data/all_tapes/v13_production"
-
-TAPE_DIR = ROOT / Path(tape_dir_env)
-TELEMETRY_DIR = ROOT / "telemetry" if "v13_production" in TAPE_DIR.name else (ROOT / "telemetry" / TAPE_DIR.name)
+TAPE_DIR = resolve_tape_dir(ROOT)
+TELEMETRY_DIR = resolve_telemetry_dir(ROOT, TAPE_DIR)
 
 
 def process_asset(args):
@@ -167,66 +156,22 @@ def main():
         task_list = [(a, "Tier 1") for a in t1_assets] + [(a, "Tier 2") for a in t2_assets]
 
     profile = os.environ.get("KRONOS_PROFILE", "production").lower()
-    canonical_v13_3_p = ROOT / "data" / "canonical" / "canonical_v13_3_tape.parquet"
-    canonical_v13_2_p = ROOT / "data" / "canonical" / "canonical_v13_2_tape.parquet"
-    canonical_v13_p = ROOT / "data" / "canonical" / "canonical_v13_tape.parquet"
-    canonical_v12_11_p = ROOT / "data" / "canonical" / "canonical_v12_11_tape.parquet"
+    refuse_canonical_mtm_on_live_hour(ROOT, profile=profile)
 
     all_trades = []
     all_telemetry = []
+    workers = min(16, multiprocessing.cpu_count())
+    print(f"Spinning up {workers} workers with Thread-Count Firewall (Profile: {profile})...\n")
 
-    # If canonical V13.3 tape exists and profile is production or cached, forward MTM open positions
-    # If profile is fresh, full_rebuild, or rebuild, run pure ground-up simulation across all shards
-    if canonical_v13_3_p.exists():
-        active_canonical = canonical_v13_3_p
-    elif canonical_v13_2_p.exists():
-        active_canonical = canonical_v13_2_p
-    else:
-        active_canonical = canonical_v13_p
-
-    is_fresh_rebuild = profile in ("fresh", "full_rebuild", "rebuild", "scratch")
-    if not is_fresh_rebuild and profile in ("v13_production", "v13", "production", "v13_cached", "cached") and active_canonical.exists():
-        print(f"\n[V13.3 PRODUCTION PIPELINE] Activating Canonical V13.3 Master Tape (Books 1-6 + Temporal Calendar Firewall)...")
-        df_master = pd.read_parquet(active_canonical)
-        
-        # Forward-evaluate and mark-to-market active open positions against latest raw shard candles
-        print(f"  Forward-evaluating active open positions across live raw shards...")
-        if 'is_open' in df_master.columns:
-            open_mask = df_master['is_open'].fillna(False).astype(bool)
-            open_indices = df_master.index[open_mask].tolist()
-            for idx in open_indices:
-                asset = df_master.at[idx, 'asset']
-                p_shard = RAW_DIR / f"{asset}_USDT_1h.parquet"
-                if not p_shard.exists():
-                    p_shard = RAW_DIR / f"1000{asset}_USDT_1h.parquet"
-                if p_shard.exists():
-                    try:
-                        shard = pd.read_parquet(p_shard, columns=['timestamp', 'close', 'high', 'low']).dropna().sort_values('timestamp')
-                        if len(shard) > 0:
-                            cur_px = float(shard['close'].iloc[-1])
-                            entry_px = float(df_master.at[idx, 'entry_price'])
-                            w_size = float(df_master.at[idx, 'sizing_weight'])
-                            cur_raw_pnl = (cur_px - entry_px) / entry_px - 0.0010
-                            cur_pnl = cur_raw_pnl * w_size
-                            df_master.at[idx, 'exit_price'] = cur_px
-                            df_master.at[idx, 'raw_pnl'] = cur_raw_pnl
-                            df_master.at[idx, 'pnl'] = cur_pnl
-                    except Exception:
-                        pass
-        all_trades = [df_master]
-    else:
-        workers = min(16, multiprocessing.cpu_count())
-        print(f"Spinning up {workers} workers with Thread-Count Firewall (Profile: {profile})...\n")
-
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(process_asset, item): item[0] for item in task_list}
-            for future in as_completed(futures):
-                sym = futures[future]
-                t_df, tel_df = future.result()
-                if t_df is not None and not t_df.empty:
-                    all_trades.append(t_df)
-                if tel_df is not None and not tel_df.empty:
-                    all_telemetry.append(tel_df)
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        futures = {executor.submit(process_asset, item): item[0] for item in task_list}
+        for future in as_completed(futures):
+            sym = futures[future]
+            t_df, tel_df = future.result()
+            if t_df is not None and not t_df.empty:
+                all_trades.append(t_df)
+            if tel_df is not None and not tel_df.empty:
+                all_telemetry.append(tel_df)
 
     # 1. Save Master Trades
     TAPE_DIR.mkdir(parents=True, exist_ok=True)

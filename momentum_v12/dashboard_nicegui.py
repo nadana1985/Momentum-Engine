@@ -63,9 +63,11 @@ ASSET_TIERS_PARQUET = ROOT / "data" / "asset_tiers.parquet"
 def get_available_arms() -> List[str]:
     base = ROOT / "data" / "all_tapes"
     if not base.exists():
-        return ["v13_production", "v12_11_production", "v12_production"]
+        return ["v14_production", "v13_production", "v12_11_production", "v12_production"]
     arms = [d.name for d in base.iterdir() if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists())]
     ordered = []
+    if "v14_production" in arms:
+        ordered.append("v14_production")
     if "v13_production" in arms:
         ordered.append("v13_production")
     if "v12_11_production" in arms:
@@ -97,6 +99,8 @@ def get_initial_arm() -> str:
         if slug in get_available_arms():
             return slug
     available = get_available_arms()
+    if "v14_production" in available:
+        return "v14_production"
     if "v13_production" in available:
         return "v13_production"
     if "v12_11_production" in available:
@@ -105,7 +109,7 @@ def get_initial_arm() -> str:
         return "v12_production"
     if "v12_book3_flush_reclaim_arm" in available:
         return "v12_book3_flush_reclaim_arm"
-    return "v13_production"
+    return "v14_production"
 
 
 CURRENT_ARM: str = get_initial_arm()
@@ -134,7 +138,7 @@ def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
 
 def load_v12_telemetry(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
-    if arm == "v12_production":
+    if arm in ("v12_production", "v13_production"):
         p = ROOT / "telemetry" / "veto_telemetry.parquet"
     else:
         p = ROOT / "telemetry" / arm / "veto_telemetry.parquet"
@@ -1619,6 +1623,7 @@ def index_page():
                     CURRENT_ARM = e.value
                     ui.navigate.to('/')
                 arm_labels = {
+                    'v14_production': '🛡️ V14 Production (S-CA Book 4)',
                     'v13_production': '🛡️ Canonical V13.2 Production (Books 1-6)',
                     'v12_11_production': '🛡️ Canonical V12.11 Production',
                     'v12_decoupling_arm': '⚡ V12.2 Decoupling + ATH Clamp',
@@ -1626,7 +1631,9 @@ def index_page():
                 }
                 options = {a: arm_labels.get(a, a) for a in arms}
                 ui.select(options=options, value=CURRENT_ARM, on_change=set_arm).props('dense dark borderless options-dense').classes('text-xs mono w-64 text-cyan-300 font-bold')
-            if CURRENT_ARM == "v13_production":
+            if CURRENT_ARM == "v14_production":
+                arm_badge = '<span class="badge-tag badge-cyan">V14 Production Active (S-CA Book 4)</span>'
+            elif CURRENT_ARM == "v13_production":
                 arm_badge = '<span class="badge-tag badge-cyan">V13.2 Production Active (Books 1-6)</span>'
             elif CURRENT_ARM == "v12_11_production":
                 arm_badge = '<span class="badge-tag badge-cyan">V12.11 Production Active</span>'

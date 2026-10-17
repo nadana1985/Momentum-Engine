@@ -91,7 +91,7 @@ Copy `.env.example` to `.env` to customize settings:
 ```env
 # Execution Profile (production, no_book4, legacy_3_books, baseline_no_book3)
 KRONOS_PROFILE=production
-KRONOS_TAPE_DIR=data/all_tapes/v12_production
+KRONOS_TAPE_DIR=data/all_tapes/v14_production
 
 # Cloud Backups & Dead-Man's Switch
 AWS_DEFAULT_REGION=eu-central-1

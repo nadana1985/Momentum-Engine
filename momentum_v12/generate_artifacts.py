@@ -9,9 +9,14 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-TAPE_DIR = ROOT / Path(os.environ.get("KRONOS_TAPE_DIR", "data/all_tapes/v12_production"))
-TELEMETRY_DIR = ROOT / "telemetry" if "v12_production" in str(TAPE_DIR) else (ROOT / "telemetry" / TAPE_DIR.name)
+from momentum_v12.ops_paths import resolve_tape_dir, resolve_telemetry_dir
+TAPE_DIR = resolve_tape_dir(ROOT)
+TELEMETRY_DIR = resolve_telemetry_dir(ROOT, TAPE_DIR)
 DOCS_DIR = ROOT
+try:
+    TAPE_DIR_REL = TAPE_DIR.relative_to(ROOT).as_posix()
+except ValueError:
+    TAPE_DIR_REL = TAPE_DIR.as_posix()
 
 
 def generate_tear_tape():
@@ -175,7 +180,7 @@ def generate_tear_tape():
 - **Net Profitable Symbols:** `{len(pos_assets):,}` ({len(pos_assets)/len(sc_df)*100:.1f}%)
 - **Net Drawdown Symbols:** `{len(neg_assets):,}` ({len(neg_assets)/len(sc_df)*100:.1f}%)
 - **Neutral / Breakeven Symbols:** `{len(even_assets):,}` ({len(even_assets)/len(sc_df)*100:.1f}%)
-- **Individual Asset Trade Logs:** Available in `data/all_tapes/v12_production/symbols/<ASSET>_trades.csv`
+- **Individual Asset Trade Logs:** Available in `{TAPE_DIR_REL}/symbols/<ASSET>_trades.csv`
 """
 
     md = f"""# Kronos V12: Production Executive Tear Sheet

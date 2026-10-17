@@ -24,6 +24,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger("kronos.health_monitor")
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from momentum_v12.ops_paths import resolve_tape_dir
 
 # ── Thresholds (tunable via .env) ──────────────────────────────────────────────
 STALE_HOURS       = float(os.getenv("HEALTH_STALE_HOURS",    "2"))    # Alert if newest shard > 2h old
@@ -135,10 +138,11 @@ def validate_s3_uploads(bucket: str | None = None) -> bool:
         logger.info("[Health #7] S3 validation skipped (no S3_BUCKET configured — localhost mode).")
         return True
 
+    slug = resolve_tape_dir(ROOT).name
     critical_keys = [
-        "v12_production/latest/trades.parquet",
-        "v12_production/latest/closed_trades.csv",
-        "v12_production/latest/sync_state.json",
+        f"{slug}/latest/trades.parquet",
+        f"{slug}/latest/closed_trades.csv",
+        f"{slug}/latest/sync_state.json",
     ]
 
     try:
@@ -202,8 +206,7 @@ def check_zombie_positions() -> bool:
     flags it as a potential zombie trade (delisting, ticker rename, or halted trading).
     Returns True if all open trades are healthy, False if zombies detected.
     """
-    tape_env = os.getenv("KRONOS_TAPE_DIR", "data/all_tapes/v12_production")
-    tape_dir = ROOT / Path(tape_env)
+    tape_dir = resolve_tape_dir(ROOT)
     open_p = tape_dir / "open_trades.parquet"
     if not open_p.exists():
         open_p = tape_dir / "trades.parquet"

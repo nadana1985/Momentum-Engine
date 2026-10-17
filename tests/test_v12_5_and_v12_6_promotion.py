@@ -41,6 +41,8 @@ def test_config_dataclasses_integrity():
     assert cfg.book4.enable_p_nb_microstructure_sizing is True
     assert cfg.tier.tier2_enable_book4 is False
     assert cfg.tier.tier3_enable_book4 is False
+    assert "MYX" in cfg.tier.excluded_symbols
+    assert "LAB" in cfg.tier.excluded_symbols
     
     # Sizing Config (Study S-AY)
     assert cfg.sizing.enable_ema_sizing is True

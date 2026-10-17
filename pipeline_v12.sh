@@ -46,12 +46,12 @@ if [ -f ".env" ]; then
     set +a
 fi
 
-export KRONOS_PROFILE="${KRONOS_PROFILE:-book3_flush}"
+export KRONOS_PROFILE="${KRONOS_PROFILE:-production}"
 if [ -z "$KRONOS_TAPE_DIR" ]; then
     if [ "$KRONOS_PROFILE" = "book3_flush" ]; then
         export KRONOS_TAPE_DIR="data/all_tapes/v12_book3_flush_reclaim_arm"
     else
-        export KRONOS_TAPE_DIR="data/all_tapes/v12_production"
+        export KRONOS_TAPE_DIR="data/all_tapes/v14_production"
     fi
 fi
 
