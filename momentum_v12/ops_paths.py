@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-DEFAULT_TAPE_SLUG = "v14_production"
+DEFAULT_TAPE_SLUG = "v15_production"
 DEFAULT_TAPE_DIR = f"data/all_tapes/{DEFAULT_TAPE_SLUG}"
 
 CANONICAL_V13_NAMES = (
@@ -23,7 +23,7 @@ CANONICAL_V13_NAMES = (
 
 LIVE_MTM_PROFILES = frozenset({
     "production",
-    "v14_production",
+    "v15_production",
     "v14",
     "v13_production",
     "v13",
@@ -35,7 +35,7 @@ LIVE_MTM_PROFILES = frozenset({
 REBUILD_PROFILES = frozenset({"fresh", "full_rebuild", "rebuild", "scratch"})
 
 PROFILE_TAPE_MAP = {
-    "v14_production": DEFAULT_TAPE_DIR,
+    "v15_production": DEFAULT_TAPE_DIR,
     "v14": DEFAULT_TAPE_DIR,
     "production": DEFAULT_TAPE_DIR,
     "fresh": DEFAULT_TAPE_DIR,

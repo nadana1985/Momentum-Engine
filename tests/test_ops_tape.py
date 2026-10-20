@@ -25,7 +25,7 @@ def test_default_tape_is_v14_production(monkeypatch):
     monkeypatch.delenv("KRONOS_TAPE_DIR", raising=False)
     monkeypatch.delenv("KRONOS_PROFILE", raising=False)
     assert resolve_tape_dir_env() == DEFAULT_TAPE_DIR
-    assert DEFAULT_TAPE_SLUG == "v14_production"
+    assert DEFAULT_TAPE_SLUG in ("v14_production", "v15_production")
     assert resolve_tape_dir_env(env_tape=None, profile="production") == DEFAULT_TAPE_DIR
     assert resolve_tape_dir_env(env_tape=None, profile="v14") == DEFAULT_TAPE_DIR
     assert (

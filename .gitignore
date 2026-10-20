@@ -1,0 +1,85 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Large Data Shards & Tapes (STRICT: Prevents GitHub 100MB Limit Push Errors)
+data/raw_shards/
+data/exotic_shards/
+data/all_tapes/
+v15_standalone/data/raw_shards/
+v15_standalone/data/exotic_shards/
+v15_standalone/data/all_tapes/
+*.parquet
+!data/canonical/canonical_v15_0_tape.parquet
+!v15_standalone/data/canonical/canonical_v15_0_tape.parquet
+
+# Logs & Alert Caches
+*.log
+.alert_cache.json
+reports/alerts/
+telemetry/*.parquet
+!telemetry/veto_telemetry.parquet
+
+# Legacy Standalone Directories & Historical Research Dump
+v10_standalone/
+v12_standalone/
+v14_standalone/
+archive/
+clean_room/
+agent_prompts/
+symbol_liquidations_csv/
+signatures/
+config/ingestion_backup/
+temp*
+*.html
+*.pdf
+*.csv
+!data/canonical/*.csv
+!v15_standalone/data/canonical/*.csv

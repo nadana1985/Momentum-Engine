@@ -91,7 +91,7 @@ def test_tier2_calibrated_flush_discount():
       Stop = $8.80 * (1 - 0.08) = $8.096. Target = $10.00 (+13.6% gain).
     """
     n_bars = 40
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.0)
     closes[10] = 10.00
@@ -151,7 +151,7 @@ def test_tier2_calibrated_flush_discount():
 def test_tier2_disabled_by_default_in_book3():
     """Verify that by default, Tier 2 mid-caps are disabled in Book 3 to purge absorption drag."""
     n_bars = 40
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.0)
     closes[10] = 10.00
@@ -219,7 +219,7 @@ def test_book3_flush_fill_and_target_reclaim():
       Bar 20: Recovery! High reaches $10.05 >= $10.00 -> exits at $10.00 (target_reclaim).
     """
     n_bars = 60
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.0)
     closes[10] = 10.00  # Trigger candle at P0 = 10.00
@@ -300,7 +300,7 @@ def test_book3_flush_stop_loss():
       Bar 16: Cascades down to Low = $8.30 <= $8.464 -> Exits via stop_loss!
     """
     n_bars = 40
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.0)
     closes[10] = 10.00
@@ -359,7 +359,7 @@ def test_book3_ttl_expiry_when_limit_not_reached():
     the resting limit order expires harmlessly with 0 trades and $0 risk.
     """
     n_bars = 100
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.60)
     closes[10] = 10.00  # P0 = 10.00, Limit = 9.20
@@ -409,7 +409,7 @@ def test_book3_bear_market_veto_preservation():
     preserving Core 1 100% Cash Preservation invariant.
     """
     n_bars = 40
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
 
     closes = np.full(n_bars, 9.0)
     closes[10] = 10.00
@@ -460,7 +460,7 @@ def test_two_tier_volume_shelf_absorption():
       3. When price reclaims P0 ($10.00), the trade exits at target reclaim.
     """
     n_bars = 250
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
     closes = np.full(n_bars, 9.40)
     closes[200] = 10.00  # P0 breakout pop
     closes[201:205] = [9.70, 9.50, 9.38, 9.40]  # Dips to 9.38, never reaches 9.20
@@ -501,7 +501,7 @@ def test_volume_shelf_static_fallback_when_no_hvn():
       - The engine falls back seamlessly to the static -8.0% limit bid ($9.20 for P0 = $10.00).
     """
     n_bars = 250
-    dates = pd.date_range("2026-03-01 00:00:00", periods=n_bars, freq="1h")
+    dates = pd.date_range("2026-03-15 00:00:00", periods=n_bars, freq="1h")
     # All historical volume is at $7.50 (outside [8.50, 9.60] corridor)
     closes = np.full(n_bars, 7.50)
     closes[200] = 10.00  # P0 breakout pop
