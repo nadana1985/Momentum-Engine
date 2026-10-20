@@ -127,6 +127,42 @@ CURRENT_ARM: str = get_initial_arm()
 # ---------------------------------------------------------------------------
 # DATA LOADING & CACHING
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# BOOK MAPPING & BADGE HELPERS FOR VETO TELEMETRY
+# ---------------------------------------------------------------------------
+def map_setup_to_book(setup_str: str) -> str:
+    s = str(setup_str).lower()
+    if 'book 7' in s or 'mssr' in s or 'supernova' in s:
+        return 'Book 7'
+    elif 'book 6' in s or '3-sare' in s:
+        return 'Book 6'
+    elif 'book 4' in s or '200d' in s or 'cusum' in s:
+        return 'Book 4'
+    elif 'book 3' in s or 'flush' in s:
+        return 'Book 3'
+    elif 'book 2' in s or 'squeeze' in s or 'coiled' in s:
+        return 'Book 2'
+    elif 'bear-trap' in s:
+        return 'Bear-Trap'
+    return 'Book 1'
+
+
+def get_book_badge_style(book_str: str) -> tuple:
+    if book_str == 'Book 1':
+        return 'badge-cyan', ''
+    elif book_str == 'Book 2':
+        return 'badge-green', ''
+    elif book_str == 'Book 3':
+        return 'badge-purple', ''
+    elif book_str == 'Book 4':
+        return '', 'background: rgba(255, 183, 3, 0.15); color: #ffb703; border: 1px solid rgba(255, 183, 3, 0.3);'
+    elif book_str == 'Book 6':
+        return '', 'background: rgba(247, 37, 133, 0.15); color: #f72585; border: 1px solid rgba(247, 37, 133, 0.3);'
+    elif book_str == 'Book 7':
+        return '', 'background: rgba(76, 201, 240, 0.15); color: #4cc9f0; border: 1px solid rgba(76, 201, 240, 0.3);'
+    return 'badge-gray', ''
+
+
 def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
     # 1. Check direct arm directory
@@ -1456,9 +1492,17 @@ def coin_research_page(symbol: str):
                                     mfe_str = f"+{mfe72_val:.1f}%" if mfe72_val >= 0 else f"{mfe72_val:.1f}%"
                                     mae_str = f"{mae72_val:.1f}%" if mae72_val <= 0 else f"+{mae72_val:.1f}%"
 
+                                b_name = str(vr.get('candidate_book', ''))
+                                if not b_name or b_name in ('nan', 'None'):
+                                    b_name = map_setup_to_book(setup_val)
+                                b_cls, b_sty = get_book_badge_style(b_name)
+
                                 v_rows.append({
                                     'id': f"{clean_sym}_v_{v_idx}_{ts_str}",
                                     'timestamp': ts_str,
+                                    'book': b_name,
+                                    'book_badge_class': b_cls,
+                                    'book_style': b_sty,
                                     'setup': setup_val,
                                     'gate': gate_val,
                                     'price': px_val,
@@ -1475,6 +1519,7 @@ def coin_research_page(symbol: str):
 
                             v_cols = [
                                 {'name': 'timestamp', 'label': 'Signal Time (UTC)', 'field': 'timestamp', 'align': 'left', 'sortable': True, 'sortOrder': 'da'},
+                                {'name': 'book', 'label': 'Book', 'field': 'book', 'align': 'center', 'sortable': True},
                                 {'name': 'setup', 'label': 'Setup', 'field': 'setup', 'align': 'left', 'sortable': True},
                                 {'name': 'gate', 'label': 'Triggered Veto Gate', 'field': 'gate', 'align': 'left', 'sortable': True},
                                 {'name': 'price', 'label': 'Signal Px', 'field': 'price', 'align': 'right', 'sortable': True, 'sortOrder': 'da'},
@@ -1485,8 +1530,10 @@ def coin_research_page(symbol: str):
                             ]
 
                             with ui.row().classes('w-full justify-between items-center px-1 mb-1'):
-                                ui.label('Click column header to sort (descending first). Use search to filter gates or dates.').classes('text-[11px] text-gray-500 mono')
-                                v_search = ui.input(placeholder='Filter vetoed signals...').props('dense dark borderless').classes('bg-[#161b22] px-3 py-0.5 rounded border border-[#30363d] text-xs mono w-56')
+                                ui.label('Click column header to sort. Use Book filter or search to isolate veto gates.').classes('text-[11px] text-gray-500 mono')
+                                with ui.row().classes('items-center gap-2'):
+                                    v_book_filter = ui.select(['All Books', 'Book 1', 'Book 2', 'Book 3', 'Book 4', 'Book 6', 'Book 7'], value='All Books').classes('w-32 mono text-xs')
+                                    v_search = ui.input(placeholder='Filter vetoed signals...').props('dense dark borderless').classes('bg-[#161b22] px-3 py-0.5 rounded border border-[#30363d] text-xs mono w-48')
 
                             vtbl = ui.table(
                                 columns=v_cols,
@@ -1495,9 +1542,31 @@ def coin_research_page(symbol: str):
                                 pagination={'rowsPerPage': 10, 'sortBy': 'timestamp', 'descending': True, 'page': 1}
                             ).classes('w-full card-glass mono text-xs').props(':rows-per-page-options="[6, 10, 25, 50, 100]"')
 
-                            vtbl.bind_filter_to(v_search, 'value')
+                            def apply_v_filters():
+                                q = (v_search.value or '').strip().lower()
+                                b_sel = v_book_filter.value
+                                filtered_rows = []
+                                for r in v_rows:
+                                    if b_sel != 'All Books' and r['book'] != b_sel:
+                                        continue
+                                    if q:
+                                        match_q = any(q in str(v).lower() for v in [r['gate'], r['setup'], r['timestamp'], r['out_label']])
+                                        if not match_q:
+                                            continue
+                                    filtered_rows.append(r)
+                                vtbl.rows = filtered_rows
+
+                            v_book_filter.on('update:model-value', lambda _: apply_v_filters())
+                            v_search.on('update:model-value', lambda _: apply_v_filters())
                             attach_table_sort_reset(vtbl, 'timestamp', True)
 
+                            vtbl.add_slot('body-cell-book', '''
+                                <q-td :props="props" class="text-center">
+                                    <span class="badge-tag font-bold" :class="props.row.book_badge_class" :style="props.row.book_style">
+                                        {{ props.row.book }}
+                                    </span>
+                                </q-td>
+                            ''')
                             vtbl.add_slot('body-cell-gate', '''
                                 <q-td :props="props" class="text-left font-bold text-[#00f0ff]">
                                     {{ props.row.gate }}
@@ -2278,11 +2347,19 @@ def index_page():
                                 mfe_str = f"+{mfe_f:.1f}%"
                                 mae_str = f"{mae_f:.1f}%"
 
+                            b_name_g = str(r.get('candidate_book', ''))
+                            if not b_name_g or b_name_g in ('nan', 'None'):
+                                b_name_g = map_setup_to_book(r.get('candidate_setup', ''))
+                            b_cls_g, b_sty_g = get_book_badge_style(b_name_g)
+
                             rows_data.append({
                                 'id': f"{sym_str}_{ts_str}_{idx}",
                                 'timestamp': ts_str,
                                 'asset': sym_str,
                                 'tier': str(r.get('tier', 'Tier 1')),
+                                'book': b_name_g,
+                                'book_badge_class': b_cls_g,
+                                'book_style': b_sty_g,
                                 'candidate_setup': str(r.get('candidate_setup', '')),
                                 'veto_gate': str(r.get('veto_gate', '')),
                                 'price': px_f,
@@ -2302,6 +2379,7 @@ def index_page():
                             {'name': 'timestamp', 'label': 'Veto Date (UTC)', 'field': 'timestamp', 'align': 'left', 'sortable': True},
                             {'name': 'asset', 'label': 'Asset', 'field': 'asset', 'align': 'left', 'sortable': True},
                             {'name': 'tier', 'label': 'Tier', 'field': 'tier', 'align': 'center', 'sortable': True},
+                            {'name': 'book', 'label': 'Book', 'field': 'book', 'align': 'center', 'sortable': True},
                             {'name': 'candidate_setup', 'label': 'Candidate Setup', 'field': 'candidate_setup', 'align': 'left'},
                             {'name': 'veto_gate', 'label': 'Veto Gate Trigger', 'field': 'veto_gate', 'align': 'left', 'sortable': True},
                             {'name': 'price', 'label': 'Veto Price', 'field': 'price', 'align': 'right', 'sortable': True},
@@ -2314,6 +2392,13 @@ def index_page():
 
                         with tel_table_container:
                             tt = ui.table(columns=cols, rows=rows_data, row_key='id', pagination={'rowsPerPage': 25}).classes('w-full card-glass mono')
+                            tt.add_slot('body-cell-book', '''
+                                <q-td :props="props" class="text-center">
+                                    <span class="badge-tag font-bold" :class="props.row.book_badge_class" :style="props.row.book_style">
+                                        {{ props.row.book }}
+                                    </span>
+                                </q-td>
+                            ''')
                             tt.add_slot('body-cell-price', '<q-td :props="props" class="text-right">{{ props.row.price_str }}</q-td>')
                             tt.add_slot('body-cell-ret_24h_fwd', '''
                                 <q-td :props="props" class="text-right" :class="props.row.ret_24h_fwd >= 0 ? 'text-[#00ff87]' : 'text-[#ff4655]'">
