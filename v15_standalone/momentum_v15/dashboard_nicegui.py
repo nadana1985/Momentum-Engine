@@ -61,11 +61,25 @@ ASSET_TIERS_PARQUET = ROOT / "data" / "asset_tiers.parquet"
 
 
 def get_available_arms() -> List[str]:
-    base = ROOT / "data" / "all_tapes"
-    if not base.exists():
-        return ["v13_production", "v12_11_production", "v12_production"]
-    arms = [d.name for d in base.iterdir() if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists())]
+    search_dirs = [
+        ROOT / "data" / "all_tapes",
+        ROOT.parent / "v15_standalone" / "data" / "all_tapes",
+        ROOT.parent / "data" / "canonical",
+        ROOT / "data" / "canonical"
+    ]
+    arms = set()
+    for base in search_dirs:
+        if base.exists():
+            for d in base.iterdir():
+                if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists()):
+                    arms.add(d.name)
+                elif d.is_file() and d.name.endswith(".parquet"):
+                    if "v15_0" in d.name:
+                        arms.add("v15_0_production")
+
     ordered = []
+    if "v15_0_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet").exists():
+        ordered.append("v15_0_production")
     if "v13_production" in arms:
         ordered.append("v13_production")
     if "v12_11_production" in arms:
@@ -76,18 +90,10 @@ def get_available_arms() -> List[str]:
         ordered.append("v12_book3_flush_reclaim_arm")
     if "v12_coiled_book2_arm" in arms:
         ordered.append("v12_coiled_book2_arm")
-    if "v12_decoupled_turnover_arm" in arms:
-        ordered.append("v12_decoupled_turnover_arm")
-    if "v12_turnover_arm" in arms:
-        ordered.append("v12_turnover_arm")
-    if "v12_decoupling_arm" in arms:
-        ordered.append("v12_decoupling_arm")
-    if "v12_continuation_arm" in arms:
-        ordered.append("v12_continuation_arm")
     for a in arms:
         if a not in ordered:
             ordered.append(a)
-    return ordered or ["v13_production", "v12_11_production", "v12_production"]
+    return ordered or ["v15_0_production", "v13_production"]
 
 
 def get_initial_arm() -> str:
@@ -97,8 +103,15 @@ def get_initial_arm() -> str:
         if slug in get_available_arms():
             return slug
     available = get_available_arms()
+    if "v15_0_production" in available:
+        return "v15_0_production"
     if "v13_production" in available:
         return "v13_production"
+    if "v12_11_production" in available:
+        return "v12_11_production"
+    if "v12_production" in available:
+        return "v12_production"
+    return available[0] if available else "v15_0_production"
     if "v12_11_production" in available:
         return "v12_11_production"
     if "v12_production" in available:
@@ -116,19 +129,38 @@ CURRENT_ARM: str = get_initial_arm()
 # ---------------------------------------------------------------------------
 def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
-    t_dir = ROOT / "data" / "all_tapes" / arm
-    parquet_p = t_dir / "trades.parquet"
-    if parquet_p.exists():
-        try:
-            return pd.read_parquet(parquet_p)
-        except Exception:
-            pass
-    raw_csv = t_dir / "master_raw_tape.csv"
-    if raw_csv.exists():
-        try:
-            return pd.read_csv(raw_csv)
-        except Exception:
-            pass
+    # 1. Check direct arm directory
+    for base in [ROOT / "data" / "all_tapes", ROOT.parent / "v15_standalone" / "data" / "all_tapes"]:
+        t_dir = base / arm
+        parquet_p = t_dir / "trades.parquet"
+        if parquet_p.exists():
+            try:
+                return pd.read_parquet(parquet_p)
+            except Exception:
+                pass
+        raw_csv = t_dir / "master_raw_tape.csv"
+        if raw_csv.exists():
+            try:
+                return pd.read_csv(raw_csv)
+            except Exception:
+                pass
+
+    # 2. Check canonical v15 tape
+    if arm == "v15_0_production":
+        for c_path in [
+            ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_0_tape.parquet",
+            ROOT.parent / "v15_standalone" / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
+            ROOT / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_0_tape.csv",
+        ]:
+            if c_path.exists():
+                try:
+                    if c_path.suffix == ".parquet":
+                        return pd.read_parquet(c_path)
+                    return pd.read_csv(c_path)
+                except Exception:
+                    pass
     return pd.DataFrame()
 
 
@@ -1619,6 +1651,7 @@ def index_page():
                     CURRENT_ARM = e.value
                     ui.navigate.to('/')
                 arm_labels = {
+                    'v15_0_production': '👑 Canonical V15.0 Master Production (Books 1-4, 6, 7)',
                     'v13_production': '🛡️ Canonical V13.2 Production (Books 1-6)',
                     'v12_11_production': '🛡️ Canonical V12.11 Production',
                     'v12_decoupling_arm': '⚡ V12.2 Decoupling + ATH Clamp',
@@ -1626,7 +1659,9 @@ def index_page():
                 }
                 options = {a: arm_labels.get(a, a) for a in arms}
                 ui.select(options=options, value=CURRENT_ARM, on_change=set_arm).props('dense dark borderless options-dense').classes('text-xs mono w-64 text-cyan-300 font-bold')
-            if CURRENT_ARM == "v13_production":
+            if CURRENT_ARM == "v15_0_production":
+                arm_badge = '<span class="badge-tag badge-green font-bold">V15.0 Master Production (652 Shards)</span>'
+            elif CURRENT_ARM == "v13_production":
                 arm_badge = '<span class="badge-tag badge-cyan">V13.2 Production Active (Books 1-6)</span>'
             elif CURRENT_ARM == "v12_11_production":
                 arm_badge = '<span class="badge-tag badge-cyan">V12.11 Production Active</span>'
@@ -1767,7 +1802,7 @@ def index_page():
                     open_log_sum = open_df['log_ret'].sum() * 100.0 if 'log_ret' in open_df.columns else 0.0
                     be_count = (open_df['stop_price'] >= open_df['entry_price']).sum() if 'stop_price' in open_df.columns else 0
 
-                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-4 gap-4'):
+                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4'):
                         with ui.card().classes('card-glass p-4 border border-[#21262d]'):
                             ui.label('UNREALIZED ARITHMETIC PNL').classes('text-xs text-gray-400 mono font-bold')
                             pnl_c = '#00ff87' if open_pnl_sum >= 0 else '#ff4655'
@@ -1797,13 +1832,15 @@ def index_page():
                         if b_val == 'Book 4':
                             setup_name = "Book 4: 200d Reclaim"
                         elif b_val == 'Book 3':
-                            setup_name = "Book 3: Flush Reclaim"
+                            setup_name = "Book 3: Shelf Absorption"
                         elif b_val == 'Book 2':
                             setup_name = "Book 2: Coiled Squeeze"
+                        elif b_val == 'Book 6':
+                            setup_name = "Book 6: 3-SARE Base Reclaim"
+                        elif b_val == 'Book 7':
+                            setup_name = "Book 7: MSSR Micro-Harvesting"
                         elif 'Book 5' in b_val:
                             setup_name = "Book 5: Shelf Squeeze"
-                        elif 'Book 6' in b_val:
-                            setup_name = "Book 6: 3-SARE Base Reclaim"
                         elif is_reclaim:
                             setup_name = "Bear-Trap Reclaim"
                         else:
@@ -1998,7 +2035,7 @@ def index_page():
                     with filter_box:
                         sym_input = ui.input(placeholder='Search Symbol (e.g. SOL)...').classes('w-44 filter-input px-3 py-1 mono text-xs')
                         tier_select = ui.select(['All Tiers', 'Tier 1', 'Tier 2', 'Tier 3'], value='All Tiers').classes('w-32 mono text-xs')
-                        book_select = ui.select(['All Books', 'Book 1', 'Book 2', 'Book 3', 'Book 4', 'Book 5 (Shelf Absorption Squeeze)', 'Book 6 (Orderflow Base Reclaim)'], value='All Books').classes('w-48 mono text-xs')
+                        book_select = ui.select(['All Books', 'Book 1', 'Book 2', 'Book 3', 'Book 4', 'Book 6', 'Book 7'], value='All Books').classes('w-36 mono text-xs')
                         outcome_select = ui.select(['All Outcomes', 'Winners Only', 'Losses Only'], value='All Outcomes').classes('w-36 mono text-xs')
                         # MEDIUM-8: Trade type filter for Reclaim / Continuation / Squeeze isolation
                         type_options = ['All Types']
@@ -2046,8 +2083,12 @@ def index_page():
                 # Calculate live sleeve allocations from open positions
                 n_open_b1 = int((open_df['book'] == 'Book 1').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
                 n_open_b2 = int((open_df['book'] == 'Book 2').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
-                n_open_trend = n_open_b1 + n_open_b2
-                n_open_flush = int((open_df['book'] == 'Book 3').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
+                n_open_b3 = int((open_df['book'] == 'Book 3').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
+                n_open_b4 = int((open_df['book'] == 'Book 4').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
+                n_open_b6 = int((open_df['book'] == 'Book 6').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
+                n_open_b7 = int((open_df['book'] == 'Book 7').sum()) if ('book' in open_df.columns and not open_df.empty) else 0
+                n_open_trend = n_open_b1 + n_open_b2 + n_open_b4 + n_open_b6 + n_open_b7
+                n_open_flush = n_open_b3
 
                 # Top Live Slot Utilization Gauges
                 with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-3 gap-4'):
@@ -2083,12 +2124,14 @@ def index_page():
                 # Historical Multi-Book Performance Attribution
                 ui.label('📊 HISTORICAL MULTI-BOOK ATTRIBUTION').classes('text-sm font-bold tracking-wider text-[#00f0ff] mono mt-4')
                 if not closed_df.empty:
-                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-4 gap-4'):
+                    with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4'):
                         for b_name, b_badge, b_col in [
                             ('Book 1', 'Continuation Trend', '#00f0ff'),
                             ('Book 2', 'Coiled Squeeze', '#00ff87'),
-                            ('Book 3', 'Flush Reclaim', '#a855f7'),
-                            ('Book 4', '200d EMA Reclaim', '#ffb703')
+                            ('Book 3', 'Shelf Absorption', '#a855f7'),
+                            ('Book 4', '200d EMA Reclaim', '#ffb703'),
+                            ('Book 6', '3-SARE Base Reclaim', '#f72585'),
+                            ('Book 7', 'MSSR Micro-Harvesting', '#4cc9f0')
                         ]:
                             b_df = closed_df[closed_df['book'] == b_name] if 'book' in closed_df.columns else pd.DataFrame()
                             n_b = len(b_df)
