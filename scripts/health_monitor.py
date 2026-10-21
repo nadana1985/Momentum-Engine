@@ -26,7 +26,7 @@ logger = logging.getLogger("kronos.health_monitor")
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from momentum_v12.ops_paths import resolve_tape_dir
+from momentum_v15.ops_paths import resolve_tape_dir
 
 # ── Thresholds (tunable via .env) ──────────────────────────────────────────────
 STALE_HOURS       = float(os.getenv("HEALTH_STALE_HOURS",    "2"))    # Alert if newest shard > 2h old

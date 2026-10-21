@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
 import pytest
 import numpy as np
 import pandas as pd
-from momentum_v12.telemetry_v12 import TelemetryCollector, TelemetryRecord
+from momentum_v15.telemetry_v12 import TelemetryCollector, TelemetryRecord
 
 
 def test_telemetry_incomplete_horizon_flags():

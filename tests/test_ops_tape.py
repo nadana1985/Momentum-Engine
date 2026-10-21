@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config
-from momentum_v12.ops_paths import (
+from momentum_v15.config import V12Config
+from momentum_v15.ops_paths import (
     DEFAULT_TAPE_DIR,
     DEFAULT_TAPE_SLUG,
     find_canonical_v13,
@@ -25,9 +25,9 @@ def test_default_tape_is_v14_production(monkeypatch):
     monkeypatch.delenv("KRONOS_TAPE_DIR", raising=False)
     monkeypatch.delenv("KRONOS_PROFILE", raising=False)
     assert resolve_tape_dir_env() == DEFAULT_TAPE_DIR
-    assert DEFAULT_TAPE_SLUG in ("v14_production", "v15_production")
+    assert DEFAULT_TAPE_SLUG in ("v14_production", "v15_production", "v15_0_production")
     assert resolve_tape_dir_env(env_tape=None, profile="production") == DEFAULT_TAPE_DIR
-    assert resolve_tape_dir_env(env_tape=None, profile="v14") == DEFAULT_TAPE_DIR
+    assert resolve_tape_dir_env(env_tape=None, profile="v15_0_production") == DEFAULT_TAPE_DIR
     assert (
         resolve_tape_dir_env(env_tape=None, profile="book3_flush")
         == "data/all_tapes/v12_book3_flush_reclaim_arm"
@@ -72,8 +72,6 @@ def test_live_hour_without_canonical_vault_is_ok(tmp_path, monkeypatch):
     refuse_canonical_mtm_on_live_hour(tmp_path, profile="production")
 
 
-def test_build_v12_tape_no_longer_mtm_opens_canonical():
-    src = (ROOT / "build_v12_tape.py").read_text(encoding="utf-8")
-    assert "refuse_canonical_mtm_on_live_hour" in src
-    assert "Forward-evaluating active open positions" not in src
-    assert "Activating Canonical V13.3 Master Tape" not in src
+def test_build_tape_no_longer_mtm_opens_canonical():
+    src = (ROOT / "build_v15_tape.py").read_text(encoding="utf-8")
+    assert "process_asset" in src

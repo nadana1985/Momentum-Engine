@@ -1,8 +1,8 @@
 """
-Production tape path and canonical-MTM fail-closed helpers.
+Production tape path and canonical-MTM fail-closed helpers (Momentum V15).
 
-Default ledger is data/all_tapes/v14_production. A live hour must not
-MTM-open data/canonical/canonical_v13_*. Cold engine replay is
+Default ledger is data/all_tapes/v15_0_production. A live hour must not
+MTM-open data/canonical/canonical_*. Cold engine replay is
 KRONOS_FULL_REBUILD=1 (or profile fresh/full_rebuild/rebuild/scratch).
 """
 
@@ -12,10 +12,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
-DEFAULT_TAPE_SLUG = "v15_production"
+DEFAULT_TAPE_SLUG = "v15_0_production"
 DEFAULT_TAPE_DIR = f"data/all_tapes/{DEFAULT_TAPE_SLUG}"
 
-CANONICAL_V13_NAMES = (
+CANONICAL_TAPE_NAMES = (
+    "canonical_v15_0_tape.parquet",
+    "canonical_v14_tape.parquet",
     "canonical_v13_3_tape.parquet",
     "canonical_v13_2_tape.parquet",
     "canonical_v13_tape.parquet",
@@ -24,6 +26,7 @@ CANONICAL_V13_NAMES = (
 LIVE_MTM_PROFILES = frozenset({
     "production",
     "v15_production",
+    "v15_0_production",
     "v14",
     "v13_production",
     "v13",
@@ -35,10 +38,11 @@ LIVE_MTM_PROFILES = frozenset({
 REBUILD_PROFILES = frozenset({"fresh", "full_rebuild", "rebuild", "scratch"})
 
 PROFILE_TAPE_MAP = {
+    "v15_0_production": DEFAULT_TAPE_DIR,
     "v15_production": DEFAULT_TAPE_DIR,
-    "v14": DEFAULT_TAPE_DIR,
     "production": DEFAULT_TAPE_DIR,
     "fresh": DEFAULT_TAPE_DIR,
+    "v14": "data/all_tapes/v14_production",
     "v13_production": "data/all_tapes/v13_production",
     "v13": "data/all_tapes/v13_production",
     "legacy": "data/all_tapes/v12_legacy_baseline",
@@ -75,23 +79,35 @@ def resolve_tape_dir(
     profile: Optional[str] = None,
 ) -> Path:
     raw = Path(resolve_tape_dir_env(env_tape, profile))
-    return raw if raw.is_absolute() else Path(root) / raw
+    if raw.is_absolute():
+        return raw
+    # Check v15_standalone directory if tape lives there
+    v15_cand = Path(root) / "v15_standalone" / raw
+    if v15_cand.exists():
+        return v15_cand
+    return Path(root) / raw
 
 
 def resolve_telemetry_dir(root: Path, tape_dir: Path) -> Path:
     slug = tape_dir.name
-    if slug in ("v13_production", "v12_production"):
-        return Path(root) / "telemetry"
-    return Path(root) / "telemetry" / slug
+    base = Path(root)
+    if "v15_standalone" in str(tape_dir):
+        base = Path(root) / "v15_standalone"
+    if slug in ("v15_0_production", "v15_production", "v13_production", "v12_production"):
+        return base / "telemetry"
+    return base / "telemetry" / slug
 
 
-def find_canonical_v13(root: Path) -> Optional[Path]:
-    canon = Path(root) / "data" / "canonical"
-    for name in CANONICAL_V13_NAMES:
-        p = canon / name
-        if p.exists():
-            return p
+def find_canonical_tape(root: Path) -> Optional[Path]:
+    for cand in [Path(root) / "data" / "canonical", Path(root) / "v15_standalone" / "data" / "canonical"]:
+        for name in CANONICAL_TAPE_NAMES:
+            p = cand / name
+            if p.exists():
+                return p
     return None
+
+
+find_canonical_v13 = find_canonical_tape
 
 
 def refuse_canonical_mtm_on_live_hour(
@@ -99,7 +115,7 @@ def refuse_canonical_mtm_on_live_hour(
     profile: Optional[str] = None,
     full_rebuild: Optional[bool] = None,
 ) -> None:
-    """Raise SystemExit if a live hour would MTM-open a canonical v13 tape."""
+    """Raise SystemExit if a live hour would MTM-open a canonical tape."""
     prof = (profile if profile is not None else os.environ.get("KRONOS_PROFILE", "production")).lower()
     if full_rebuild is None:
         full_rebuild = (
@@ -110,11 +126,11 @@ def refuse_canonical_mtm_on_live_hour(
         return
     if prof not in LIVE_MTM_PROFILES:
         return
-    hit = find_canonical_v13(root)
+    hit = find_canonical_tape(root)
     if hit is None:
         return
     raise SystemExit(
         f"Refusing to MTM-open {hit.name} on a live hour. "
         "Cold engine replay only: KRONOS_FULL_REBUILD=1. "
-        "Do not copy canonical_v13_* into a production tape."
+        "Do not copy canonical_* into a production tape."
     )

@@ -290,8 +290,11 @@ def process_symbol(sym):
 
             if all_new_metrics:
                 concatenated_new = pd.concat(all_new_metrics)
-                df = pd.read_parquet(metrics_path)
-                combined = pd.concat([df, concatenated_new])
+                try:
+                    df = pd.read_parquet(metrics_path)
+                    combined = pd.concat([df, concatenated_new])
+                except Exception:
+                    combined = concatenated_new
                 combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                 atomic_to_parquet(combined.reset_index(drop=True), metrics_path)
 

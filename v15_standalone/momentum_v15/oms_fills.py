@@ -1,5 +1,5 @@
 """
-Paper vs live resting-limit fill model.
+Paper vs live resting-limit fill model (Momentum V15).
 
 This is not an exchange order placer. Paper replay fills a buy limit at the
 bid whenever the bar low trades through. Live replay fills a gap-through at
@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from momentum_v12.config import ExecutionConfig
+from momentum_v15.config import ExecutionConfig
 
 
 def execution_from_env() -> ExecutionConfig:

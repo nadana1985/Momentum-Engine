@@ -56,7 +56,8 @@ class TierConfig:
         'ARM', 'AVGO', 'MU', 'QCOM', 'SPY', 'QQQ', 'XAU', 'XAG', 'CL', 'BZ',
         'ASTS', 'PLTR', 'COIN', 'MSTR', 'SNDK', 'MRVL', 'EWY', 'KORU', 'AAOI',
         'AMAT', 'ANTHROPIC', 'OPENAI', 'SPCX', 'SKHYNIX', 'SAMSUNG', 'SOXL',
-        'DRAM', 'BMNR', 'TQQQ', 'USDC'
+        'DRAM', 'BMNR', 'TQQQ', 'USDC',
+        'APP', 'BX', 'COST', 'CRCL', 'HD', 'RDDT', 'SQQQ', 'TMF', 'UVXY', 'MYX', 'LAB'
     )
 
     def __post_init__(self):
@@ -629,23 +630,40 @@ class Book7Config:
     5. Micro-Harvesting Two-Tranche Architecture: Clamped at -12.0% max initial risk, Tranche A +3.0% target cap,
        Breakeven cushion ratchet (-0.5%) upon +3.0% MFE, and unconstrained 72h Donchian floor for Tranche B.
     """
-    enable_book7: bool = True              # Promoted to Canonical V15.0 with Micro-Harvesting
-    min_bars_below: int = 720              # 30 days below 200d EMA before touch
+    enable_book7: bool = True              # Promoted to Canonical V15.2 with Micro-Harvesting & Direct Breakout
+    min_bars_below: int = 168              # Promoted to Canonical V15.2 (Study S-CL): 7-day micro-cap dormancy (168 bars)
     touch_tolerance_pct: float = 0.015     # High >= 0.985 * EMA_200d
     max_retest_hours: int = 168            # Retest window within 7 days
     min_dist_200d: float = -0.05           # Minimum distance from 200d EMA (-5%)
-    max_dist_200d: float = 0.12            # Over-extension ceiling: price <= +12% above 200d EMA
+    max_dist_200d: float = 0.20            # Promoted to Canonical V15.2 (Study S-CL): +20% over-extension ceiling
     max_pct_ls: float = 15.0               # Whale Squeeze Fuel: Top Trader L/S <= 15th percentile
     max_z_ls: float = -1.25                # OR studentized z_ls <= -1.25 sigma
     max_d_oi_tokens: float = 0.35          # Leverage Bubble Firewall: 24h Token OI change <= +35%
     min_turnover: float = 1.00             # Minimum $1.0M turnover velocity
     require_negative_carry: bool = True    # Study S-CI: Negative Carry Inverted Squeeze Gate (FR <= 0.0)
     max_funding_rate: float = 0.0          # Max funding rate (<= 0.0% / 8h)
+    enable_studentized_carry: bool = True       # Promoted to Canonical V15.1 (Study S-CJ): Dynamic studentized carry (z_fnd <= +0.25s)
+    max_z_funding: float = 0.25                 # Max studentized z_fnd_30d allowed (allows mild natural positive carry)
+    enable_whale_carry_override: bool = False   # Study S-CJ: Allow z_fnd <= +0.50s if whale conviction z_ls <= -1.50s
+    whale_override_max_z_ls: float = -1.50      # Threshold for extreme whale counter-short conviction
+    whale_override_max_z_fnd: float = 0.50      # Relaxed z_fnd limit under extreme whale conviction
+    enable_studentized_oi_bubble: bool = False  # Study S-CJ: Studentized orderflow expansion firewall (z_oi_12h <= +2.0s)
+    max_z_oi: float = 2.00                      # Studentized 12h token OI expansion cap
     max_initial_risk: float = 0.12         # Hard -12.0% initial risk clamp
     tranche_a_target_pct: float = 0.03     # Tranche A +3.0% Micro-Harvesting target cap
     breakeven_mfe_trigger: float = 0.03    # Ratchet stop when MFE reaches +3.0%
     breakeven_cushion_pct: float = 0.005   # Breakeven cushion (-0.5% below entry)
     donchian_trail_bars: int = 72          # Tranche B unconstrained 72h Donchian floor trail
+    # Study S-CK: Microstructure-Conditioned Dynamic Exit & Peak Harvest Engine
+    enable_microstructure_conditioned_exit: bool = False  # Condition ratchet on bar acceptance quality
+    stall_wick_threshold: float = 0.40                   # Air-pocket stall if wick >= 40% (ratchet to -0.5%)
+    runner_cushion_pct: float = 0.030                    # Clean runner cushion (-3.0%) if wick < 40%
+    enable_climax_runner_harvest: bool = False           # Climax exhaustion harvest on Tranche B
+    climax_min_mfe: float = 0.20                         # Min +20% MFE before climax harvest arms
+    climax_harvest_urgency: float = 55.0                 # Urgency threshold for climax harvest
+    # Study S-CL: Relaxed 200d EMA & Direct Breakout Ignition Engine
+    enable_direct_breakout: bool = True                  # Promoted to Canonical V15.2 (Study S-CL): Direct breakout ignition
+    direct_breakout_max_z_ls: float = -1.50              # Extreme whale short squeeze conviction threshold
     max_duration_hours: int = 720          # 30-day max holding horizon
     cooldown_hours: int = 120              # 5-day post-exit cooldown on same asset
 
@@ -654,6 +672,21 @@ class Book7Config:
         assert self.max_dist_200d > self.min_dist_200d, "max_dist_200d must exceed min_dist_200d"
         assert 0.0 < self.max_initial_risk <= 0.25, "max_initial_risk must be in (0, 0.25]"
         assert self.tranche_a_target_pct > 0.0, "tranche_a_target_pct must be positive"
+
+
+@dataclass(frozen=True)
+class ExecutionConfig:
+    """Paper vs live resting-limit fill model. Not an exchange order placer.
+
+    paper_limit: fill a buy limit at the bid when the bar low trades through.
+    live_limit:  gap-through fills at the open (bid is not available after a gap).
+    Book 4 stays market-on-close (S-CA day-close). Book 3/5 stay paper_limit
+    unless KRONOS_EXECUTION=live.
+    """
+    mode: str = "paper_limit"
+
+    def __post_init__(self):
+        assert self.mode in ("paper_limit", "live_limit"), "mode must be paper_limit or live_limit"
 
 
 @dataclass(frozen=True)
@@ -673,6 +706,7 @@ class V12Config:
     book6: Book6Config = field(default_factory=Book6Config)
     book7: Book7Config = field(default_factory=Book7Config)
     calendar: CalendarConfig = field(default_factory=CalendarConfig)
+    execution: ExecutionConfig = field(default_factory=ExecutionConfig)
 
 
 

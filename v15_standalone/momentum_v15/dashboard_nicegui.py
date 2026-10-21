@@ -45,9 +45,12 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from nicegui import app, ui
 
-ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = REPO_ROOT
+V15_ROOT = Path(__file__).resolve().parent.parent
+for p in [str(ROOT), str(V15_ROOT)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from momentum_v15.telemetry_v12 import TelemetryCollector
 
@@ -74,10 +77,18 @@ def get_available_arms() -> List[str]:
                 if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists()):
                     arms.add(d.name)
                 elif d.is_file() and d.name.endswith(".parquet"):
-                    if "v15_0" in d.name:
+                    if "v15_2" in d.name:
+                        arms.add("v15_2_production")
+                    elif "v15_1" in d.name:
+                        arms.add("v15_1_production")
+                    elif "v15_0" in d.name:
                         arms.add("v15_0_production")
 
     ordered = []
+    if "v15_2_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_2_tape.parquet").exists() or (ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet").exists():
+        ordered.append("v15_2_production")
+    if "v15_1_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_1_tape.parquet").exists() or (ROOT / "data" / "canonical" / "canonical_v15_1_tape.parquet").exists():
+        ordered.append("v15_1_production")
     if "v15_0_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet").exists():
         ordered.append("v15_0_production")
     if "v13_production" in arms:
@@ -103,6 +114,10 @@ def get_initial_arm() -> str:
         if slug in get_available_arms():
             return slug
     available = get_available_arms()
+    if "v15_2_production" in available:
+        return "v15_2_production"
+    if "v15_1_production" in available:
+        return "v15_1_production"
     if "v15_0_production" in available:
         return "v15_0_production"
     if "v13_production" in available:
@@ -182,12 +197,22 @@ def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
                 pass
 
     # 2. Check canonical v15 tape
-    if arm == "v15_0_production":
+    if arm in ("v15_2_production", "v15_1_production", "v15_0_production"):
         for c_path in [
+            ROOT.parent / "data" / "canonical" / "canonical_v15_2_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet",
+            ROOT.parent / "v15_standalone" / "data" / "all_tapes" / "v15_2_production" / "trades.parquet",
+            ROOT / "data" / "all_tapes" / "v15_2_production" / "trades.parquet",
+            ROOT.parent / "data" / "canonical" / "canonical_v15_1_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_1_tape.parquet",
+            ROOT.parent / "v15_standalone" / "data" / "all_tapes" / "v15_1_production" / "trades.parquet",
+            ROOT / "data" / "all_tapes" / "v15_1_production" / "trades.parquet",
             ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet",
             ROOT / "data" / "canonical" / "canonical_v15_0_tape.parquet",
             ROOT.parent / "v15_standalone" / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
             ROOT / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_2_tape.csv",
+            ROOT / "data" / "canonical" / "canonical_v15_1_tape.csv",
             ROOT / "data" / "canonical" / "canonical_v15_0_tape.csv",
         ]:
             if c_path.exists():

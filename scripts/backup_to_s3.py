@@ -20,7 +20,7 @@ logger = logging.getLogger("kronos.s3_backup")
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from momentum_v12.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
+from momentum_v15.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
 
 def backup_to_s3(bucket_name: str | None = None, prefix: str | None = None, include_shards: bool = False):
     bucket = bucket_name or os.environ.get("S3_BUCKET")

@@ -19,10 +19,10 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, MicrostructureConfig, SizingConfig, TierConfig, EntryConfig
-from momentum_v12.sizing_v12 import compute_csmi_metrics
-from momentum_v12.engine_v12 import run_v12_engine
-from momentum_v12.telemetry_v12 import TelemetryCollector
+from momentum_v15.config import V12Config, MicrostructureConfig, SizingConfig, TierConfig, EntryConfig
+from momentum_v15.sizing_v12 import compute_csmi_metrics
+from momentum_v15.engine_v12 import run_v12_engine
+from momentum_v15.telemetry_v12 import TelemetryCollector
 
 
 def test_v12_7_config_invariants():
@@ -163,7 +163,7 @@ def test_book2_sub_200d_gate_veto():
         entry=dataclasses.replace(EntryConfig(), cooldown_hours=0)
     )
     telemetry_above = TelemetryCollector()
-    trades_above, _ = run_v12_engine(df_above, 'TEST_TOKEN', cfg=cfg_enabled, telemetry=telemetry_above)
+    trades_above = run_v12_engine(df_above, 'TEST_TOKEN', cfg=cfg_enabled, telemetry=telemetry_above)
     
     # Check that it was vetoed with the exact gate name
     veto_records = [r for r in telemetry_above.records if r.status == 'VETOED' and r.veto_gate == 'Core 4: Book 2 Above-200d Squeeze Stall']
@@ -175,7 +175,7 @@ def test_book2_sub_200d_gate_veto():
     df_below = df.copy()
     df_below['ema200_1d'] = 110.0  # close (100.0) < ema200_1d (110.0)
     telemetry_below = TelemetryCollector()
-    trades_below, _ = run_v12_engine(df_below, 'TEST_TOKEN', cfg=cfg_enabled, telemetry=telemetry_below)
+    trades_below = run_v12_engine(df_below, 'TEST_TOKEN', cfg=cfg_enabled, telemetry=telemetry_below)
     assert not trades_below.empty
     b2_trades = trades_below[trades_below['book'] == 'Book 2']
     assert len(b2_trades) > 0, "Expected Book 2 trade to execute sub-200d EMA"
@@ -187,7 +187,7 @@ def test_book2_sub_200d_gate_veto():
         entry=dataclasses.replace(EntryConfig(), cooldown_hours=0)
     )
     telemetry_disabled = TelemetryCollector()
-    trades_disabled, _ = run_v12_engine(df_above, 'TEST_TOKEN', cfg=cfg_disabled, telemetry=telemetry_disabled)
+    trades_disabled = run_v12_engine(df_above, 'TEST_TOKEN', cfg=cfg_disabled, telemetry=telemetry_disabled)
     veto_records_disabled = [r for r in telemetry_disabled.records if r.veto_gate == 'Core 4: Book 2 Above-200d Squeeze Stall']
     assert len(veto_records_disabled) == 0, "Did not expect stall veto when book2_sub_200d_only is False"
 
@@ -247,7 +247,7 @@ def test_csmi_anti_chop_firewall():
     )
     telemetry = TelemetryCollector()
 
-    trades, _ = run_v12_engine(df, 'CHOP_TOKEN', cfg=cfg, telemetry=telemetry)
+    trades = run_v12_engine(df, 'CHOP_TOKEN', cfg=cfg, telemetry=telemetry)
     anti_chop_vetoes = [r for r in telemetry.records if r.status == 'VETOED' and r.veto_gate == 'Core 4: CSMI Anti-Chop Firewall']
     assert len(anti_chop_vetoes) > 0, "Expected setup to be vetoed by CSMI Anti-Chop Firewall"
     if not trades.empty:
@@ -298,7 +298,7 @@ def test_v12_7_engine_csmi_sizing_weights():
         sizing=dataclasses.replace(SizingConfig(), enable_csmi_sizing=True)
     )
 
-    trades, _ = run_v12_engine(df, 'SIZING_TOKEN', cfg=cfg)
+    trades = run_v12_engine(df, 'SIZING_TOKEN', cfg=cfg)
     assert not trades.empty, "Expected executed trades"
     b2_trades = trades[trades['book'] == 'Book 2']
     assert not b2_trades.empty, "Expected executed Book 2 trades"

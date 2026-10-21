@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, MacroConfig, TierConfig, MicrostructureConfig, EntryConfig, ExitConfig
+from momentum_v15.config import V12Config, MacroConfig, TierConfig, MicrostructureConfig, EntryConfig, ExitConfig
 from config.ingestion.live_bridger import RateLimiter, atomic_to_parquet
 
 

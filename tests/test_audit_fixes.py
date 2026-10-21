@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.build_csv import _log_pf
+from momentum_v15.build_csv import _log_pf
 
 
 def test_log_profit_factor_calculation():
@@ -91,9 +91,9 @@ def test_telemetry_safe_filtering():
 
 def test_zero_tolerance_data_firewall():
     """Verify that candidate signals with missing/NaN exotic data are vetoed."""
-    from momentum_v12.engine_v12 import run_v12_engine
-    from momentum_v12.config import V12Config
-    from momentum_v12.telemetry_v12 import TelemetryCollector
+    from momentum_v15.engine_v12 import run_v12_engine
+    from momentum_v15.config import V12Config
+    from momentum_v15.telemetry_v12 import TelemetryCollector
     import tempfile
 
     cfg = V12Config()
@@ -132,7 +132,7 @@ def test_zero_tolerance_data_firewall():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         telemetry = TelemetryCollector(storage_dir=Path(tmpdir))
-        trades, _ = run_v12_engine(df, 'SYNTHETIC_TEST', cfg=cfg, telemetry=telemetry)
+        trades = run_v12_engine(df, 'SYNTHETIC_TEST', cfg=cfg, telemetry=telemetry)
         
         # Zero-Tolerance firewall must have prevented ANY trade entry!
         assert len(trades) == 0, f"Expected 0 trades on NaN data, got {len(trades)}"

@@ -10,9 +10,9 @@ Validates:
 import pytest
 import numpy as np
 import pandas as pd
-from momentum_v12.config import V12Config, ShadowReclaimConfig
-from momentum_v12.telemetry_v12 import TelemetryRecord, TelemetryCollector
-from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v15.config import V12Config, ShadowReclaimConfig, Book1Config, CalendarConfig
+from momentum_v15.telemetry_v12 import TelemetryRecord, TelemetryCollector
+from momentum_v15.engine_v12 import run_v12_engine
 
 
 def test_shadow_reclaim_config_immutability():
@@ -119,18 +119,22 @@ def test_shadow_reclaim_lifecycle_point_in_time():
     # 1. When shadow reclaim is DISABLED: 0 trades fired (100% macro vetoed to cash)
     cfg_disabled = V12Config(shadow_reclaim=ShadowReclaimConfig(enable_bear_shadow_reclaims=False))
     tel_disabled = TelemetryCollector()
-    t_disabled, _ = run_v12_engine(df, "TEST_COIN", cfg=cfg_disabled, telemetry=tel_disabled)
+    t_disabled = run_v12_engine(df, "TEST_COIN", cfg=cfg_disabled, telemetry=tel_disabled)
     assert len(t_disabled) == 0, "Default disabled config must produce 0 trades during bear regime"
 
     # 2. When shadow reclaim is ENABLED:
-    cfg_enabled = V12Config(shadow_reclaim=ShadowReclaimConfig(
-        enable_bear_shadow_reclaims=True,
-        reclaim_min_hours=12.0,
-        reclaim_max_hours=144.0,
-        max_initial_risk=0.08
-    ))
+    cfg_enabled = V12Config(
+        shadow_reclaim=ShadowReclaimConfig(
+            enable_bear_shadow_reclaims=True,
+            reclaim_min_hours=12.0,
+            reclaim_max_hours=144.0,
+            max_initial_risk=0.08
+        ),
+        book1=Book1Config(enable_avwap_reclaim=False),
+        calendar=CalendarConfig(enable_calendar_firewall=False)
+    )
     tel_enabled = TelemetryCollector()
-    t_enabled, _ = run_v12_engine(df, "TEST_COIN", cfg=cfg_enabled, telemetry=tel_enabled)
+    t_enabled = run_v12_engine(df, "TEST_COIN", cfg=cfg_enabled, telemetry=tel_enabled)
 
     assert len(t_enabled) > 0, "Enabled shadow reclaim must capture confirmed reclaim"
     reclaim_trade = t_enabled.iloc[0]

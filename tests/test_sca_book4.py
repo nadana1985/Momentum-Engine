@@ -21,9 +21,9 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import Book4Config, V12Config
-from momentum_v12.engine_v12 import run_v12_engine
-from momentum_v12.features_v12 import compute_features_v12, extract_p_nb_high
+from momentum_v15.config import Book4Config, V12Config
+from momentum_v15.engine_v12 import run_v12_engine
+from momentum_v15.features_v12 import compute_features_v12, extract_p_nb_high
 
 
 def _sbb_cfg() -> V12Config:
@@ -139,8 +139,8 @@ def test_sca_day_close_blocks_intraday_reclaim():
     df = _book4_frame()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=V12Config())
 
-    off, _ = run_v12_engine(feat, "SCA_TOKEN", cfg=_sbb_cfg())
-    on, _ = run_v12_engine(feat, "SCA_TOKEN", cfg=V12Config())
+    off = run_v12_engine(feat, "SCA_TOKEN", cfg=_sbb_cfg())
+    on = run_v12_engine(feat, "SCA_TOKEN", cfg=V12Config())
 
     off_b4 = off[off["book"] == "Book 4"]
     assert not off_b4.empty
@@ -189,7 +189,7 @@ def test_sca_day_close_fires_at_hour_23():
     )
     cfg = V12Config()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades, _ = run_v12_engine(feat, "SCA_DAY_CLOSE", cfg=cfg)
+    trades = run_v12_engine(feat, "SCA_DAY_CLOSE", cfg=cfg)
     b4 = trades[trades["book"] == "Book 4"] if not trades.empty else trades
     assert not b4.empty, "S-CA should fill on a 23:00 close above P_NB_High"
     entry = pd.Timestamp(b4.iloc[0]["entry"])
@@ -203,9 +203,9 @@ def test_book4_disabled_on_tier2_and_tier3():
     feat_t2 = compute_features_v12(df, btc_df=None, tier_label="Tier 2", cfg=cfg)
     feat_t3 = compute_features_v12(df, btc_df=None, tier_label="Tier 3", cfg=cfg)
 
-    t1, _ = run_v12_engine(feat_t1, "T1", cfg=cfg)
-    t2, _ = run_v12_engine(feat_t2, "T2", cfg=cfg)
-    t3, _ = run_v12_engine(feat_t3, "T3", cfg=cfg)
+    t1 = run_v12_engine(feat_t1, "T1", cfg=cfg)
+    t2 = run_v12_engine(feat_t2, "T2", cfg=cfg)
+    t3 = run_v12_engine(feat_t3, "T3", cfg=cfg)
 
     assert not t1[t1["book"] == "Book 4"].empty
     t2_b4 = t2[t2["book"] == "Book 4"] if not t2.empty else t2
@@ -239,8 +239,8 @@ def test_sca_microstructure_changes_sizing_vs_sbb():
     )
     feat_sbb = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=sbb)
     feat_sca = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=sca_size)
-    t_sbb, _ = run_v12_engine(feat_sbb, "SZ", cfg=sbb)
-    t_sca, _ = run_v12_engine(feat_sca, "SZ", cfg=sca_size)
+    t_sbb = run_v12_engine(feat_sbb, "SZ", cfg=sbb)
+    t_sca = run_v12_engine(feat_sca, "SZ", cfg=sca_size)
     b_sbb = t_sbb[t_sbb["book"] == "Book 4"].iloc[0]
     b_sca = t_sca[t_sca["book"] == "Book 4"].iloc[0]
     assert 0.20 <= float(b_sca["sizing_weight"]) <= 1.50
