@@ -1,0 +1,544 @@
+/* =============================================================================
+   KRONOS V15.2 HIGH-FIDELITY QUANT WORKSTATION STYLESHEET
+   Matching TradingView Lightweight Charts Dark Tactical Theme & Mockup
+   ============================================================================= */
+
+:root {
+  --kw-bg-canvas: #090d14;
+  --kw-bg-panel: #0d121c;
+  --kw-bg-card: #131a26;
+  --kw-bg-card-hover: #1a2333;
+  --kw-border-subtle: #1e293b;
+  --kw-border-accent: #334155;
+  --kw-text-main: #f1f5f9;
+  --kw-text-muted: #94a3b8;
+  --kw-text-faint: #64748b;
+  
+  --kw-neon-green: #00ff87;
+  --kw-neon-red: #ff4655;
+  --kw-neon-cyan: #00f0ff;
+  --kw-neon-magenta: #d946ef;
+  --kw-neon-purple: #8b5cf6;
+  --kw-neon-amber: #f59e0b;
+  --kw-neon-blue: #38bdf8;
+}
+
+/* Outer Workstation Wrapper */
+@keyframes kw-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#coin-workstation-app,
+#quant-workstation-app,
+.nicegui-html {
+  width: 100% !important;
+  min-width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+.workstation-container {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 860px;
+  background-color: var(--kw-bg-canvas);
+  color: var(--kw-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--kw-border-subtle);
+  position: relative;
+  box-sizing: border-box !important;
+}
+
+/* Top Control Ribbon */
+.workstation-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--kw-bg-panel);
+  border-bottom: 1px solid var(--kw-border-subtle);
+  font-size: 13px;
+  user-select: none;
+  z-index: 10;
+}
+
+.workstation-ribbon-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.workstation-symbol-badge {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workstation-tier-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  background-color: rgba(56, 189, 248, 0.15);
+  color: var(--kw-neon-blue);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.workstation-quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.workstation-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.workstation-stat-label {
+  font-size: 10px;
+  color: var(--kw-text-faint);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.workstation-stat-val {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 600;
+  color: var(--kw-text-main);
+}
+
+.workstation-ribbon-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Quick Timeframe Buttons */
+.workstation-btn-group {
+  display: flex;
+  background: var(--kw-bg-card);
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid var(--kw-border-subtle);
+}
+
+.workstation-btn-pill {
+  background: transparent;
+  border: none;
+  color: var(--kw-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.workstation-btn-pill:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workstation-btn-pill.active {
+  color: #fff;
+  background: #2563eb;
+}
+
+/* Layer Toggle Buttons */
+.workstation-layer-btn {
+  background: var(--kw-bg-card);
+  border: 1px solid var(--kw-border-subtle);
+  color: var(--kw-text-muted);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.workstation-layer-btn.active {
+  color: #ffffff;
+  border-color: var(--kw-border-accent);
+  background: var(--kw-bg-card-hover);
+}
+
+.layer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Main Split Viewport */
+.workstation-body {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: calc(100% - 48px);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box !important;
+}
+
+/* Charts Multi-Pane Canvas Container with Vertical Scroller */
+.workstation-panes {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: calc(100% - 360px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  background: var(--kw-bg-canvas);
+  position: relative;
+  box-sizing: border-box !important;
+  scroll-behavior: smooth;
+}
+
+/* Custom Tactical Cyberpunk Scrollbar for Panes */
+.workstation-panes::-webkit-scrollbar {
+  width: 10px;
+}
+.workstation-panes::-webkit-scrollbar-track {
+  background: #0d121c;
+  border-left: 1px solid var(--kw-border-subtle);
+}
+.workstation-panes::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 5px;
+  border: 2px solid #0d121c;
+}
+.workstation-panes::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+}
+
+.pane-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  position: relative;
+  border-bottom: 1px solid var(--kw-border-subtle);
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+#pane-price {
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+#pane-volume {
+  height: 160px !important;
+  min-height: 160px !important;
+}
+
+#pane-oi {
+  height: 280px !important;
+  min-height: 280px !important;
+}
+
+#pane-funding {
+  height: 200px !important;
+  min-height: 200px !important;
+}
+
+.pane-label {
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--kw-text-faint);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pane-metric-val {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: var(--kw-text-main);
+}
+
+/* Hover Legend Box in Main Pane */
+.main-pane-legend {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  z-index: 5;
+  pointer-events: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  background: rgba(13, 18, 28, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.legend-item {
+  display: flex;
+  gap: 4px;
+}
+
+.legend-key {
+  color: var(--kw-text-faint);
+}
+
+.legend-val {
+  font-weight: 600;
+}
+
+/* Signal Inspector Sidebar */
+.workstation-sidebar {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  flex: 0 0 360px !important;
+  height: 100%;
+  background: var(--kw-bg-panel);
+  border-left: 1px solid var(--kw-border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+  box-sizing: border-box !important;
+  transition: transform 0.2s ease;
+}
+
+.inspector-header {
+  padding: 12px 16px;
+  background: var(--kw-bg-card);
+  border-bottom: 1px solid var(--kw-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inspector-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--kw-text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspector-timestamp {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--kw-neon-cyan);
+}
+
+.inspector-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card Sections inside Inspector */
+.inspector-card {
+  background: var(--kw-bg-card);
+  border: 1px solid var(--kw-border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inspector-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--kw-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Decision Status Banner */
+.decision-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.decision-banner.entry {
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  color: var(--kw-neon-green);
+}
+
+.decision-banner.veto {
+  background: rgba(255, 70, 85, 0.15);
+  border: 1px solid rgba(255, 70, 85, 0.4);
+  color: var(--kw-neon-red);
+}
+
+.decision-banner.neutral {
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: var(--kw-text-muted);
+}
+
+/* Condition Item Checklist */
+.condition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.condition-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.condition-name {
+  color: var(--kw-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.condition-val {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.pass {
+  background: rgba(0, 255, 135, 0.15);
+  color: var(--kw-neon-green);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+}
+
+.status-badge.fail {
+  background: rgba(255, 70, 85, 0.15);
+  color: var(--kw-neon-red);
+  border: 1px solid rgba(255, 70, 85, 0.3);
+}
+
+.status-badge.skip {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--kw-text-faint);
+}
+
+/* Metric Key-Value Grid */
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metric-cell {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-cell-label {
+  font-size: 10px;
+  color: var(--kw-text-faint);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metric-cell-val {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--kw-text-main);
+}
+
+/* Navigation Jump Bar (Bottom of Sidebar) */
+.event-navigator-bar {
+  margin-top: auto;
+  padding: 12px 16px;
+  background: var(--kw-bg-card);
+  border-top: 1px solid var(--kw-border-subtle);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.event-nav-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--kw-border-subtle);
+  color: var(--kw-text-main);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.event-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--kw-border-accent);
+}
+
+/* Scrollbar styling */
+.workstation-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.workstation-sidebar::-webkit-scrollbar-track {
+  background: var(--kw-bg-panel);
+}
+.workstation-sidebar::-webkit-scrollbar-thumb {
+  background: var(--kw-border-accent);
+  border-radius: 3px;
+}

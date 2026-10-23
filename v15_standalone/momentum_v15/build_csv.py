@@ -16,26 +16,50 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
-tape_dir_env = os.environ.get("KRONOS_TAPE_DIR", "data/all_tapes/v12_production")
-raw_tape_dir = Path(tape_dir_env)
-if raw_tape_dir.is_absolute():
-    TAPE_DIR = raw_tape_dir
-elif (ROOT / raw_tape_dir).exists():
-    TAPE_DIR = ROOT / raw_tape_dir
-elif raw_tape_dir.exists():
-    TAPE_DIR = raw_tape_dir
-else:
-    TAPE_DIR = ROOT / raw_tape_dir
-RAW_CSV = TAPE_DIR / "master_raw_tape.csv"
-TRADES_PARQUET = TAPE_DIR / "trades.parquet"
-CLOSED_CSV = TAPE_DIR / "closed_trades.csv"
-CLOSED_PARQUET = TAPE_DIR / "closed_trades.parquet"
-OPEN_CSV = TAPE_DIR / "open_trades.csv"
-OPEN_PARQUET = TAPE_DIR / "open_trades.parquet"
-ALL_CSV = TAPE_DIR / "all_trades.csv"
-SCORECARD_PARQUET = TAPE_DIR / "scorecard.parquet"
-SCORECARD_CSV = TAPE_DIR / "scorecard.csv"
-SYMBOLS_DIR = TAPE_DIR / "symbols"
+
+
+def get_tape_paths(custom_tape_dir=None):
+    if custom_tape_dir is not None:
+        target_dir = Path(custom_tape_dir)
+    else:
+        tape_dir_env = os.environ.get("KRONOS_TAPE_DIR", "data/all_tapes/v12_production")
+        raw_tape_dir = Path(tape_dir_env)
+        if raw_tape_dir.is_absolute():
+            target_dir = raw_tape_dir
+        elif (ROOT / raw_tape_dir).exists():
+            target_dir = ROOT / raw_tape_dir
+        elif raw_tape_dir.exists():
+            target_dir = raw_tape_dir
+        else:
+            target_dir = ROOT / raw_tape_dir
+    return {
+        "TAPE_DIR": target_dir,
+        "RAW_CSV": target_dir / "master_raw_tape.csv",
+        "TRADES_PARQUET": target_dir / "trades.parquet",
+        "CLOSED_CSV": target_dir / "closed_trades.csv",
+        "CLOSED_PARQUET": target_dir / "closed_trades.parquet",
+        "OPEN_CSV": target_dir / "open_trades.csv",
+        "OPEN_PARQUET": target_dir / "open_trades.parquet",
+        "ALL_CSV": target_dir / "all_trades.csv",
+        "SCORECARD_PARQUET": target_dir / "scorecard.parquet",
+        "SCORECARD_CSV": target_dir / "scorecard.csv",
+        "SYMBOLS_DIR": target_dir / "symbols",
+    }
+
+
+# Backwards compatibility defaults for module-level imports
+_default_paths = get_tape_paths()
+TAPE_DIR = _default_paths["TAPE_DIR"]
+RAW_CSV = _default_paths["RAW_CSV"]
+TRADES_PARQUET = _default_paths["TRADES_PARQUET"]
+CLOSED_CSV = _default_paths["CLOSED_CSV"]
+CLOSED_PARQUET = _default_paths["CLOSED_PARQUET"]
+OPEN_CSV = _default_paths["OPEN_CSV"]
+OPEN_PARQUET = _default_paths["OPEN_PARQUET"]
+ALL_CSV = _default_paths["ALL_CSV"]
+SCORECARD_PARQUET = _default_paths["SCORECARD_PARQUET"]
+SCORECARD_CSV = _default_paths["SCORECARD_CSV"]
+SYMBOLS_DIR = _default_paths["SYMBOLS_DIR"]
 
 
 def _log_pf(wins: pd.Series, losses: pd.Series) -> float:
@@ -50,15 +74,28 @@ def _log_pf(wins: pd.Series, losses: pd.Series) -> float:
     return (log_wins / log_losses) if log_losses > 1e-12 else 999.0
 
 
-def main():
-    if not TRADES_PARQUET.exists() and not RAW_CSV.exists():
-        print(f"No trades found in {TAPE_DIR}. Run build_v12_tape.py first.")
+def main(tape_dir=None):
+    paths = get_tape_paths(tape_dir)
+    target_tape_dir = paths["TAPE_DIR"]
+    raw_csv = paths["RAW_CSV"]
+    trades_parquet = paths["TRADES_PARQUET"]
+    closed_csv = paths["CLOSED_CSV"]
+    closed_parquet = paths["CLOSED_PARQUET"]
+    open_csv = paths["OPEN_CSV"]
+    open_parquet = paths["OPEN_PARQUET"]
+    all_csv = paths["ALL_CSV"]
+    scorecard_parquet = paths["SCORECARD_PARQUET"]
+    scorecard_csv = paths["SCORECARD_CSV"]
+    symbols_dir = paths["SYMBOLS_DIR"]
+
+    if not trades_parquet.exists() and not raw_csv.exists():
+        print(f"No trades found in {target_tape_dir}. Run build_v12_tape.py first.")
         return
 
-    if TRADES_PARQUET.exists():
-        df = pd.read_parquet(TRADES_PARQUET)
+    if trades_parquet.exists():
+        df = pd.read_parquet(trades_parquet)
     else:
-        df = pd.read_csv(RAW_CSV)
+        df = pd.read_csv(raw_csv)
 
     if df.empty:
         print("Trades dataset is empty.")
@@ -71,8 +108,9 @@ def main():
             df[num_col] = pd.to_numeric(df[num_col], errors='coerce')
 
     # Status column
-    df['status'] = np.where(df['reason'] == 'open_at_end', 'OPEN', 'CLOSED')
-    df['is_open'] = df['status'] == 'OPEN'
+    is_open_mask = (df['reason'] == 'open_at_end') | (df['is_open'].fillna(False).astype(bool) if 'is_open' in df.columns else False)
+    df['status'] = np.where(is_open_mask, 'OPEN', 'CLOSED')
+    df['is_open'] = is_open_mask
 
     # MEDIUM-8: Trade type label for dashboard filtering
     def _trade_type(row):
@@ -114,7 +152,7 @@ def main():
         df['exit_dt'] = pd.NaT
 
     # HIGH-6 FIX: Use tz-naive UTC now for open trade duration
-    now_naive = pd.Timestamp.utcnow().replace(tzinfo=None)
+    now_naive = pd.Timestamp.now('UTC').tz_localize(None)
     open_mask = df['status'] == 'OPEN'
     if open_mask.any():
         entry_naive = _parse_dt_naive(df.loc[open_mask, 'entry'])
@@ -124,31 +162,31 @@ def main():
 
     # Save Cleaned Trades Parquet & All Trades CSV
     df = df.sort_values(['asset', 'entry_dt']).reset_index(drop=True)
-    df.to_parquet(TRADES_PARQUET, index=False)
-    df.to_csv(ALL_CSV, index=False)
+    df.to_parquet(trades_parquet, index=False)
+    df.to_csv(all_csv, index=False)
 
     # Split Open & Closed
     open_df = df[df['status'] == 'OPEN'].copy()
-    open_df.to_csv(OPEN_CSV, index=False)
-    open_df.to_parquet(OPEN_PARQUET, index=False)
+    open_df.to_csv(open_csv, index=False)
+    open_df.to_parquet(open_parquet, index=False)
 
     closed_df = df[df['status'] == 'CLOSED'].copy()
-    closed_df.to_csv(CLOSED_CSV, index=False)
-    closed_df.to_parquet(CLOSED_PARQUET, index=False)
+    closed_df.to_csv(closed_csv, index=False)
+    closed_df.to_parquet(closed_parquet, index=False)
 
     # -----------------------------------------------------------------------
     # ALL BOOKS EXPORT & MULTI-BOOK ATTRIBUTION LEDGERS (For Dashboard & Analysis)
     # -----------------------------------------------------------------------
-    ALL_BOOKS_CSV = TAPE_DIR / "all_books.csv"
+    ALL_BOOKS_CSV = target_tape_dir / "all_books.csv"
     df.to_csv(ALL_BOOKS_CSV, index=False)
 
     # Individual book exports (Book 1, Book 2, Book 3)
     for b in ['Book 1', 'Book 2', 'Book 3']:
         b_slug = b.lower().replace(' ', '')
         b_df = df[df['book'] == b].copy()
-        b_df.to_csv(TAPE_DIR / f"{b_slug}_trades.csv", index=False)
-        b_df[b_df['status'] == 'CLOSED'].to_csv(TAPE_DIR / f"{b_slug}_closed.csv", index=False)
-        b_df[b_df['status'] == 'OPEN'].to_csv(TAPE_DIR / f"{b_slug}_open.csv", index=False)
+        b_df.to_csv(target_tape_dir / f"{b_slug}_trades.csv", index=False)
+        b_df[b_df['status'] == 'CLOSED'].to_csv(target_tape_dir / f"{b_slug}_closed.csv", index=False)
+        b_df[b_df['status'] == 'OPEN'].to_csv(target_tape_dir / f"{b_slug}_open.csv", index=False)
 
     # Summary table across books
     books_summary_rows = []
@@ -211,14 +249,14 @@ def main():
     })
 
     books_summary_df = pd.DataFrame(books_summary_rows)
-    books_summary_df.to_csv(TAPE_DIR / "books_summary.csv", index=False)
+    books_summary_df.to_csv(target_tape_dir / "books_summary.csv", index=False)
 
     # Precompute Strict Log Scorecard & Export Per-Symbol CSVs
-    SYMBOLS_DIR.mkdir(parents=True, exist_ok=True)
+    symbols_dir.mkdir(parents=True, exist_ok=True)
     scorecards = []
     for asset, grp in df.groupby('asset'):
         # Export individual symbol trades
-        asset_file = SYMBOLS_DIR / f"{asset}_trades.csv"
+        asset_file = symbols_dir / f"{asset}_trades.csv"
         grp.to_csv(asset_file, index=False)
 
         closed_grp = grp[grp['status'] == 'CLOSED']
@@ -276,12 +314,12 @@ def main():
         })
 
     df_sc = pd.DataFrame(scorecards).sort_values('total_log_pnl', ascending=False).reset_index(drop=True)
-    df_sc.to_parquet(SCORECARD_PARQUET, index=False)
-    df_sc.to_csv(SCORECARD_CSV, index=False)
+    df_sc.to_parquet(scorecard_parquet, index=False)
+    df_sc.to_csv(scorecard_csv, index=False)
 
     print(f"  [build_csv] Successfully exported {len(closed_df)} closed, {len(open_df)} open trades.")
     print(f"  [build_csv] Precomputed {len(df_sc)} ticker scorecards in strict log-compounding space (PF = log-space).")
-    print(f"  [build_csv] Exported individual symbol CSV files to: {SYMBOLS_DIR}/")
+    print(f"  [build_csv] Exported individual symbol CSV files to: {symbols_dir}/")
 
     if not df_sc.empty:
         print("\n  === TOP 5 ALPHA LEADERS (Log-Space PF) ===")

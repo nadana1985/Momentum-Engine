@@ -18,7 +18,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from momentum_v12.ops_paths import resolve_tape_dir, resolve_telemetry_dir
+from momentum_v15.ops_paths import resolve_tape_dir, resolve_telemetry_dir
 TAPE_DIR = resolve_tape_dir(ROOT)
 TELEMETRY_PATH = resolve_telemetry_dir(ROOT, TAPE_DIR) / "veto_telemetry.parquet"
 if not TELEMETRY_PATH.exists():

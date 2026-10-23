@@ -15,8 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, SizingConfig
-from momentum_v12.sizing_v12 import (
+from momentum_v15.config import V12Config, SizingConfig
+from momentum_v15.sizing_v12 import (
     compute_kyle_lambda_series,
     compute_pit_lambda_percentile,
     get_position_weight,

@@ -21,7 +21,7 @@ logger = logging.getLogger("kronos.restore_s3")
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from momentum_v12.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
+from momentum_v15.ops_paths import DEFAULT_TAPE_SLUG, resolve_tape_dir
 
 
 def restore_from_s3(

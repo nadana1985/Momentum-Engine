@@ -37,6 +37,7 @@ venv.bak/
 
 # Testing & Coverage
 .pytest_cache/
+.pytest_tmp/
 .coverage
 htmlcov/
 
@@ -57,8 +58,8 @@ v15_standalone/data/raw_shards/
 v15_standalone/data/exotic_shards/
 v15_standalone/data/all_tapes/
 *.parquet
-!data/canonical/canonical_v15_0_tape.parquet
-!v15_standalone/data/canonical/canonical_v15_0_tape.parquet
+!data/canonical/canonical_v15_*.parquet
+!v15_standalone/data/canonical/canonical_v15_*.parquet
 
 # Logs & Alert Caches
 *.log

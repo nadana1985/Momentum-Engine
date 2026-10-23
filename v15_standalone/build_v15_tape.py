@@ -72,6 +72,12 @@ def get_runtime_config() -> V12Config:
             enable_book7=True,
             require_negative_carry=True,
             max_funding_rate=0.0,
+            enable_studentized_carry=True,
+            max_z_funding=0.25,
+            min_bars_below=168,
+            max_dist_200d=0.20,
+            enable_direct_breakout=True,
+            direct_breakout_max_z_ls=-1.50,
             tranche_a_target_pct=0.03,
             breakeven_mfe_trigger=0.03,
             breakeven_cushion_pct=0.005,
@@ -88,7 +94,7 @@ if not RAW_DIR.exists():
 
 tape_dir_env = os.environ.get("KRONOS_TAPE_DIR")
 if not tape_dir_env:
-    tape_dir_env = "data/all_tapes/v15_0_production"
+    tape_dir_env = "data/all_tapes/v15_2_production"
 
 TAPE_DIR = ROOT / Path(tape_dir_env)
 TELEMETRY_DIR = ROOT / "telemetry"
@@ -111,7 +117,10 @@ def process_asset(args):
 
         return trades_df, tel_df
     except Exception as e:
-        return None, None
+        import traceback
+        err_msg = f"[CRITICAL ERROR] Failed processing asset '{asset}' ({tier}): {e}\n{traceback.format_exc()}"
+        print(err_msg, file=sys.stderr)
+        raise RuntimeError(f"Processing failed for asset '{asset}': {e}") from e
 
 def main():
     print("=" * 105)
@@ -151,10 +160,15 @@ def main():
         futures = {executor.submit(process_asset, item): item[0] for item in task_list}
         for future in as_completed(futures):
             sym = futures[future]
-            t_df, tel_df = future.result()
+            try:
+                t_df, tel_df = future.result()
+            except Exception as e:
+                print(f"\n[FATAL ERROR] Engine execution aborted: asset '{sym}' failed: {e}", file=sys.stderr)
+                executor.shutdown(wait=False, cancel_futures=True)
+                raise SystemExit(1)
             completed += 1
-            if completed % 100 == 0 or completed == total:
-                print(f"  [Progress] Processed {completed}/{total} shards ({completed/total*100:.1f}%)")
+            if completed % 25 == 0 or completed == total:
+                print(f"  [Progress] Processed {completed}/{total} shards ({completed/total*100:.1f}%)", flush=True)
             if t_df is not None and not t_df.empty:
                 all_trades.append(t_df)
             if tel_df is not None and not tel_df.empty:
@@ -171,13 +185,24 @@ def main():
         print(f"\n  [Tape] Master V15.0 trades saved: {len(df_trades):,} records -> {trades_out}")
 
         # Mirror to canonical production repository
-        canon_dir = ROOT / "data" / "canonical"
-        canon_dir.mkdir(parents=True, exist_ok=True)
-        canon_p = canon_dir / "canonical_v15_0_tape.parquet"
-        canon_csv = canon_dir / "canonical_v15_0_tape.csv"
-        df_trades.to_parquet(canon_p, index=False)
-        df_trades.to_csv(canon_csv, index=False)
-        print(f"  [Canonical] Master V15.0 Tape mirrored -> {canon_p}")
+        for canon_dir in [ROOT / "data" / "canonical", ROOT.parent / "data" / "canonical"]:
+            canon_dir.mkdir(parents=True, exist_ok=True)
+            canon_p15_2 = canon_dir / "canonical_v15_2_tape.parquet"
+            canon_csv15_2 = canon_dir / "canonical_v15_2_tape.csv"
+            df_trades.to_parquet(canon_p15_2, index=False)
+            df_trades.to_csv(canon_csv15_2, index=False)
+            
+            # Backward compatibility mirrors for existing consumers
+            canon_p15_1 = canon_dir / "canonical_v15_1_tape.parquet"
+            canon_csv15_1 = canon_dir / "canonical_v15_1_tape.csv"
+            df_trades.to_parquet(canon_p15_1, index=False)
+            df_trades.to_csv(canon_csv15_1, index=False)
+            
+            canon_p15_0 = canon_dir / "canonical_v15_0_tape.parquet"
+            canon_csv15_0 = canon_dir / "canonical_v15_0_tape.csv"
+            df_trades.to_parquet(canon_p15_0, index=False)
+            df_trades.to_csv(canon_csv15_0, index=False)
+        print(f"  [Canonical] Master V15.2 Tape mirrored -> {canon_p15_2}")
 
         # Summary Metrics
         is_open_bool = df_trades['is_open'].fillna(False).astype(bool) if 'is_open' in df_trades.columns else pd.Series(False, index=df_trades.index)

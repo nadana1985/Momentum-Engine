@@ -12,6 +12,7 @@ from momentum_v15.config import V12Config
 from momentum_v15.telemetry_v12 import TelemetryCollector, TelemetryRecord
 from momentum_v15.sizing_v12 import compute_csmi_metrics
 from momentum_v15.features_v12 import extract_p_nb_high
+from momentum_v15.oms_fills import limit_fill_price
 
 
 def compute_exit_urgency_score(row, c: float, h: float, l: float, o: float, shock: float, mfe: float, cfg_exit=None) -> int:
@@ -377,46 +378,53 @@ def run_v12_engine(
                 bid_age_h = (ts - active_flush_bid['armed_ts']).total_seconds() / 3600.0
                 if bid_age_h > active_flush_bid['ttl_bars']:
                     active_flush_bid = None # Expired
-                elif l <= active_flush_bid['bid_px']: # Filled at limit!
-                    # Study S-BX: Calendar Firewall on Limit Fills
-                    cal_cfg = getattr(cfg, 'calendar', None)
-                    is_mon = (ts.dayofweek == 0)
-                    is_mstart = ts.is_month_start
-                    is_mend = ts.is_month_end
-                    skip_fill = False
-                    if cal_cfg and cal_cfg.enable_calendar_firewall and (candidate_setup != "200d EMA Reclaim"):
-                        if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
-                            skip_fill = True
-                    
-                    if not skip_fill:
-                        entry_px = active_flush_bid['bid_px']
-                        active_positions['Book 3'] = {
-                            'entry_time': ts,
-                            'entry_price': entry_px,
-                            'stop': active_flush_bid['stop_px'],
-                            'target': active_flush_bid['target_px'],
-                            'max_high': h,
-                            'min_low': l,
-                            'book': 'Book 3',
-                            'is_reclaim': False,
-                            'is_continuation': False,
-                            'is_book3': True,
-                            'entry_oi': current_oi,
-                            'pct_lam': 0.50,
-                            'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
-                            'veto_gate': active_flush_bid['veto_gate'],
-                        }
-                        active_flush_bid = None
-                        if telemetry:
-                            telemetry.log_signal(TelemetryRecord(
-                                timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
-                                veto_gate="Book 3: Flush Limit Filled", candidate_setup="Book 3 Flush Reclaim",
-                                price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
-                                ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
-                                funding_rate=fr if pd.notna(fr) else 0.0,
-                                btc_macro_bull=btc_bull
-                            ))
-                        continue
+                else:
+                    fill_mode = getattr(getattr(cfg, 'execution', None), 'mode', 'paper_limit')
+                    entry_px = limit_fill_price(
+                        float(active_flush_bid['bid_px']), o, l, fill_mode
+                    )
+                    if entry_px is not None:
+                        # Study S-BX: Calendar Firewall on Limit Fills
+                        cal_cfg = getattr(cfg, 'calendar', None)
+                        is_mon = (ts.dayofweek == 0)
+                        is_mstart = ts.is_month_start
+                        is_mend = ts.is_month_end
+                        skip_fill = False
+                        if cal_cfg and cal_cfg.enable_calendar_firewall and (candidate_setup != "200d EMA Reclaim"):
+                            if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
+                                skip_fill = True
+
+                        if not skip_fill:
+                            stop_px = float(active_flush_bid['stop_px'])
+                            if fill_mode == 'live_limit':
+                                stop_px = entry_px * (1.0 - float(cfg.book3_flush.max_initial_risk))
+                            active_positions['Book 3'] = {
+                                'entry_time': ts,
+                                'entry_price': entry_px,
+                                'stop': stop_px,
+                                'target': active_flush_bid['target_px'],
+                                'max_high': h,
+                                'min_low': l,
+                                'book': 'Book 3',
+                                'is_reclaim': False,
+                                'is_continuation': False,
+                                'is_book3': True,
+                                'entry_oi': current_oi,
+                                'pct_lam': 0.50,
+                                'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
+                                'veto_gate': active_flush_bid['veto_gate'],
+                            }
+                            active_flush_bid = None
+                            if telemetry:
+                                telemetry.log_signal(TelemetryRecord(
+                                    timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
+                                    veto_gate="Book 3: Flush Limit Filled", candidate_setup="Book 3 Flush Reclaim",
+                                    price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
+                                    ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
+                                    funding_rate=fr if pd.notna(fr) else 0.0,
+                                    btc_macro_bull=btc_bull
+                                ))
+                            continue
 
         # Study S-BI Pillar 1: Book 5 Trapped-Whale Shelf Absorption (resting limit bid lifecycle - Tier 1 & 2 only)
         if getattr(cfg.book5, 'enable_book5', False) and (tier in ('Tier 1', 'Tier 2')):
@@ -434,32 +442,39 @@ def run_v12_engine(
                         if (cal_cfg.veto_monday and is_mon) or (cal_cfg.veto_month_start and is_mstart) or (cal_cfg.veto_month_end and is_mend):
                             skip_b5 = True
                     if not skip_b5:
-                        entry_px = min(o, active_b5_bid['bid_px'])  # gap-down fills at open
-                        active_positions['Book 5'] = {
-                            'entry_time': ts,
-                            'entry_price': entry_px,
-                            'stop': entry_px * (1.0 - cfg.book5.max_initial_risk),
-                            'target': active_b5_bid['target_px'],
-                            'max_high': h,
-                            'min_low': l,
-                            'book': 'Book 5',
-                            'is_reclaim': False,
-                            'is_continuation': False,
-                            'entry_oi': current_oi,
-                            'pct_lam': 0.50,
-                            'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
-                        }
-                        active_b5_bid = None
-                        if telemetry:
-                            telemetry.log_signal(TelemetryRecord(
-                                timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
-                                veto_gate="Book 5: Shelf Squeeze Limit Filled", candidate_setup="Book 5 Trapped-Whale Shelf",
-                                price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
-                                ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
-                                funding_rate=fr if pd.notna(fr) else 0.0,
-                                btc_macro_bull=btc_bull
-                            ))
-                        continue
+                        fill_mode = getattr(getattr(cfg, 'execution', None), 'mode', 'paper_limit')
+                        if fill_mode == 'live_limit':
+                            entry_px = limit_fill_price(
+                                float(active_b5_bid['bid_px']), o, l, fill_mode
+                            )
+                        else:
+                            entry_px = min(o, active_b5_bid['bid_px'])
+                        if entry_px is not None:
+                            active_positions['Book 5'] = {
+                                'entry_time': ts,
+                                'entry_price': entry_px,
+                                'stop': entry_px * (1.0 - cfg.book5.max_initial_risk),
+                                'target': active_b5_bid['target_px'],
+                                'max_high': h,
+                                'min_low': l,
+                                'book': 'Book 5',
+                                'is_reclaim': False,
+                                'is_continuation': False,
+                                'entry_oi': current_oi,
+                                'pct_lam': 0.50,
+                                'turnover_at_entry': turnover if pd.notna(turnover) else 1.0,
+                            }
+                            active_b5_bid = None
+                            if telemetry:
+                                telemetry.log_signal(TelemetryRecord(
+                                    timestamp=ts, asset=asset, tier=tier, status="ACTIVE",
+                                    veto_gate="Book 5: Shelf Squeeze Limit Filled", candidate_setup="Book 5 Trapped-Whale Shelf",
+                                    price=entry_px, turnover=turnover if pd.notna(turnover) else 1.0,
+                                    ls_ratio=ls_ratio if pd.notna(ls_ratio) else 1.0,
+                                    funding_rate=fr if pd.notna(fr) else 0.0,
+                                    btc_macro_bull=btc_bull
+                                ))
+                            continue
             # Arm a new bid using only information available at this bar's close (institutional liquidity only)
             if (tier in ('Tier 1', 'Tier 2')) and active_positions['Book 5'] is None and active_b5_bid is None and pd.notna(ls_ratio):
                 since_arm = (ts - last_b5_arm_ts).total_seconds() / 3600.0 if last_b5_arm_ts is not None else 1e9
@@ -534,10 +549,12 @@ def run_v12_engine(
                     elif active.get('t_a_hit', False):
                         active['stop'] = max(active['stop'], active['entry_price'] * 0.998)
             elif book_type == 'Book 7':
-                # Study S-CH: Book 7 Snug Stop & Breakeven Cushion Ratchet
+                # Study S-CH & S-CK: Book 7 Snug Stop & Breakeven Cushion Ratchet
                 b7_cfg = getattr(cfg, 'book7', None)
                 be_trigger = getattr(b7_cfg, 'breakeven_mfe_trigger', 0.05) if b7_cfg is not None else 0.05
                 be_cush = getattr(b7_cfg, 'breakeven_cushion_pct', 0.005) if b7_cfg is not None else 0.005
+                if active.get('is_clean_runner', False):
+                    be_cush = getattr(b7_cfg, 'runner_cushion_pct', 0.030)
                 if mfe >= be_trigger:
                     active['stop'] = max(active['stop'], active['entry_price'] * (1.0 - be_cush))
             elif book_type == 'Book 4':
@@ -786,17 +803,29 @@ def run_v12_engine(
                     exit_triggered = True
                     exit_reason = "stagnation_cut"
             elif book_type == 'Book 7':
-                # Study S-CH: Dedicated Book 7 Micro-Cap Supernova Exits
+                # Study S-CH & S-CK: Dedicated Book 7 Micro-Cap Supernova Exits
                 b7_cfg = getattr(cfg, 'book7', None)
                 if not exit_triggered and active.get('t1_a_hit', False):
-                    don_floor = float(row.get('low_72h', np.nan))
-                    be_cush = getattr(b7_cfg, 'breakeven_cushion_pct', 0.005) if b7_cfg is not None else 0.005
-                    arm_level = active['entry_price'] * (1.0 - be_cush)
-                    if pd.notna(don_floor) and don_floor >= arm_level and c < don_floor:
-                        active['t1_b_exit_px'] = c * (1 - slippage)
-                        exit_price = 0.50 * active['t1_a_exit_px'] + 0.50 * active['t1_b_exit_px']
-                        exit_triggered = True
-                        exit_reason = "donchian_floor_break"
+                    # Study S-CK: Climax Runner Harvest
+                    if getattr(b7_cfg, 'enable_climax_runner_harvest', False) and mfe >= getattr(b7_cfg, 'climax_min_mfe', 0.20):
+                        urg_score = compute_exit_urgency_score(row, c, h, l, o, shock, mfe)
+                        if urg_score >= getattr(b7_cfg, 'climax_harvest_urgency', 55.0):
+                            active['t1_b_exit_px'] = c * (1 - slippage)
+                            exit_price = 0.50 * active['t1_a_exit_px'] + 0.50 * active['t1_b_exit_px']
+                            exit_triggered = True
+                            exit_reason = "climax_top_harvest"
+
+                    if not exit_triggered:
+                        don_floor = float(row.get('low_72h', np.nan))
+                        be_cush = getattr(b7_cfg, 'breakeven_cushion_pct', 0.005) if b7_cfg is not None else 0.005
+                        if active.get('is_clean_runner', False):
+                            be_cush = getattr(b7_cfg, 'runner_cushion_pct', 0.030)
+                        arm_level = active['entry_price'] * (1.0 - be_cush)
+                        if pd.notna(don_floor) and don_floor >= arm_level and c < don_floor:
+                            active['t1_b_exit_px'] = c * (1 - slippage)
+                            exit_price = 0.50 * active['t1_a_exit_px'] + 0.50 * active['t1_b_exit_px']
+                            exit_triggered = True
+                            exit_reason = "donchian_floor_break"
             elif book_type == 'Book 2':
                 if mfe >= cfg.exit.b2_climax_mfe and wick >= cfg.exit.b2_climax_wick and shock >= cfg.exit.b2_climax_shock:
                     exit_price = c * (1 - slippage)
@@ -1013,7 +1042,22 @@ def run_v12_engine(
                     active['t1_a_exit_px'] = active['target']
                     b7_cfg = getattr(cfg, 'book7', None)
                     be_cush = getattr(b7_cfg, 'breakeven_cushion_pct', 0.005) if b7_cfg is not None else 0.005
-                    active['stop'] = max(active['stop'], active['entry_price'] * (1.0 - be_cush))
+                    
+                    if getattr(b7_cfg, 'enable_microstructure_conditioned_exit', False):
+                        # Study S-CK: Check upper wick rejection on trigger bar
+                        wick_ratio = (h - max(o, c)) / (h - l + 1e-9) if (h - l) > 1e-9 else 0.0
+                        stall_wick = getattr(b7_cfg, 'stall_wick_threshold', 0.40)
+                        if wick_ratio >= stall_wick:
+                            # Micro-Stall Air Pocket: snug ratchet to save from -48% collapse
+                            active['stop'] = max(active['stop'], active['entry_price'] * (1.0 - be_cush))
+                            active['is_micro_stall'] = True
+                        else:
+                            # Clean structural continuation: wide cushion to allow runner breathing room
+                            runner_cush = getattr(b7_cfg, 'runner_cushion_pct', 0.030)
+                            active['stop'] = max(active['initial_stop'], active['entry_price'] * (1.0 - runner_cush))
+                            active['is_clean_runner'] = True
+                    else:
+                        active['stop'] = max(active['stop'], active['entry_price'] * (1.0 - be_cush))
                     active['arm_donchian'] = True
             elif (
                 not exit_triggered
@@ -1685,7 +1729,10 @@ def run_v12_engine(
                 b7_last_exit = last_exit_ts_by_book.get('Book 7')
                 b7_cd_hours = getattr(b7_cfg, 'cooldown_hours', 120)
                 b7_cooldown_ok = (b7_last_exit is None) or ((ts - b7_last_exit).total_seconds() >= b7_cd_hours * 3600)
-                is_b7_touch = bool(row.get('is_200d_touch', False))
+                touch_tol_b7 = getattr(b7_cfg, 'touch_tolerance_pct', 0.015)
+                min_bel_b7 = getattr(b7_cfg, 'min_bars_below', 720)
+                ema200_val_b7 = float(row.get('ema200_1d', c))
+                is_b7_touch = (h >= ema200_val_b7 * (1.0 - touch_tol_b7)) and (float(row.get('bars_below_ema200_1d', 0)) >= min_bel_b7)
 
                 if is_b7_touch and (active_positions['Book 7'] is None) and b7_cooldown_ok:
                     pre_start_b7 = max(0, _bar_i - getattr(b7_cfg, 'min_bars_below', 720))
@@ -1739,19 +1786,36 @@ def run_v12_engine(
                         z_ls_b7 = float(row.get('z_ls_30d', 0.0))
                         squeeze_fuel_ok = (pct_ls_b7 <= b7_cfg.max_pct_ls) or (z_ls_b7 <= b7_cfg.max_z_ls)
 
-                        # 3. Leverage Bubble Firewall: d_oi_tok <= +35%
-                        d_oi_tok_b7 = float(row.get('d_oi_tokens_24h', 0.0))
-                        leverage_ok = (d_oi_tok_b7 <= b7_cfg.max_d_oi_tokens)
+                        # 3. Leverage Bubble Firewall: Dynamic Heuristic (Rule 7) vs Legacy Static
+                        if getattr(b7_cfg, 'enable_studentized_oi_bubble', False):
+                            z_oi_val = float(row.get('z_oi_12h', 0.0))
+                            leverage_ok = (z_oi_val <= getattr(b7_cfg, 'max_z_oi', 2.00))
+                        elif getattr(b7_cfg, 'enable_percentile_oi_bubble', False):
+                            pct_oi_val = float(row.get('pct_doi_30d', 50.0))
+                            leverage_ok = (pct_oi_val <= getattr(b7_cfg, 'max_pct_oi', 90.0))
+                        else:
+                            d_oi_tok_b7 = float(row.get('d_oi_tokens_24h', 0.0))
+                            leverage_ok = (d_oi_tok_b7 <= b7_cfg.max_d_oi_tokens)
 
                         # 4. Minimum Turnover
                         to_val_b7 = float(turnover) if pd.notna(turnover) else 0.0
                         to_ok = (to_val_b7 >= b7_cfg.min_turnover)
 
-                        # 5. Negative Carry Inverted Squeeze Gate (Study S-CI)
+                        # 5. Negative Carry Inverted Squeeze Gate (Study S-CI & S-CJ Studentized Carry)
                         carry_ok = True
                         if getattr(b7_cfg, 'require_negative_carry', False):
                             fr_b7 = float(row.get('funding_rate', 0.0))
-                            carry_ok = (fr_b7 <= getattr(b7_cfg, 'max_funding_rate', 0.0))
+                            fr_z = float(row.get('funding_z', 0.0))
+                            if getattr(b7_cfg, 'enable_studentized_carry', False):
+                                max_z_fnd = getattr(b7_cfg, 'max_z_funding', 0.25)
+                                if getattr(b7_cfg, 'enable_whale_carry_override', False):
+                                    ov_z_ls = getattr(b7_cfg, 'whale_override_max_z_ls', -1.50)
+                                    ov_z_fnd = getattr(b7_cfg, 'whale_override_max_z_fnd', 0.50)
+                                    if z_ls_b7 <= ov_z_ls:
+                                        max_z_fnd = max(max_z_fnd, ov_z_fnd)
+                                carry_ok = (fr_b7 <= getattr(b7_cfg, 'max_funding_rate', 0.0)) or (fr_z <= max_z_fnd)
+                            else:
+                                carry_ok = (fr_b7 <= getattr(b7_cfg, 'max_funding_rate', 0.0))
 
                         # Calendar Firewall
                         cal_ok = True
@@ -1760,8 +1824,15 @@ def run_v12_engine(
                             if (cal_cfg.veto_monday and ts.dayofweek == 0) or (cal_cfg.veto_month_start and ts.is_month_start) or (cal_cfg.veto_month_end and ts.is_month_end):
                                 cal_ok = False
 
+                        # Study S-CL: Direct Breakout Mode (Zero Retest Delay under Extreme Whale Squeeze Conviction)
+                        direct_ok = False
+                        if getattr(b7_cfg, 'enable_direct_breakout', False):
+                            direct_z_ls = getattr(b7_cfg, 'direct_breakout_max_z_ls', -1.50)
+                            if (z_ls_b7 <= direct_z_ls) and (c >= ema200):
+                                direct_ok = True
+
                         if (
-                            active_b7_setup['retest_found'] and
+                            (active_b7_setup['retest_found'] or direct_ok) and
                             reclaimed_b7 and
                             ext_ok and
                             squeeze_fuel_ok and

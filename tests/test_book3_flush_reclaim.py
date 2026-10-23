@@ -20,9 +20,9 @@ if str(ROOT) not in sys.path:
 import pytest
 import numpy as np
 import pandas as pd
-from momentum_v12.config import V12Config, Book3FlushReclaimConfig
-from momentum_v12.telemetry_v12 import TelemetryRecord, TelemetryCollector
-from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v15.config import V12Config, Book3FlushReclaimConfig, Book1Config, CalendarConfig
+from momentum_v15.telemetry_v12 import TelemetryRecord, TelemetryCollector
+from momentum_v15.engine_v12 import run_v12_engine
 
 
 def test_book3_flush_config_immutability():
@@ -136,7 +136,7 @@ def test_tier2_calibrated_flush_discount():
     df.loc[dates[10], "breakout_21d"] = True
 
     cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, enable_tier2=True))
-    trades, _ = run_v12_engine(df, "TIER2_COIN", cfg=cfg)
+    trades = run_v12_engine(df, "TIER2_COIN", cfg=cfg)
 
     assert len(trades) == 1
     tr = trades.iloc[0]
@@ -192,7 +192,7 @@ def test_tier2_disabled_by_default_in_book3():
 
     # Book 3 enabled, but enable_tier2 defaults to False
     cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True))
-    trades, _ = run_v12_engine(df, "TIER2_COIN", cfg=cfg)
+    trades = run_v12_engine(df, "TIER2_COIN", cfg=cfg)
 
     # Must produce 0 trades because Tier 2 is disabled
     assert len(trades) == 0
@@ -267,7 +267,7 @@ def test_book3_flush_fill_and_target_reclaim():
 
     # 1. With Book 3 DISABLED: 0 trades fired (100% vetoed)
     cfg_off = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=False))
-    t_off, _ = run_v12_engine(df, "FLUSH_COIN", cfg=cfg_off)
+    t_off = run_v12_engine(df, "FLUSH_COIN", cfg=cfg_off)
     assert len(t_off) == 0
 
     # 2. With Book 3 ENABLED:
@@ -279,7 +279,7 @@ def test_book3_flush_fill_and_target_reclaim():
         target_reclaim_pct=0.087
     ))
     tel = TelemetryCollector()
-    t_on, _ = run_v12_engine(df, "FLUSH_COIN", cfg=cfg_on, telemetry=tel)
+    t_on = run_v12_engine(df, "FLUSH_COIN", cfg=cfg_on, telemetry=tel)
 
     assert len(t_on) == 1
     tr = t_on.iloc[0]
@@ -344,7 +344,7 @@ def test_book3_flush_stop_loss():
     df.loc[dates[10], "breakout_21d"] = True
 
     cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True))
-    trades, _ = run_v12_engine(df, "FLUSH_KNIFE", cfg=cfg)
+    trades = run_v12_engine(df, "FLUSH_KNIFE", cfg=cfg)
 
     assert len(trades) == 1
     tr = trades.iloc[0]
@@ -397,7 +397,7 @@ def test_book3_ttl_expiry_when_limit_not_reached():
     df.loc[dates[10], "breakout_21d"] = True
 
     cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True))
-    trades, _ = run_v12_engine(df, "FLUSH_NO_FILL", cfg=cfg)
+    trades = run_v12_engine(df, "FLUSH_NO_FILL", cfg=cfg)
 
     # Never reached $9.20, expired harmlessly -> 0 trades
     assert len(trades) == 0
@@ -445,7 +445,7 @@ def test_book3_bear_market_veto_preservation():
     df.loc[dates[10], "breakout_21d"] = True
 
     cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True))
-    trades, _ = run_v12_engine(df, "BEAR_FLUSH", cfg=cfg)
+    trades = run_v12_engine(df, "BEAR_FLUSH", cfg=cfg)
 
     # In bear regime, Core 1 vetoes immediately to cash and Book 3 refuses to arm
     assert len(trades) == 0
@@ -480,8 +480,12 @@ def test_two_tier_volume_shelf_absorption():
     df.loc[dates[200], "breakout_21d"] = True
 
     # 1. Canonical V12.3 (shelf_fallback default): captures the shallow shelf bounce
-    cfg_shelf = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback"))
-    trades_shelf, _ = run_v12_engine(df, "SHELF_COIN", cfg=cfg_shelf)
+    cfg_shelf = V12Config(
+        book1=Book1Config(enable_avwap_reclaim=False),
+        calendar=CalendarConfig(enable_calendar_firewall=False),
+        book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback")
+    )
+    trades_shelf = run_v12_engine(df, "SHELF_COIN", cfg=cfg_shelf)
     assert len(trades_shelf) == 1
     tr = trades_shelf.iloc[0]
     assert tr["book"] == "Book 3"
@@ -490,8 +494,12 @@ def test_two_tier_volume_shelf_absorption():
     assert abs(tr["exit_price"] - 10.00) < 1e-4
 
     # 2. Static Only baseline: requires deep dip to $9.20, misses the shallow shelf bounce (0 trades)
-    cfg_static = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="static_only"))
-    trades_static, _ = run_v12_engine(df, "SHELF_COIN", cfg=cfg_static)
+    cfg_static = V12Config(
+        book1=Book1Config(enable_avwap_reclaim=False),
+        calendar=CalendarConfig(enable_calendar_firewall=False),
+        book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="static_only")
+    )
+    trades_static = run_v12_engine(df, "SHELF_COIN", cfg=cfg_static)
     assert len(trades_static) == 0
 
 
@@ -522,8 +530,12 @@ def test_volume_shelf_static_fallback_when_no_hvn():
     }, index=dates)
     df.loc[dates[200], "breakout_21d"] = True
 
-    cfg = V12Config(book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback"))
-    trades, _ = run_v12_engine(df, "FALLBACK_COIN", cfg=cfg)
+    cfg = V12Config(
+        book1=Book1Config(enable_avwap_reclaim=False),
+        calendar=CalendarConfig(enable_calendar_firewall=False),
+        book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True, book3_shelf_mode="shelf_fallback")
+    )
+    trades = run_v12_engine(df, "FALLBACK_COIN", cfg=cfg)
 
     assert len(trades) == 1
     tr = trades.iloc[0]

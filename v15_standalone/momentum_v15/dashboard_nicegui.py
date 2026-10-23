@@ -45,11 +45,28 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from nicegui import app, ui
 
-ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = REPO_ROOT
+V15_ROOT = Path(__file__).resolve().parent.parent
+for p in [str(ROOT), str(V15_ROOT)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from momentum_v15.telemetry_v12 import TelemetryCollector
+from momentum_v15.workstation_bridge import (
+    build_workstation_payload,
+    get_available_workstation_symbols,
+)
+
+# ---------------------------------------------------------------------------
+# STATIC ASSETS MOUNT
+# ---------------------------------------------------------------------------
+STATIC_DIR = V15_ROOT / "momentum_v15" / "static"
+if STATIC_DIR.exists():
+    try:
+        app.add_static_files('/static', str(STATIC_DIR))
+    except Exception:
+        pass
 
 # ---------------------------------------------------------------------------
 # PATHS & CONFIGURATION
@@ -74,10 +91,18 @@ def get_available_arms() -> List[str]:
                 if d.is_dir() and ((d / "trades.parquet").exists() or (d / "master_raw_tape.csv").exists()):
                     arms.add(d.name)
                 elif d.is_file() and d.name.endswith(".parquet"):
-                    if "v15_0" in d.name:
+                    if "v15_2" in d.name:
+                        arms.add("v15_2_production")
+                    elif "v15_1" in d.name:
+                        arms.add("v15_1_production")
+                    elif "v15_0" in d.name:
                         arms.add("v15_0_production")
 
     ordered = []
+    if "v15_2_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_2_tape.parquet").exists() or (ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet").exists():
+        ordered.append("v15_2_production")
+    if "v15_1_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_1_tape.parquet").exists() or (ROOT / "data" / "canonical" / "canonical_v15_1_tape.parquet").exists():
+        ordered.append("v15_1_production")
     if "v15_0_production" in arms or (ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet").exists():
         ordered.append("v15_0_production")
     if "v13_production" in arms:
@@ -103,6 +128,10 @@ def get_initial_arm() -> str:
         if slug in get_available_arms():
             return slug
     available = get_available_arms()
+    if "v15_2_production" in available:
+        return "v15_2_production"
+    if "v15_1_production" in available:
+        return "v15_1_production"
     if "v15_0_production" in available:
         return "v15_0_production"
     if "v13_production" in available:
@@ -111,14 +140,7 @@ def get_initial_arm() -> str:
         return "v12_11_production"
     if "v12_production" in available:
         return "v12_production"
-    return available[0] if available else "v15_0_production"
-    if "v12_11_production" in available:
-        return "v12_11_production"
-    if "v12_production" in available:
-        return "v12_production"
-    if "v12_book3_flush_reclaim_arm" in available:
-        return "v12_book3_flush_reclaim_arm"
-    return "v13_production"
+    return available[0] if available else "v15_2_production"
 
 
 CURRENT_ARM: str = get_initial_arm()
@@ -166,7 +188,7 @@ def get_book_badge_style(book_str: str) -> tuple:
 def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
     # 1. Check direct arm directory
-    for base in [ROOT / "data" / "all_tapes", ROOT.parent / "v15_standalone" / "data" / "all_tapes"]:
+    for base in [V15_ROOT / "data" / "all_tapes", ROOT / "v15_standalone" / "data" / "all_tapes", ROOT / "data" / "all_tapes"]:
         t_dir = base / arm
         parquet_p = t_dir / "trades.parquet"
         if parquet_p.exists():
@@ -181,50 +203,81 @@ def load_v12_trades(arm_name: Optional[str] = None) -> pd.DataFrame:
             except Exception:
                 pass
 
-    # 2. Check canonical v15 tape
-    if arm == "v15_0_production":
-        for c_path in [
-            ROOT.parent / "data" / "canonical" / "canonical_v15_0_tape.parquet",
+    # 2. Check canonical tapes matching the arm
+    candidate_paths = []
+    if arm == "v15_2_production":
+        candidate_paths = [
+            V15_ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet",
+            V15_ROOT / "data" / "all_tapes" / "v15_2_production" / "trades.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_2_tape.csv",
+        ]
+    elif arm == "v15_1_production":
+        candidate_paths = [
+            V15_ROOT / "data" / "canonical" / "canonical_v15_1_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_1_tape.parquet",
+            V15_ROOT / "data" / "all_tapes" / "v15_1_production" / "trades.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_1_tape.csv",
+        ]
+    elif arm == "v15_0_production":
+        candidate_paths = [
+            V15_ROOT / "data" / "canonical" / "canonical_v15_0_tape.parquet",
             ROOT / "data" / "canonical" / "canonical_v15_0_tape.parquet",
-            ROOT.parent / "v15_standalone" / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
-            ROOT / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
+            V15_ROOT / "data" / "all_tapes" / "v15_0_production" / "trades.parquet",
             ROOT / "data" / "canonical" / "canonical_v15_0_tape.csv",
-        ]:
-            if c_path.exists():
-                try:
-                    if c_path.suffix == ".parquet":
-                        return pd.read_parquet(c_path)
-                    return pd.read_csv(c_path)
-                except Exception:
-                    pass
+        ]
+    else:
+        candidate_paths = [
+            ROOT / "data" / "canonical" / f"canonical_{arm}_tape.parquet",
+            ROOT / "data" / "canonical" / "canonical_v15_2_tape.parquet",
+        ]
+
+    for c_path in candidate_paths:
+        if c_path.exists():
+            try:
+                if c_path.suffix == ".parquet":
+                    return pd.read_parquet(c_path)
+                return pd.read_csv(c_path)
+            except Exception:
+                pass
     return pd.DataFrame()
 
 
 def load_v12_telemetry(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
-    if arm == "v12_production":
-        p = ROOT / "telemetry" / "veto_telemetry.parquet"
-    else:
-        p = ROOT / "telemetry" / arm / "veto_telemetry.parquet"
-        if not p.exists():
-            p = ROOT / "telemetry" / "veto_telemetry.parquet"
-    if p.exists():
-        try:
-            return pd.read_parquet(p)
-        except Exception:
-            pass
+    search_paths = [
+        V15_ROOT / "data" / "all_tapes" / arm / "veto_telemetry.parquet",
+        ROOT / "v15_standalone" / "data" / "all_tapes" / arm / "veto_telemetry.parquet",
+        ROOT / "data" / "all_tapes" / arm / "veto_telemetry.parquet",
+        V15_ROOT / "telemetry" / arm / "veto_telemetry.parquet",
+        V15_ROOT / "telemetry" / "veto_telemetry.parquet",
+        ROOT / "telemetry" / arm / "veto_telemetry.parquet",
+        ROOT / "telemetry" / "veto_telemetry.parquet",
+    ]
+    for p in search_paths:
+        if p.exists():
+            try:
+                df = pd.read_parquet(p)
+                if not df.empty:
+                    return df
+            except Exception:
+                pass
     return pd.DataFrame()
 
 
 def load_v12_scorecard(arm_name: Optional[str] = None) -> pd.DataFrame:
     arm = arm_name or CURRENT_ARM
-    t_dir = ROOT / "data" / "all_tapes" / arm
-    p = t_dir / "scorecard.parquet"
-    if p.exists():
-        try:
-            return pd.read_parquet(p)
-        except Exception:
-            pass
+    search_paths = [
+        V15_ROOT / "data" / "all_tapes" / arm / "scorecard.parquet",
+        ROOT / "v15_standalone" / "data" / "all_tapes" / arm / "scorecard.parquet",
+        ROOT / "data" / "all_tapes" / arm / "scorecard.parquet",
+    ]
+    for p in search_paths:
+        if p.exists():
+            try:
+                return pd.read_parquet(p)
+            except Exception:
+                pass
     return pd.DataFrame()
 
 
@@ -994,6 +1047,13 @@ body {
 def setup_page_head():
     ui.add_head_html(CUSTOM_CSS)
 
+    # TradingView Lightweight Charts & Quant Workstation Assets
+    ui.add_head_html("""
+    <link rel="stylesheet" href="/static/css/workstation.css">
+    <script src="/static/js/lightweight-charts.standalone.production.js"></script>
+    <script src="/static/js/quant_workstation.js"></script>
+    """)
+
     # Fix #10 — WebSocket Auto-Reconnect Guard
     ui.add_head_html("""
     <script>
@@ -1073,7 +1133,7 @@ def coin_research_page(symbol: str):
     chart_df, diag = load_coin_research_data(clean_sym, lookback_bars=720)
 
     if chart_df is None or chart_df.empty:
-        with ui.column().classes('w-full max-w-7xl mx-auto p-6 gap-6'):
+        with ui.column().classes('w-full px-6 py-4 gap-6'):
             ui.link('<- Back to Command Center', '/').classes('text-xs text-[#00f0ff] font-bold mono border border-[#00f0ff]/30 px-3 py-1.5 rounded-lg hover:bg-[#00f0ff]/10 w-fit')
             with ui.card().classes('card-glass p-8 border border-[#ff4655] w-full text-center'):
                 ui.label(f'Shard Tape Not Found: {clean_sym}').classes('text-xl font-bold text-[#ff4655] mono')
@@ -1164,8 +1224,9 @@ def coin_research_page(symbol: str):
             ui.html(macro_badge)
             ui.label(f"${curr_px:,.4f}").classes('text-lg font-black text-white mono')
             ui.label(f"({ret_24h_str})").classes(f'text-xs font-bold text-[{ret_24h_col}] mono')
+            ui.link('⚡ Launch 60 FPS Workstation', f'/workstation/{clean_sym}').classes('text-xs text-[#00ff87] font-bold mono border border-[#00ff87]/30 px-3 py-1.5 rounded-lg hover:bg-[#00ff87]/10 ml-auto')
 
-    with ui.column().classes('w-full max-w-7xl mx-auto p-6 gap-6'):
+    with ui.column().classes('w-full px-6 py-4 gap-6'):
         with ui.row().classes('w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4'):
             with ui.card().classes('card-glass p-4 border-l-4 border-l-[#00f0ff]'):
                 ui.label('LIFETIME WIN RATE').classes('text-xs text-gray-400 font-bold tracking-wider mono')
@@ -1206,62 +1267,95 @@ def coin_research_page(symbol: str):
                 ui.label(f"{net_v_alpha:+.1f}%").classes(f'text-2xl font-black text-[{v_col}] mono mt-1')
                 ui.label(f"+{saved_loss:.0f}% Saved ({dodged_cnt} Dodged)").classes('text-xs text-gray-400 mono')
 
-        with ui.card().classes('card-glass p-4 border border-[#21262d] w-full'):
-            chart_state = {'tab': 'price', 'lookback': 30}
+        with ui.card().classes('card-glass p-3 border border-[#21262d] w-full flex flex-col gap-2 items-stretch'):
+            chart_container = ui.column().classes('w-full items-stretch')
 
-            with ui.row().classes('w-full justify-between items-center mb-3 flex-wrap gap-2'):
-                tab_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
-                lookback_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
+            def render_tv_workstation():
+                chart_container.clear()
+                with chart_container:
+                    with ui.row().classes('w-full justify-between items-center mb-2 flex-wrap gap-2'):
+                        with ui.row().classes('items-center gap-2'):
+                            ui.label(f'📈 {clean_sym} QUANT TRADING WORKSTATION (TRADINGVIEW LIGHTWEIGHT CHARTS)').classes('text-xs text-[#00f0ff] font-bold mono')
+                            ui.html('<span class="badge-tag badge-cyan">Canvas/WebGL 60 FPS</span>')
+                            ui.html('<span class="badge-tag badge-green">4-Pane Synced</span>')
+                        with ui.row().classes('items-center gap-2'):
+                            ui.button('📊 Switch to Legacy Plotly', on_click=render_plotly_view).props('dense outline size=sm color=grey').classes('mono font-bold')
+                            ui.button('Full-Screen Pop-Out ↗', on_click=lambda: ui.open(f'/workstation/{clean_sym}', new_tab=True)).props('dense outline size=sm color=amber').classes('mono font-bold')
 
-            chart_holder = ui.column().classes('w-full')
+                    ui.html('<div id="coin-workstation-app" style="width:100% !important; min-width:100% !important; height:850px; display:block;"></div>').classes('w-full')
 
-            def render_chart_and_controls():
-                tab_bar.clear()
-                lookback_bar.clear()
-                chart_holder.clear()
+                ui.timer(0.2, lambda: ui.run_javascript(f"""
+                if (!window.coinKwInstance) {{
+                    window.coinKwInstance = new QuantWorkstation('coin-workstation-app');
+                }}
+                window.coinKwInstance.loadSymbol('{clean_sym}', 2500);
+                """), once=True)
 
-                tabs = [
-                    ('price', 'Price Action'),
-                    ('derivatives', 'Derivatives & OI'),
-                    ('volume', 'Volume & Tape'),
-                    ('overview', '3-Pane Overview')
-                ]
-                with tab_bar:
-                    for t_key, t_label in tabs:
-                        is_active = (chart_state['tab'] == t_key)
-                        btn_cls = 'bg-[#21262d] text-white border-b-2 border-cyan-400 font-bold' if is_active else 'text-gray-400 hover:text-white'
-                        def make_tab_cb(k):
-                            return lambda: (chart_state.update({'tab': k}), render_chart_and_controls())
-                        ui.button(t_label, on_click=make_tab_cb(t_key)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-3 py-1 rounded-sm text-xs mono transition-all')
+            def render_plotly_view():
+                chart_container.clear()
+                with chart_container:
+                    chart_state = {'tab': 'price', 'lookback': 30}
+                    with ui.row().classes('w-full justify-between items-center mb-2 flex-wrap gap-2'):
+                        with ui.row().classes('items-center gap-2'):
+                            ui.label(f'📊 {clean_sym} LEGACY PLOTLY VIEW').classes('text-xs text-gray-400 font-bold mono')
+                            ui.button('⚡ Switch to TradingView Workstation (60 FPS)', on_click=render_tv_workstation).props('dense outline size=sm color=cyan').classes('mono font-bold')
 
-                lookbacks = [
-                    (14, '14D'),
-                    (30, '30D'),
-                    (60, '60D'),
-                    (0, 'ALL')
-                ]
-                with lookback_bar:
-                    for lb_val, lb_label in lookbacks:
-                        is_active = (chart_state['lookback'] == lb_val)
-                        btn_cls = 'bg-[#21262d] text-white font-bold' if is_active else 'text-gray-400 hover:text-white'
-                        def make_lb_cb(v):
-                            return lambda: (chart_state.update({'lookback': v}), render_chart_and_controls())
-                        ui.button(lb_label, on_click=make_lb_cb(lb_val)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-2.5 py-1 rounded-sm text-xs mono transition-all')
+                        with ui.row().classes('items-center gap-2'):
+                            tab_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
+                            lookback_bar = ui.row().classes('items-center bg-[#161b22] p-1 rounded-lg border border-[#21262d] gap-1')
 
-                bars = chart_state['lookback'] * 24 if chart_state['lookback'] > 0 else 0
-                sub_df, _ = load_coin_research_data(clean_sym, lookback_bars=bars)
-                with chart_holder:
-                    fig = build_coin_deep_research_chart(
-                        clean_sym,
-                        sub_df if sub_df is not None else chart_df,
-                        coin_trades,
-                        open_trade,
-                        coin_vetoes=coin_vetoes,
-                        active_tab=chart_state['tab']
-                    )
-                    ui.plotly(fig).classes('w-full')
+                    plotly_holder = ui.column().classes('w-full')
 
-            render_chart_and_controls()
+                    def update_plotly():
+                        tab_bar.clear()
+                        lookback_bar.clear()
+                        plotly_holder.clear()
+
+                        tabs = [
+                            ('price', 'Price Action'),
+                            ('derivatives', 'Derivatives & OI'),
+                            ('volume', 'Volume & Tape'),
+                            ('overview', '3-Pane Overview')
+                        ]
+                        with tab_bar:
+                            for t_key, t_label in tabs:
+                                is_active = (chart_state['tab'] == t_key)
+                                btn_cls = 'bg-[#21262d] text-white border-b-2 border-cyan-400 font-bold' if is_active else 'text-gray-400 hover:text-white'
+                                def make_tab_cb(k):
+                                    return lambda: (chart_state.update({'tab': k}), update_plotly())
+                                ui.button(t_label, on_click=make_tab_cb(t_key)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-3 py-1 rounded-sm text-xs mono transition-all')
+
+                        lookbacks = [
+                            (14, '14D'),
+                            (30, '30D'),
+                            (60, '60D'),
+                            (0, 'ALL')
+                        ]
+                        with lookback_bar:
+                            for lb_val, lb_label in lookbacks:
+                                is_active = (chart_state['lookback'] == lb_val)
+                                btn_cls = 'bg-[#21262d] text-white font-bold' if is_active else 'text-gray-400 hover:text-white'
+                                def make_lb_cb(v):
+                                    return lambda: (chart_state.update({'lookback': v}), update_plotly())
+                                ui.button(lb_label, on_click=make_lb_cb(lb_val)).props('flat dense no-caps size=sm').classes(f'{btn_cls} px-2.5 py-1 rounded-sm text-xs mono transition-all')
+
+                        bars = chart_state['lookback'] * 24 if chart_state['lookback'] > 0 else 0
+                        sub_df, _ = load_coin_research_data(clean_sym, lookback_bars=bars)
+                        with plotly_holder:
+                            fig = build_coin_deep_research_chart(
+                                clean_sym,
+                                sub_df if sub_df is not None else chart_df,
+                                coin_trades,
+                                open_trade,
+                                coin_vetoes=coin_vetoes,
+                                active_tab=chart_state['tab']
+                            )
+                            ui.plotly(fig).classes('w-full')
+
+                    update_plotly()
+
+            # Render TradingView Workstation by default
+            render_tv_workstation()
 
         with ui.row().classes('w-full grid grid-cols-1 lg:grid-cols-2 gap-6'):
             # Card 1: Historical Performance Matrix
@@ -1666,6 +1760,87 @@ def coin_research_page(symbol: str):
 
 
 # ---------------------------------------------------------------------------
+# QUANT WORKSTATION API & VIEW COMPONENT
+# ---------------------------------------------------------------------------
+@app.get('/api/workstation/{symbol}')
+def api_workstation_data(symbol: str, bars: int = 2500):
+    """REST API endpoint returning high-fidelity Lightweight Charts payload."""
+    try:
+        payload = build_workstation_payload(symbol, arm=CURRENT_ARM, lookback_bars=bars)
+        return payload
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {'error': str(e), 'symbol': symbol}
+
+
+def render_quant_workstation_panel(initial_sym: Optional[str] = None):
+    symbols_data = get_available_workstation_symbols()
+    sym_options = {item['symbol']: item['display_label'] for item in symbols_data}
+
+    if initial_sym and initial_sym.upper() in sym_options:
+        default_sym = initial_sym.upper()
+    elif 'JCT' in sym_options:
+        default_sym = 'JCT'
+    elif sym_options:
+        default_sym = list(sym_options.keys())[0]
+    else:
+        default_sym = 'BTC'
+
+    with ui.card().classes('card-glass p-3 border border-[#21262d] w-full flex flex-col gap-3 items-stretch'):
+        with ui.row().classes('w-full justify-between items-center gap-4 flex-wrap'):
+            with ui.row().classes('items-center gap-3 flex-wrap'):
+                ui.label('⚡ ASSET SELECTOR:').classes('text-xs font-bold text-[#00f0ff] mono')
+                sym_select = ui.select(
+                    options=sym_options,
+                    value=default_sym,
+                    with_input=True
+                ).classes('w-72 bg-[#161b22] text-white mono text-xs').props('dense outlined dark')
+
+                ui.label('HOT SHARDS:').classes('text-xs font-bold text-gray-400 mono ml-2')
+                for q_sym in ['JCT', 'MAGIC', 'DOOD', 'Q', 'AGT', 'BTC', 'ETH', 'SOL']:
+                    if q_sym in sym_options:
+                        ui.button(
+                            q_sym,
+                            on_click=lambda s=q_sym: on_select_symbol(s)
+                        ).props('dense outline size=sm color=cyan').classes('mono font-bold')
+
+            with ui.row().classes('items-center gap-3'):
+                ui.button(
+                    'Full-Screen Pop-Out ↗',
+                    on_click=lambda: ui.open(f'/workstation/{sym_select.value}', new_tab=True)
+                ).props('dense outline size=sm color=amber').classes('mono font-bold')
+
+        # The Workstation Canvas Container
+        ui.html('<div id="quant-workstation-app" style="width:100% !important; min-width:100% !important; height:860px; display:block;"></div>').classes('w-full')
+
+    def on_select_symbol(sym):
+        sym_select.value = sym
+        ui.run_javascript(f"""
+        if (!window.kwInstance) {{
+            window.kwInstance = new QuantWorkstation('quant-workstation-app');
+        }}
+        window.kwInstance.loadSymbol('{sym}', 2500);
+        """)
+
+    sym_select.on('update:model-value', lambda e: on_select_symbol(e.value))
+
+    # Trigger initial load once DOM is mounted
+    ui.timer(0.35, lambda: on_select_symbol(default_sym), once=True)
+
+
+@ui.page('/workstation')
+@ui.page('/workstation/{symbol}')
+def workstation_fullscreen_page(symbol: Optional[str] = None):
+    setup_page_head()
+    with ui.column().classes('w-full min-h-screen p-2 bg-[#090d14] gap-2'):
+        with ui.row().classes('w-full justify-between items-center px-2 py-1'):
+            ui.link('← Back to Command Center', '/').classes('text-xs text-[#00f0ff] font-bold mono border border-[#00f0ff]/30 px-3 py-1.5 rounded-lg hover:bg-[#00f0ff]/10')
+            ui.label('KRONOS V15.2: HIGH-FIDELITY QUANT WORKSTATION (FULL SCREEN)').classes('text-xs font-bold text-gray-400 mono')
+        render_quant_workstation_panel(initial_sym=symbol)
+
+
+# ---------------------------------------------------------------------------
 # MAIN DASHBOARD VIEW
 # ---------------------------------------------------------------------------
 @ui.page('/')
@@ -1720,6 +1895,8 @@ def index_page():
                     CURRENT_ARM = e.value
                     ui.navigate.to('/')
                 arm_labels = {
+                    'v15_2_production': '👑 Canonical V15.2 Master Production (Direct Squeeze Ignition)',
+                    'v15_1_production': '👑 Canonical V15.1 Master Production (Studentized Carry)',
                     'v15_0_production': '👑 Canonical V15.0 Master Production (Books 1-4, 6, 7)',
                     'v13_production': '🛡️ Canonical V13.2 Production (Books 1-6)',
                     'v12_11_production': '🛡️ Canonical V12.11 Production',
@@ -1727,8 +1904,12 @@ def index_page():
                     'v12_production': '🛡️ Canonical V12 Production'
                 }
                 options = {a: arm_labels.get(a, a) for a in arms}
-                ui.select(options=options, value=CURRENT_ARM, on_change=set_arm).props('dense dark borderless options-dense').classes('text-xs mono w-64 text-cyan-300 font-bold')
-            if CURRENT_ARM == "v15_0_production":
+                ui.select(options=options, value=CURRENT_ARM, on_change=set_arm).props('dense dark borderless options-dense').classes('text-xs mono w-72 text-cyan-300 font-bold')
+            if CURRENT_ARM == "v15_2_production":
+                arm_badge = '<span class="badge-tag badge-green font-bold">V15.2 Master Production (641 Shards)</span>'
+            elif CURRENT_ARM == "v15_1_production":
+                arm_badge = '<span class="badge-tag badge-green font-bold">V15.1 Master Production (641 Shards)</span>'
+            elif CURRENT_ARM == "v15_0_production":
                 arm_badge = '<span class="badge-tag badge-green font-bold">V15.0 Master Production (652 Shards)</span>'
             elif CURRENT_ARM == "v13_production":
                 arm_badge = '<span class="badge-tag badge-cyan">V13.2 Production Active (Books 1-6)</span>'
@@ -1800,7 +1981,7 @@ def index_page():
     # -----------------------------------------------------------------------
     # KPI METRIC CARDS STRIP
     # -----------------------------------------------------------------------
-    with ui.column().classes('w-full max-w-[1600px] mx-auto p-6 gap-6'):
+    with ui.column().classes('w-full px-6 py-4 gap-6'):
         with ui.row().classes('w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4'):
             # Card 1: Capital Multiple
             with ui.card().classes('card-glass p-4 border-l-4 border-l-[#00f0ff]'):
@@ -1846,6 +2027,7 @@ def index_page():
         # TOP-LEVEL COMPREHENSIVE NAVIGATION TABS
         # -------------------------------------------------------------------
         with ui.tabs().classes('w-full text-gray-400 border-b border-[#21262d]') as tabs:
+            tab_workstation = ui.tab('workstation', label='📈 Quant Workstation')
             tab_open = ui.tab('open', label=f'⚡ Open Positions ({tot_open})')
             tab_closed = ui.tab('closed', label=f'📜 Closed Positions ({tot_closed})')
             tab_portfolio = ui.tab('portfolio', label='💼 Portfolio & Sizing Allocation')
@@ -1857,6 +2039,12 @@ def index_page():
             tab_timeline = ui.tab('timeline', label='📅 Execution Timeline & Traverse')
 
         with ui.tab_panels(tabs, value=tab_open).classes('w-full bg-transparent p-0'):
+            # ---------------------------------------------------------------
+            # 0. 📈 QUANT WORKSTATION TAB (LIGHTWEIGHT CHARTS 60 FPS CANVAS)
+            # ---------------------------------------------------------------
+            with ui.tab_panel(tab_workstation).classes('p-0 gap-4 flex flex-col'):
+                render_quant_workstation_panel()
+
             # ---------------------------------------------------------------
             # 1. ⚡ OPEN POSITIONS TAB (ACTIVE PORTFOLIO)
             # ---------------------------------------------------------------
@@ -2851,13 +3039,13 @@ if __name__ in {"__main__", "__mp_main__"}:
     host = os.getenv("NICEGUI_HOST", "0.0.0.0")
     port = int(os.getenv("NICEGUI_PORT", "8056"))
     print("\n" + "=" * 80)
-    print(f"STARTING KRONOS V12 NICEGUI COMMAND CENTER ({host}:{port})")
+    print(f"STARTING KRONOS V15.2 NICEGUI COMMAND CENTER ({host}:{port})")
     print(f"Accessible at: http://localhost:{port} or http://<server-ip>:{port}")
     print("=" * 80 + "\n")
     ui.run(
         host=host,
         port=port,
-        title="Kronos V12: Clean 6-Core Command Center",
+        title="Kronos V15.2: Master Multi-Book Command Center",
         dark=True,
         reload=False
     )

@@ -1,11 +1,11 @@
 """
-Kronos V15.0 Production Dashboard Entrypoint
-Launches the Cyber Command Center on Port 8080 with full NiceGUI UI,
+Kronos V15.2 Master Production Dashboard Entrypoint
+Launches the Cyber Command Center on Port 8056 with full NiceGUI UI,
 Plotly multi-pane charts, Quasar data tables, and real-time tactical alerts.
 
 Usage:
     python dashboard.py
-    (Accessible at http://localhost:8080)
+    (Accessible at http://localhost:8056)
 """
 import os
 import sys

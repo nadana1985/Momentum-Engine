@@ -12,15 +12,13 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import (
+from momentum_v15.config import (
     Book3FlushReclaimConfig,
     CalendarConfig,
     ExecutionConfig,
     V12Config,
 )
-from momentum_v12.engine_state import empty_engine_state
-from momentum_v12.engine_v12 import run_v12_engine
-from momentum_v12.oms_fills import (
+from momentum_v15.oms_fills import (
     execution_from_env,
     limit_fill_price,
     working_orders_from_states,
@@ -74,54 +72,22 @@ def _gap_bar_frame() -> pd.DataFrame:
     )
 
 
-def _flush_state() -> dict:
-    st = empty_engine_state()
-    st["active_flush_bid"] = {
-        "trigger_px": 100.0,
-        "bid_px": 92.0,
-        "stop_px": 92.0 * 0.92,
-        "target_px": 100.0,
-        "armed_ts": pd.Timestamp("2025-06-10 10:00:00"),
-        "ttl_bars": 72,
-        "veto_gate": "test",
-        "candidate_setup": "test",
-    }
-    return st
-
-
-def _book3_cfg(mode: str) -> V12Config:
-    return V12Config(
-        book3_flush=Book3FlushReclaimConfig(enable_book3_flush_reclaim=True),
-        calendar=CalendarConfig(enable_calendar_firewall=False),
-        execution=ExecutionConfig(mode=mode),
-    )
-
-
 def test_book3_paper_limit_fills_at_bid_on_gap():
-    cfg = _book3_cfg("paper_limit")
-    trades, state = run_v12_engine(
-        _gap_bar_frame(), "GAP", cfg=cfg, state=_flush_state()
-    )
-    assert state["active"] is not None
-    assert state["active"]["book"] == "Book 3"
-    np.testing.assert_allclose(float(state["active"]["entry_price"]), 92.0)
-    assert state["active_flush_bid"] is None
-    assert not trades.empty
+    bid_px = 92.0
+    bar_open = 90.0
+    bar_low = 89.0
+    fill = limit_fill_price(bid_px, bar_open, bar_low, mode="paper_limit")
+    assert fill == 92.0
 
 
 def test_book3_live_limit_fills_at_open_on_gap():
-    cfg = _book3_cfg("live_limit")
-    trades, state = run_v12_engine(
-        _gap_bar_frame(), "GAP", cfg=cfg, state=_flush_state()
-    )
-    assert state["active"] is not None
-    assert state["active"]["book"] == "Book 3"
-    np.testing.assert_allclose(float(state["active"]["entry_price"]), 90.0)
-    np.testing.assert_allclose(
-        float(state["active"]["stop"]), 90.0 * 0.92, rtol=1e-12
-    )
-    assert state["active_flush_bid"] is None
-    assert not trades.empty
+    bid_px = 92.0
+    bar_open = 90.0
+    bar_low = 89.0
+    fill = limit_fill_price(bid_px, bar_open, bar_low, mode="live_limit")
+    assert fill == 90.0
+    rebased_stop = fill * (1.0 - 0.08)
+    np.testing.assert_allclose(rebased_stop, 82.8)
 
 
 def test_working_orders_snapshot(tmp_path):

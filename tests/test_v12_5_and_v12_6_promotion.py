@@ -18,10 +18,10 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, Book4Config, SizingConfig, ExitConfig
-from momentum_v12.sizing_v12 import get_ema_position_weight, get_btc_macro_multiplier
-from momentum_v12.features_v12 import compute_features_v12
-from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v15.config import V12Config, Book4Config, SizingConfig, ExitConfig
+from momentum_v15.sizing_v12 import get_ema_position_weight, get_btc_macro_multiplier
+from momentum_v15.features_v12 import compute_features_v12
+from momentum_v15.engine_v12 import run_v12_engine
 
 
 def test_config_dataclasses_integrity():
@@ -172,7 +172,7 @@ def test_book4_and_target_cap_engine_execution():
         )
     )
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades, _ = run_v12_engine(feat, "TEST_ASSET", cfg=cfg)
+    trades = run_v12_engine(feat, "TEST_ASSET", cfg=cfg)
     
     # Engine should run without error and generate valid trades
     assert isinstance(trades, pd.DataFrame)

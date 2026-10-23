@@ -1,7 +1,7 @@
 # Kronos Quantitative Knowledge Base & Migration Architecture (KNOWLEDGE.md)
 ## Sovereign Pipeline Protocol, Version Promotion SOP & Zero-Reversion Invariants
 
-* **Version:** Canonical Production V13.3 (Master Unified Multi-Book Production Architecture + Temporal Calendar Firewall)
+* **Version:** Canonical Production V15.2 (Master Unified Multi-Book Production Architecture + Relaxed 200d Squeeze Ignition)
 * **Scope:** All Autonomous Agents, Quantitative Engineers, Pipeline Scripts, and Dashboard Services
 * **Mandate:** Zero-Reversion Guarantee — Clean-room discoveries MUST natively propagate through the pipeline without static band-aids or cache desynchronization.
 
@@ -20,6 +20,12 @@
    Integrated Book 6 (3-Stage Asymmetric Reclaim Engine) natively into `engine_v12.py`, `features_v12.py`, and `build_v12_tape.py`, capturing orderflow accumulation breakout reclaims at $\text{AVWAP}_\tau$ across 30-day cyclical bases with 50% resting limit absorption and volume liquidation bailout.
 5. **V13.3 Promotion (Temporal Calendar Boundary Firewall - Study S-BV & S-BX):**
    Natively integrates `CalendarConfig` into `engine_v12.py` and `build_v12_tape.py`. Eliminates opening new positions on Monday, Month-End, and Month-Start across all books, and Book 1 on Sunday. Converts Book 2 Sunday setups to 7-Day High Breakout conditional triggers while preserving high-WR Sunday absorption entries for Books 3, 4, 5, and 6. Elevates Master Portfolio Win Rate to **`64.85%`** (from 62.69%) and surges Log Profit Factor to **`2.707`** (from 2.458) across 3,937 closed trades.
+6. **V15.1 Promotion (Dynamic Studentized Funding Carry Governor for Micro-Caps - Study S-CJ & S-CK):**
+   Replaces static $FR \le 0.0$ with $z_{\text{fnd},30\text{d}} \le +0.25\sigma$ in Book 7 while preserving Two-Tranche Micro-Harvesting (+3% Tranche A, -0.5% BE cushion, 72h Donchian runner for Tranche B), doubling Book 7 sample size with 80.8% Win Rate.
+7. **V15.2 Promotion (Relaxed 200d Dormancy + Direct Breakout Ignition - Study S-CL):**
+   Calibrates Book 7 micro-cap pre-dormancy from 30 days to 7 days (`min_bars_below = 168`), expands allowable 200d EMA breakout penetration to +20% (`max_dist_200d = 0.20`), and adds direct breakout ignition on aggressive whale short squeezes ($z_{LS} \le -1.50\sigma$) without requiring a delayed 4h retest pullback. Expands Book 7 to **509 closed trades** with **79.17% Win Rate**, Log PF **1.469**, and surges Book 7 Net Log Return to **+301.7%** (from -8.9%). Elevates Master Portfolio across 641 shards to **3,473 closed trades**, **54.79% Win Rate**, Log PF **1.460**, and **+4,319.3% Net Log Return** ($5.74 \times 10^{18}\times$ capital multiple), forensically capturing both waves of `JCT` (+1.55% and +43.17%).
+8. **Study S-CM Clean-Room Audit (The Physical Liquidity Capacity Invariant of the +35% Leverage Firewall):**
+   Rigorously evaluated pure dynamic studentized ($z_{\text{OI}, 12\text{h}} \le +2.00\sigma$) and empirical percentile ($pct_{\text{OI}, 30\text{d}} \le 90\%$) orderflow bubble gates across all 384 Tier 3 micro-cap shards. Proved that in thin micro-caps, a pure relative z-score permits fatal $+80\%$ to $+150\%$ nominal leverage spikes that exceed physical orderbook depth, collapsing Log PF from 1.469 to 1.111 and destroying over -214.3% Net Log alpha. Meanwhile, a 90th percentile gate vetoes `JCT` Wave 2 (+43.17% gain). Proves that the $+35.0\%$ 24h nominal token expansion ceiling functions as an inviolable Physical Liquidity Capacity constraint and is permanently retained as the baseline architecture.
 
 ### Immutable Iron Law:
 > **Never apply static file-copy patches to production tape directories.**
@@ -112,6 +118,7 @@ Whenever research verifies a new breakthrough that passes all 6 SPEC Acceptance 
 | **Book 4 (Dual Confluence Multiplier)** | Concurrent reclaim of USD 200d EMA and synthetic `ALT/BTC` 200d EMA earns $1.35\times$ Maximum Conviction Sizing. | Dilutes sizing on macro market share rotation leaders. |
 | **Book 5 (Shelf Absorption Squeeze)** | Trapped Whale short squeezes ($L/S \le 0.85$, OI $\ge +40\%$) enter via passive resting limit bids at $-8.0\%$ discount. | Market chasing leads to 45.8% WR; limit absorption yields 90.05% WR. |
 | **Book 6 (3-SARE Orderflow Reclaim)** | Anchors $\text{AVWAP}_\tau$ on CUSUM ignition ($S_\tau^+ \ge 1.50$) within 30-day cyclical bases. Entry staged: 50% limit bid at $\text{AVWAP}_\tau$, 50% reclaim close. Dual-barrier stop with $\ge 3.0\times$ volume panic bailout. 3-Stage exits: Tranche A (+8%), Tranche B (+25%), Tranche C (72h Donchian trail). | Market chasing spikes reduces Win Rate; ignoring panic bailout causes catastrophic drawdowns. |
+| **Book 7 (MSSR Micro-Harvesting - V15.2)** | Dedicated Tier 3 micro-cap sleeve. Enforces Dynamic Studentized Carry Gate ($z_{\text{fnd},30\text{d}} \le +0.25\sigma$), Whale Squeeze Fuel ($pct_{LS} \le 15\%$ or $z_{LS} \le -1.25\sigma$), 7-day consolidation base (`min_bars_below = 168`), +20% penetration ceiling (`max_dist_200d = 0.20`), Direct Breakout Ignition ($z_{LS} \le -1.50\sigma$ without 4h retest delay), and Two-Tranche Micro-Harvesting (+3% Tranche A, -0.5% breakeven cushion ratchet, unconstrained 72h Donchian runner for Tranche B). **NEVER loosen the breakeven cushion beyond -0.5%** (Study S-CK proved widening cushion destroys 31.6% Win Rate without saving runners). | Widening stop converts +1.55% wins into losses during standard micro-cap -48% shakeout troughs. 30-day dormancy misses high-conviction micro-cap supernovas like `JCT`. |
 | **Metrics Space** | All Profit Factors and portfolio compounding MUST be calculated in **strict log-return space** ($\sum \ln(1+R)$). | Arithmetic addition ($\sum R\%$) creates mathematical illusions and obscures ruin risk. |
 | **Taguchi Quality Gate** | Every candidate model/book **MUST undergo Taguchi Noise Injection** via `v12_standalone/scripts/run_taguchi_stress_test.py`. Minimum Survival Ratio $\ge 0.85$, Spread $\le 0.35$, $+25\text{ bps}$ PF Retention $\ge 85\%$. | Deploys overfit "clean-curve" strategies that evaporate under live slippage and execution jitter. |
 
@@ -271,3 +278,31 @@ Supported by the Agent Skill: [`.agents/skills/supernova_squeeze_scanner/SKILL.m
 
 
 
+
+
+---
+
+## 9. Market Data Ingestion & Live-Bridging Protocol (Rule 5 & Operational SOP)
+
+### Architecture & Shard Partitioning
+1. **Raw Price Action Shards (data/raw_shards/*_USDT_1h.parquet)**:
+   - Contains 1-hour OHLCV candles, volume, quote amount, and taker trade statistics across ~745 liquid USDT-M contracts.
+   - Column 	imestamp represents candle **Open Time**. Column close_time represents candle close (	imestamp + 3,599,999 ms).
+2. **Exotic Shards (data/exotic_shards/*_{funding,metrics}.parquet)**:
+   - *_funding.parquet: 8-hour settlement funding rates forward-filled / resampled to 1-hour intervals.
+   - *_metrics.parquet: 1-hour open interest (sum_open_interest, sum_open_interest_value) and Top Trader Long/Short account ratios (count_toptrader_long_short_ratio).
+3. **Registry & Ingestion Engines**:
+   - config/ingestion/sync_state_manager.py maintains sync_state.json to store per-symbol timestamp watermarks, eliminating full parquet opens on disk.
+   - config/ingestion/live_bridger.py performs 20-worker asynchronous REST polling against Binance Futures endpoints, bridging the recent 72h window up to the last closed candle.
+   - config/ingestion/massive_ingestion_orchestrator.py orchestrates full CCXT ingestion and Binance Vision AWS S3 archive synchronization.
+
+### Operational Commands & SOP
+- **Incremental Live Sync (Hourly/Daily):**
+  `ash
+  python config/ingestion/live_bridger.py
+  `
+- **Weekly Canonical Archive Backfill (Full Pass):**
+  `ash
+  python config/ingestion/massive_ingestion_orchestrator.py
+  `
+- **Supported Skill:** [.agents/skills/market_data_ingestion/SKILL.md](file:///f:/kronos_v1_alt/.agents/skills/market_data_ingestion/SKILL.md).

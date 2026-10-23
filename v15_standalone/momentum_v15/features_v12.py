@@ -111,6 +111,10 @@ def load_shard(
 
     try:
         raw = pd.read_parquet(raw_path)
+    except Exception as e:
+        raise RuntimeError(f"Corrupt shard file at {raw_path}: {e}") from e
+
+    try:
         raw = raw.dropna(subset=['timestamp']).sort_values('timestamp')
 
         if exotic_dir is None:
@@ -159,8 +163,10 @@ def load_shard(
         df['dt'] = pd.to_datetime(df['timestamp'], unit='ms')
         df = df.set_index('dt')
         return df
-    except Exception:
-        return None
+    except RuntimeError:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"Error processing shard for {asset}: {e}") from e
 
 
 def compute_features_v12(
@@ -262,6 +268,7 @@ def compute_features_v12(
     oi_std_168 = d_oi.rolling(168, min_periods=24).std().replace(0, np.nan)
     oi_exp_12h = (oi_tok / oi_tok.shift(12) - 1.0).fillna(0.0) * 100.0
     out['z_oi_12h'] = (oi_exp_12h / (oi_std_168 * 100.0 * np.sqrt(12.0) + 1e-8)).fillna(0.0)
+    out['pct_doi_30d'] = (out['d_oi_tokens_24h'].rolling(720, min_periods=72).rank(pct=True) * 100.0).fillna(50.0)
 
     # Study S-CE: The 6 Climax Exhaustion Signatures & Dynamic 24h VWAP
     body_top = np.maximum(o, c)
@@ -441,7 +448,7 @@ def compute_features_v12(
     is_base = dist_to_90d_low < getattr(cfg.book6, 'cycle_base_max_dist', 0.40)
     out['base_30d'] = is_base.rolling(720, min_periods=720).min() == 1.0
     out['high_30d'] = h.shift(1).rolling(720, min_periods=720).max()
-    out['is_b6_breakout'] = (h >= out['high_30d']) & out['base_30d'].shift(1).fillna(False)
+    out['is_b6_breakout'] = (h >= out['high_30d']) & out['base_30d'].shift(1).fillna(False).astype(bool)
 
     # Study S-BZ: Pre-calculate daily candles for causal P_NB_High extraction
     try:

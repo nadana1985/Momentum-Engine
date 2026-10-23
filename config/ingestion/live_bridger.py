@@ -36,7 +36,7 @@ def get_session():
     if not hasattr(_thread_local, "session"):
         s = requests.Session()
         retries = Retry(total=3, backoff_factor=1.0, status_forcelist=[429, 500, 502, 503, 504])
-        adapter = HTTPAdapter(max_retries=retries, pool_connections=10, pool_maxsize=10)
+        adapter = HTTPAdapter(max_retries=retries, pool_connections=50, pool_maxsize=50)
         s.mount("https://", adapter)
         s.headers.update({"User-Agent": "Mozilla/5.0"})
         _thread_local.session = s
@@ -54,7 +54,7 @@ class RateLimiter:
     Binance limit for futures metrics (OI + L/S) is 1,000 req / 5 min per IP.
     3.0 req/sec = 900 req / 5 min (safely within the limit).
     """
-    def __init__(self, max_per_second: float = 3.0):
+    def __init__(self, max_per_second: float = 15.0):
         self.interval = 1.0 / max_per_second
         self.lock = threading.Lock()
         self.last_called = 0.0
@@ -67,7 +67,7 @@ class RateLimiter:
                 time.sleep(self.interval - elapsed)
             self.last_called = time.time()
 
-metrics_limiter = RateLimiter(max_per_second=3.0)
+metrics_limiter = RateLimiter(max_per_second=15.0)
 
 BANNED = threading.Event()
 
@@ -233,16 +233,15 @@ def process_symbol(sym):
             except Exception:
                 pass
 
-        # --- 2. METRICS (OI and L/S: Throttled at 3 req/sec + Paginated up to current_ts) ---
+        # --- 2. METRICS (OI and L/S: Paced at 15 req/sec + Fast-Bypass Dormant) ---
         if metrics_last_ts and current_ts - metrics_last_ts >= 3600000:
-            if current_ts - metrics_last_ts > 30 * 24 * 3600000:
-                logger.warning(f"[{sym}] Gap > 30 days ({int((current_ts - metrics_last_ts)/(24*3600000))}d). Binance derivatives older than 30d are unfillable.")
-
+            is_dormant = (current_ts - metrics_last_ts > 30 * 24 * 3600000)
             curr_start = metrics_last_ts + 1
             pages_fetched = 0
             all_new_metrics = []
 
-            while curr_start < current_ts - 3600000 and pages_fetched < 10:
+            # If gap > 30 days, Binance REST returns empty data. Bypass to eliminate dead wait time.
+            while not is_dormant and curr_start < current_ts - 3600000 and pages_fetched < 10:
                 url_oi = f"https://fapi.binance.com/futures/data/openInterestHist?symbol={sym}&period=1h&startTime={curr_start}&limit=500"
                 url_ls = f"https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol={sym}&period=1h&startTime={curr_start}&limit=500"
 
@@ -290,8 +289,11 @@ def process_symbol(sym):
 
             if all_new_metrics:
                 concatenated_new = pd.concat(all_new_metrics)
-                df = pd.read_parquet(metrics_path)
-                combined = pd.concat([df, concatenated_new])
+                try:
+                    df = pd.read_parquet(metrics_path)
+                    combined = pd.concat([df, concatenated_new])
+                except Exception:
+                    combined = concatenated_new
                 combined = combined.drop_duplicates(subset=['timestamp'], keep='last').sort_values('timestamp')
                 atomic_to_parquet(combined.reset_index(drop=True), metrics_path)
 
@@ -350,8 +352,8 @@ def run_bridger():
         logger.critical("Aborting live ingestion: Binance IP ban (418) or geo-block (451) triggered during prefetch.")
         return
 
-    workers = min(6, (os.cpu_count() or 1) * 3)
-    logger.info(f"Workers: {workers} (Tuned for vCPU count) | Token-Bucket Paced (3 req/sec metrics limiter) | Atomic Parquet Enabled")
+    workers = 20
+    logger.info(f"Workers: {workers} (Hyper-Fast Concurrent) | Token-Bucket Paced (15 req/sec limiter) | Atomic Parquet Enabled")
 
     success = 0
     failed  = 0

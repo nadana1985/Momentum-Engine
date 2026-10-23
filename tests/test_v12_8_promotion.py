@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from momentum_v12.config import V12Config, Book4Config
-from momentum_v12.features_v12 import compute_features_v12
-from momentum_v12.engine_v12 import run_v12_engine
+from momentum_v15.config import V12Config, Book4Config
+from momentum_v15.features_v12 import compute_features_v12
+from momentum_v15.engine_v12 import run_v12_engine
 
 
 def _sbb_cfg() -> V12Config:
@@ -73,7 +73,7 @@ def test_book4_two_tranche_trajectory_exit():
     
     cfg = _sbb_cfg()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades, _ = run_v12_engine(feat, "SYNTHETIC_B4_TOKEN", cfg=cfg)
+    trades = run_v12_engine(feat, "SYNTHETIC_B4_TOKEN", cfg=cfg)
     
     assert isinstance(trades, pd.DataFrame)
     assert not trades.empty
@@ -127,7 +127,7 @@ def test_book4_retest_dip_immunity():
     
     cfg = _sbb_cfg()
     feat = compute_features_v12(df, btc_df=None, tier_label="Tier 1", cfg=cfg)
-    trades, _ = run_v12_engine(feat, "RETEST_TOKEN", cfg=cfg)
+    trades = run_v12_engine(feat, "RETEST_TOKEN", cfg=cfg)
     
     assert isinstance(trades, pd.DataFrame)
     b4 = trades[trades['book'] == 'Book 4']

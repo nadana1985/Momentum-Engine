@@ -32,7 +32,7 @@ logger = logging.getLogger("kronos.reconciler")
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from momentum_v12.ops_paths import resolve_tape_dir
+from momentum_v15.ops_paths import resolve_tape_dir
 
 BINANCE_API_KEY    = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
