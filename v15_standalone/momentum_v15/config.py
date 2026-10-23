@@ -647,8 +647,10 @@ class Book7Config:
     enable_whale_carry_override: bool = False   # Study S-CJ: Allow z_fnd <= +0.50s if whale conviction z_ls <= -1.50s
     whale_override_max_z_ls: float = -1.50      # Threshold for extreme whale counter-short conviction
     whale_override_max_z_fnd: float = 0.50      # Relaxed z_fnd limit under extreme whale conviction
-    enable_studentized_oi_bubble: bool = False  # Study S-CJ: Studentized orderflow expansion firewall (z_oi_12h <= +2.0s)
+    enable_studentized_oi_bubble: bool = False  # Study S-CM / Rule 7: Studentized orderflow expansion firewall (z_oi_12h <= +2.0s)
     max_z_oi: float = 2.00                      # Studentized 12h token OI expansion cap
+    enable_percentile_oi_bubble: bool = False   # Study S-CM / Rule 7: 30-day empirical percentile cap (pct_doi_30d <= 90.0%)
+    max_pct_oi: float = 90.0                    # Max 30-day empirical percentile of 24h token OI expansion
     max_initial_risk: float = 0.12         # Hard -12.0% initial risk clamp
     tranche_a_target_pct: float = 0.03     # Tranche A +3.0% Micro-Harvesting target cap
     breakeven_mfe_trigger: float = 0.03    # Ratchet stop when MFE reaches +3.0%

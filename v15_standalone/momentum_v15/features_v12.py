@@ -268,6 +268,7 @@ def compute_features_v12(
     oi_std_168 = d_oi.rolling(168, min_periods=24).std().replace(0, np.nan)
     oi_exp_12h = (oi_tok / oi_tok.shift(12) - 1.0).fillna(0.0) * 100.0
     out['z_oi_12h'] = (oi_exp_12h / (oi_std_168 * 100.0 * np.sqrt(12.0) + 1e-8)).fillna(0.0)
+    out['pct_doi_30d'] = (out['d_oi_tokens_24h'].rolling(720, min_periods=72).rank(pct=True) * 100.0).fillna(50.0)
 
     # Study S-CE: The 6 Climax Exhaustion Signatures & Dynamic 24h VWAP
     body_top = np.maximum(o, c)

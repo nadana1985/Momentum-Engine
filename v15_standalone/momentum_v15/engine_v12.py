@@ -1786,9 +1786,16 @@ def run_v12_engine(
                         z_ls_b7 = float(row.get('z_ls_30d', 0.0))
                         squeeze_fuel_ok = (pct_ls_b7 <= b7_cfg.max_pct_ls) or (z_ls_b7 <= b7_cfg.max_z_ls)
 
-                        # 3. Leverage Bubble Firewall: d_oi_tok <= +35%
-                        d_oi_tok_b7 = float(row.get('d_oi_tokens_24h', 0.0))
-                        leverage_ok = (d_oi_tok_b7 <= b7_cfg.max_d_oi_tokens)
+                        # 3. Leverage Bubble Firewall: Dynamic Heuristic (Rule 7) vs Legacy Static
+                        if getattr(b7_cfg, 'enable_studentized_oi_bubble', False):
+                            z_oi_val = float(row.get('z_oi_12h', 0.0))
+                            leverage_ok = (z_oi_val <= getattr(b7_cfg, 'max_z_oi', 2.00))
+                        elif getattr(b7_cfg, 'enable_percentile_oi_bubble', False):
+                            pct_oi_val = float(row.get('pct_doi_30d', 50.0))
+                            leverage_ok = (pct_oi_val <= getattr(b7_cfg, 'max_pct_oi', 90.0))
+                        else:
+                            d_oi_tok_b7 = float(row.get('d_oi_tokens_24h', 0.0))
+                            leverage_ok = (d_oi_tok_b7 <= b7_cfg.max_d_oi_tokens)
 
                         # 4. Minimum Turnover
                         to_val_b7 = float(turnover) if pd.notna(turnover) else 0.0
